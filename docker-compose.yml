@@ -1,0 +1,47 @@
+# ecomerce-viet-lol — dịch vụ local cho Medusa (PostgreSQL + Redis)
+# Chạy: docker compose up -d
+# Dừng: docker compose down
+# Xóa volume (reset DB): docker compose down -v
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecomerce-viet-lol-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: medusa
+      POSTGRES_PASSWORD: medusa
+      POSTGRES_DB: medusa
+    ports:
+      # Tránh xung đột với PostgreSQL cài sẵn trên Windows (thường chiếm 5432)
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medusa -d medusa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecomerce-viet-lol-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  postgres_data:
+    name: ecomerce-viet-lol_postgres_data
+  redis_data:
+    name: ecomerce-viet-lol_redis_data

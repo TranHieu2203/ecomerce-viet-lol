@@ -1,0 +1,118 @@
+# generated: 2026-04-06
+# last_updated: 2026-04-06
+# project: ecomerce-viet-lol
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+#
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+#
+# Story keys map to epics.md (2026-04-06 refresh — E8–E10 Wave 2/3/Growth):
+#   7-4 = Seed & env mặc định region VN + VND (FR-2b)
+#   8-1…8-6 = Wave 2 nav + layout thương hiệu
+#   9-1…9-6 = Wave 3 CMS pages, SEO, announcement, 404, …
+#   10-1…10-5 = Growth FR-17…21
+
+generated: "2026-04-06"
+last_updated: "2026-04-06"
+project: ecomerce-viet-lol
+project_key: NOKEY
+tracking_system: file-system
+story_location: "_bmad-output/implementation-artifacts"
+
+development_status:
+  epic-1: done
+  1-1-init-monorepo-medusa-backend: done
+  1-2-storefront-store-api-connect: done
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-migration-banner-cms-settings: done
+  2-2-banner-image-derivatives: done
+  epic-2-retrospective: optional
+
+  epic-3: done
+  3-1-admin-banner-crud-reorder: done
+  3-2-admin-cms-settings-logo-locale: done
+  3-3-store-banners-settings-public: done
+  3-4-url-upload-validation: done
+  3-5-isr-revalidate-hook: done
+  epic-3-retrospective: optional
+
+  epic-4: done
+  4-1-i18n-resolve-helper: done
+  4-2-admin-bilingual-catalog-fields: done
+  epic-4-retrospective: optional
+
+  epic-5: done
+  5-1-admin-banner-ui-reorder: done
+  5-2-admin-logo-locale-ui: done
+  epic-5-retrospective: optional
+
+  epic-6: done
+  6-1-locale-route-default-redirect: done
+  6-2-header-dynamic-nav-locale: done
+  6-3-home-hero-slider: done
+  6-4-collection-product-pages: done
+  6-5-responsive-touch-targets: done
+  epic-6-retrospective: optional
+
+  epic-7: done
+  7-1-seed-catalog-idempotent: done
+  7-2-seed-budget-collections-parent: done
+  7-3-seed-i18n-demo-data: done
+  7-4-seed-env-default-region-vn-vnd-fr-2b: done
+  epic-7-retrospective: done
+
+  epic-8: in-progress
+  8-1-migration-nav-tree-expanded-settings-site-title-tagline-i18n: done
+  8-2-admin-crud-menu-store-get-nav-menu-resolved: ready-for-dev
+  8-3-admin-nav-tree-editor-drag-tabs-vi-en: backlog
+  8-4-storefront-meganav-navdrawer-desktop-rules-fr-24: backlog
+  8-5-storefront-header-logo-only-footer-brand-collection-i18n: backlog
+  8-6-storefront-static-labels-i18n-fr-22-audit-sc-10: backlog
+  epic-8-retrospective: optional
+
+  epic-9: backlog
+  9-1-migration-cms-pages-revision-snapshot-fr-37: backlog
+  9-2-admin-store-cms-pages-crud-draft-publish-preview: backlog
+  9-3-admin-cms-pages-editor-seo-footer-social-announcement-404: backlog
+  9-4-media-picker-reuse-uploaded-files-fr-35: backlog
+  9-5-admin-history-restore-fr-37: backlog
+  9-6-storefront-cms-page-route-seo-announcement-not-found: backlog
+  epic-9-retrospective: optional
+
+  epic-10: backlog
+  10-1-third-locale-settings-routing-fr-17: backlog
+  10-2-banner-draft-publish-audit-fr-18-nfr-6: backlog
+  10-3-rbac-draft-vs-publish-fr-19: backlog
+  10-4-banner-schedule-window-fr-20: backlog
+  10-5-ab-banner-campaign-mvp-fr-21: backlog
+  epic-10-retrospective: optional

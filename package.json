@@ -1,0 +1,9 @@
+{
+  "name": "ecomerce-viet-lol",
+  "private": true,
+  "scripts": {
+    "docker:up": "docker compose up -d",
+    "dev:backend": "npm run dev --prefix apps/backend",
+    "dev:storefront": "npm run dev --prefix apps/backend-storefront"
+  }
+}

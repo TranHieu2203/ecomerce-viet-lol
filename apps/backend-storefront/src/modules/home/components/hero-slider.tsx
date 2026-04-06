@@ -1,0 +1,190 @@
+"use client"
+
+import { ArrowLeftMini, ArrowRightMini } from "@medusajs/icons"
+import { clx } from "@medusajs/ui"
+import type { BannerSlideResolved } from "@lib/data/cms"
+import Image from "next/image"
+import Link from "next/link"
+import { useCallback, useEffect, useState } from "react"
+
+export default function HeroSlider({
+  slides,
+  locale,
+}: {
+  slides: BannerSlideResolved[]
+  locale: string
+}) {
+  const [i, setI] = useState(0)
+  const safe = slides.length ? i % slides.length : 0
+  const slide = slides[safe]
+
+  const next = useCallback(() => {
+    if (!slides.length) {
+      return
+    }
+    setI((v) => (v + 1) % slides.length)
+  }, [slides.length])
+
+  const prev = useCallback(() => {
+    if (!slides.length) {
+      return
+    }
+    setI((v) => (v - 1 + slides.length) % slides.length)
+  }, [slides.length])
+
+  useEffect(() => {
+    if (slides.length < 2) {
+      return
+    }
+    const t = setInterval(next, 6500)
+    return () => clearInterval(t)
+  }, [slides.length, next])
+
+  if (!slides.length || !slide) {
+    return (
+      <section
+        className="w-full border-b border-ui-border-base bg-ui-bg-subtle min-h-[40vh] flex items-center justify-center"
+        aria-label="Hero"
+      >
+        <p className="text-ui-fg-muted text-small-regular">
+          Chưa có banner — thêm trong Medusa Admin → Storefront CMS
+        </p>
+      </section>
+    )
+  }
+
+  const srcDesktop = slide.image?.desktop || slide.image?.mobile || ""
+  const srcMobile = slide.image?.mobile || slide.image?.desktop || ""
+  const hasDistinctMobile =
+    Boolean(srcMobile && srcDesktop && srcMobile !== srcDesktop)
+  const unoptimized =
+    srcDesktop.includes("localhost") || srcMobile.includes("localhost")
+
+  return (
+    <section
+      className="relative w-full border-b border-ui-border-base bg-ui-bg-subtle overflow-hidden"
+      aria-roledescription="carousel"
+      aria-label="Hero banners"
+    >
+      <div className="relative w-full aspect-[4/5] xsmall:aspect-[3/4] small:aspect-[16/9] max-h-[min(85vh,920px)] small:max-h-[75vh]">
+        {srcDesktop && hasDistinctMobile ? (
+          <>
+            <Image
+              src={srcMobile}
+              alt={slide.alt || slide.title || "Banner"}
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover small:hidden"
+              unoptimized={unoptimized}
+            />
+            <Image
+              src={srcDesktop}
+              alt={slide.alt || slide.title || "Banner"}
+              fill
+              priority
+              sizes="(max-width: 1023px) 100vw, min(1280px, 100vw)"
+              className="object-cover hidden small:block"
+              unoptimized={unoptimized}
+            />
+          </>
+        ) : srcDesktop ? (
+          <Image
+            src={srcDesktop}
+            alt={slide.alt || slide.title || "Banner"}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            unoptimized={unoptimized}
+          />
+        ) : null}
+      </div>
+      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 via-black/20 to-transparent small:from-black/50">
+        <div className="content-container pb-6 pt-4 xsmall:pb-8 xsmall:pt-5 small:pb-10 small:pt-6 text-white flex flex-col gap-2 xsmall:gap-3 max-w-2xl">
+          <h1 className="text-2xl xsmall:text-3xl small:text-4xl font-semibold drop-shadow-md leading-tight">
+            {slide.title}
+          </h1>
+          {slide.subtitle ? (
+            <p className="text-sm xsmall:text-base small:text-lg opacity-95 drop-shadow max-w-prose">
+              {slide.subtitle}
+            </p>
+          ) : null}
+          {slide.target_url ? (
+            slide.target_url.startsWith("http://") ||
+            slide.target_url.startsWith("https://") ? (
+              <a
+                href={slide.target_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={clx(
+                  "inline-flex items-center justify-center rounded-full bg-white text-ui-fg-base px-6 py-3 w-fit text-small-regular font-medium",
+                  "min-h-11"
+                )}
+              >
+                {slide.cta_label || "Xem thêm"}
+              </a>
+            ) : (
+              <Link
+                href={`/${locale}${slide.target_url.startsWith("/") ? slide.target_url : `/${slide.target_url}`}`}
+                className={clx(
+                  "inline-flex items-center justify-center rounded-full bg-white text-ui-fg-base px-6 py-3 w-fit text-small-regular font-medium",
+                  "min-h-11"
+                )}
+              >
+                {slide.cta_label || "Xem thêm"}
+              </Link>
+            )
+          ) : null}
+        </div>
+      </div>
+      {slides.length > 1 ? (
+        <>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={prev}
+            className="absolute left-2 small:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow hover:bg-white min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
+            <ArrowLeftMini />
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={next}
+            className="absolute right-2 small:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow hover:bg-white min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
+            <ArrowRightMini />
+          </button>
+          <div
+            className="absolute bottom-3 left-0 right-0 flex justify-center gap-2"
+            role="tablist"
+            aria-label="Slides"
+          >
+            {slides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                role="tab"
+                aria-selected={idx === safe}
+                aria-label={`Go to slide ${idx + 1}`}
+                className={clx(
+                  "p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full",
+                  "-m-2"
+                )}
+                onClick={() => setI(idx)}
+              >
+                <span
+                  className={clx(
+                    "block rounded-full h-2.5 w-2.5 transition-transform",
+                    idx === safe ? "bg-white scale-125" : "bg-white/50"
+                  )}
+                />
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+    </section>
+  )
+}

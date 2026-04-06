@@ -1,0 +1,10 @@
+---
+description: Đọc _bmad-output/project-context.md trước khi implement hoặc sửa code trong repo
+alwaysApply: true
+---
+
+# Project context BMad
+
+Trước khi **viết, sửa hoặc refactor code** trong repository này, mở và tuân thủ **`_bmad-output/project-context.md`** (quy tắc stack, Medusa 2.x, Next.js storefront, module `store_cms`, API routes, i18n `vi`/`en`, test Jest, biến môi trường, anti-patterns).
+
+Nếu thay đổi lớn về kiến trúc hoặc dữ liệu, đối chiếu thêm **`_bmad-output/planning-artifacts/architecture.md`**.

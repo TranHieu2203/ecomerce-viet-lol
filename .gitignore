@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+apps/*/.env
+!apps/*/.env.template
+!apps/*/.env.test
+.DS_Store
+*.log
+.next/
+apps/backend/.medusa/
