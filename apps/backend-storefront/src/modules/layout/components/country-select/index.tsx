@@ -1,5 +1,6 @@
 "use client"
 
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import {
   Listbox,
   ListboxButton,
@@ -27,6 +28,7 @@ type CountrySelectProps = {
 }
 
 const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
+  const m = useStorefrontMessages()
   const [current, setCurrent] = useState<
     | { country: string | undefined; region: string; label: string | undefined }
     | undefined
@@ -69,13 +71,15 @@ const CountrySelect = ({ toggleState, regions }: CountrySelectProps) => {
         onChange={handleChange}
         defaultValue={
           countryCode
-            ? options?.find((o) => o?.country === countryCode)
+            ? (options?.find((o) => o?.country === countryCode) as
+                | CountryOption
+                | undefined)
             : undefined
         }
       >
         <ListboxButton className="py-1 w-full">
           <div className="txt-compact-small flex items-start gap-x-2">
-            <span>Shipping to:</span>
+            <span>{m.country.shippingTo}</span>
             {current && (
               <span className="txt-compact-small flex items-center gap-x-2">
                 {/* @ts-ignore */}

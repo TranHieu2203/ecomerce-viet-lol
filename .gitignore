@@ -8,3 +8,7 @@ apps/*/.env
 *.log
 .next/
 apps/backend/.medusa/
+
+# Medusa file module: upload local (không commit)
+apps/backend/static/**
+!apps/backend/static/.gitkeep

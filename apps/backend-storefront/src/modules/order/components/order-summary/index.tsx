@@ -1,3 +1,6 @@
+"use client"
+
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
 
@@ -6,6 +9,7 @@ type OrderSummaryProps = {
 }
 
 const OrderSummary = ({ order }: OrderSummaryProps) => {
+  const m = useStorefrontMessages()
   const getAmount = (amount?: number | null) => {
     if (!amount) {
       return
@@ -19,37 +23,37 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
 
   return (
     <div>
-      <h2 className="text-base-semi">Order Summary</h2>
+      <h2 className="text-base-semi">{m.order.summary}</h2>
       <div className="text-small-regular text-ui-fg-base my-2">
         <div className="flex items-center justify-between text-base-regular text-ui-fg-base mb-2">
-          <span>Subtotal</span>
+          <span>{m.order.subtotal}</span>
           <span>{getAmount(order.subtotal)}</span>
         </div>
         <div className="flex flex-col gap-y-1">
           {order.discount_total > 0 && (
             <div className="flex items-center justify-between">
-              <span>Discount</span>
+              <span>{m.order.discount}</span>
               <span>- {getAmount(order.discount_total)}</span>
             </div>
           )}
           {order.gift_card_total > 0 && (
             <div className="flex items-center justify-between">
-              <span>Discount</span>
+              <span>{m.order.discount}</span>
               <span>- {getAmount(order.gift_card_total)}</span>
             </div>
           )}
           <div className="flex items-center justify-between">
-            <span>Shipping</span>
+            <span>{m.order.shipping}</span>
             <span>{getAmount(order.shipping_total)}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span>Taxes</span>
+            <span>{m.order.taxes}</span>
             <span>{getAmount(order.tax_total)}</span>
           </div>
         </div>
         <div className="h-px w-full border-b border-gray-200 border-dashed my-4" />
         <div className="flex items-center justify-between text-base-regular text-ui-fg-base mb-2">
-          <span>Total</span>
+          <span>{m.order.total}</span>
           <span>{getAmount(order.total)}</span>
         </div>
       </div>

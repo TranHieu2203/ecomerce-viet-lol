@@ -1,7 +1,8 @@
+import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
+import { getCollectionByHandle, listCollections } from "@lib/data/collections"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-
-import { getCollectionByHandle, listCollections } from "@lib/data/collections"
 import { SUPPORTED_LOCALES } from "@lib/util/locales"
 import { StoreCollection } from "@medusajs/types"
 import CollectionTemplate from "@modules/collections/templates"
@@ -46,12 +47,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
-  const metadata = {
-    title: `${collection.title} | Medusa Store`,
-    description: `${collection.title} collection`,
-  } as Metadata
+  const cms = await getCmsSettingsPublic()
+  const m = getStorefrontMessages(params.countryCode)
+  const brand = resolveCmsSiteTitle(params.countryCode, cms, m)
+  const title = `${collection.title} | ${brand}`
 
-  return metadata
+  return {
+    title,
+    description: `${collection.title}`.trim() || title,
+  }
 }
 
 export default async function CollectionPage(props: Props) {

@@ -1,7 +1,8 @@
 /**
- * POST Next.js on-demand revalidate (tag `cms`). Set STOREFRONT_REVALIDATE_URL + REVALIDATE_SECRET.
+ * POST Next.js on-demand ISR. Set STOREFRONT_REVALIDATE_URL + REVALIDATE_SECRET.
+ * @param tag — Next `revalidateTag` (mặc định `cms`; nav menu dùng `cms-nav`).
  */
-export async function revalidateStorefrontCms(): Promise<void> {
+export async function revalidateStorefrontCms(tag = "cms"): Promise<void> {
   const base = process.env.STOREFRONT_REVALIDATE_URL
   const secret = process.env.REVALIDATE_SECRET
   if (!base || !secret) {
@@ -12,7 +13,7 @@ export async function revalidateStorefrontCms(): Promise<void> {
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ secret, tag: "cms" }),
+      body: JSON.stringify({ secret, tag }),
     })
     if (!res.ok) {
       console.warn(

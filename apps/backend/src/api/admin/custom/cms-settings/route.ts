@@ -81,13 +81,27 @@ export async function PATCH(
     }
   }
 
-  const updated = await cms.updateCmsSettings({
+  const cur = current as {
+    nav_tree?: unknown
+    site_title_i18n?: unknown
+    tagline_i18n?: unknown
+  }
+
+  const updatePayload = {
     id: CMS_SETTINGS_ID,
     default_locale,
     enabled_locales: enabled_locales as unknown as Record<string, unknown>,
     logo_file_id,
     site_title,
-  })
+    nav_tree: cur.nav_tree ?? null,
+    site_title_i18n: cur.site_title_i18n ?? null,
+    tagline_i18n: cur.tagline_i18n ?? null,
+  }
+  const updated = await cms.updateCmsSettings(
+    updatePayload as unknown as Parameters<
+      StoreCmsModuleService["updateCmsSettings"]
+    >[0]
+  )
   await revalidateStorefrontCms()
   res.json({ cms_settings: updated })
 }

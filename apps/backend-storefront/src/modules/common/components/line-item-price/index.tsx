@@ -1,3 +1,6 @@
+"use client"
+
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { getPercentageDiff } from "@lib/util/get-percentage-diff"
 import { convertToLocale } from "@lib/util/money"
 import { HttpTypes } from "@medusajs/types"
@@ -14,9 +17,10 @@ const LineItemPrice = ({
   style = "default",
   currencyCode,
 }: LineItemPriceProps) => {
+  const originalLabel = useStorefrontMessages().common.originalPrice
   const { total, original_total } = item
-  const originalPrice = original_total
-  const currentPrice = total
+  const originalPrice = original_total ?? 0
+  const currentPrice = total ?? 0
   const hasReducedPrice = currentPrice < originalPrice
 
   return (
@@ -26,7 +30,7 @@ const LineItemPrice = ({
           <>
             <p>
               {style === "default" && (
-                <span className="text-ui-fg-subtle">Original: </span>
+                <span className="text-ui-fg-subtle">{originalLabel} </span>
               )}
               <span
                 className="line-through text-ui-fg-muted"

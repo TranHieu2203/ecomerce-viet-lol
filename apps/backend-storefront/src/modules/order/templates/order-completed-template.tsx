@@ -1,3 +1,4 @@
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { Heading } from "@medusajs/ui"
 import { cookies as nextCookies } from "next/headers"
 
@@ -12,11 +13,14 @@ import { HttpTypes } from "@medusajs/types"
 
 type OrderCompletedTemplateProps = {
   order: HttpTypes.StoreOrder
+  countryCode: string
 }
 
 export default async function OrderCompletedTemplate({
   order,
+  countryCode,
 }: OrderCompletedTemplateProps) {
+  const m = getStorefrontMessages(countryCode)
   const cookies = await nextCookies()
 
   const isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
@@ -33,12 +37,12 @@ export default async function OrderCompletedTemplate({
             level="h1"
             className="flex flex-col gap-y-3 text-ui-fg-base text-3xl mb-4"
           >
-            <span>Thank you!</span>
-            <span>Your order was placed successfully.</span>
+            <span>{m.orderCompleted.thankYou}</span>
+            <span>{m.orderCompleted.orderPlaced}</span>
           </Heading>
           <OrderDetails order={order} />
           <Heading level="h2" className="flex flex-row text-3xl-regular">
-            Summary
+            {m.orderCompleted.summaryHeading}
           </Heading>
           <Items order={order} />
           <CartTotals totals={order} />

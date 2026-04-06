@@ -25,10 +25,17 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const site_title =
     typeof rawTitle === "string" ? rawTitle.trim() || null : rawTitle ?? null
 
+  const site_title_i18n =
+    (settings as { site_title_i18n?: unknown }).site_title_i18n ?? null
+  const tagline_i18n =
+    (settings as { tagline_i18n?: unknown }).tagline_i18n ?? null
+
   res.json({
     default_locale: settings.default_locale,
     enabled_locales: settings.enabled_locales,
     logo_url,
     site_title,
+    site_title_i18n,
+    tagline_i18n,
   })
 }

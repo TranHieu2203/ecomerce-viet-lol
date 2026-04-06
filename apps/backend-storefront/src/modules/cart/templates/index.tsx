@@ -1,3 +1,4 @@
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import ItemsTemplate from "./items"
 import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
@@ -8,10 +9,13 @@ import { HttpTypes } from "@medusajs/types"
 const CartTemplate = ({
   cart,
   customer,
+  countryCode,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
+  countryCode: string
 }) => {
+  const m = getStorefrontMessages(countryCode)
   return (
     <div className="py-12">
       <div className="content-container" data-testid="cart-container">
@@ -20,11 +24,11 @@ const CartTemplate = ({
             <div className="flex flex-col bg-white py-6 gap-y-6">
               {!customer && (
                 <>
-                  <SignInPrompt />
+                  <SignInPrompt messages={m.cart} />
                   <Divider />
                 </>
               )}
-              <ItemsTemplate cart={cart} />
+              <ItemsTemplate cart={cart} messages={m.cart} />
             </div>
             <div className="relative">
               <div className="flex flex-col gap-y-8 sticky top-12">
@@ -40,7 +44,7 @@ const CartTemplate = ({
           </div>
         ) : (
           <div>
-            <EmptyCartMessage />
+            <EmptyCartMessage messages={m.cart} />
           </div>
         )}
       </div>

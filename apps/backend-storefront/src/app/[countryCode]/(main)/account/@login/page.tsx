@@ -1,10 +1,16 @@
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import LoginTemplate from "@modules/account/templates/login-template"
 import { Metadata } from "next"
 
-import LoginTemplate from "@modules/account/templates/login-template"
+type Props = { params: Promise<{ countryCode: string }> }
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  description: "Sign in to your Medusa Store account.",
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { countryCode } = await params
+  const m = getStorefrontMessages(countryCode)
+  return {
+    title: m.auth.signIn,
+    description: m.auth.signInBlurb,
+  }
 }
 
 export default function Login() {

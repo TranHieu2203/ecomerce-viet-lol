@@ -1,8 +1,11 @@
-import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import { displayProduct } from "@lib/util/i18n-catalog"
 import { SUPPORTED_LOCALES } from "@lib/util/locales"
+import { Metadata } from "next"
+import { notFound } from "next/navigation"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -48,18 +51,19 @@ export async function generateStaticParams() {
 function getImagesForVariant(
   product: HttpTypes.StoreProduct,
   selectedVariantId?: string
-) {
+): HttpTypes.StoreProductImage[] {
   if (!selectedVariantId || !product.variants) {
-    return product.images
+    return product.images ?? []
   }
 
   const variant = product.variants!.find((v) => v.id === selectedVariantId)
-  if (!variant || !variant.images.length) {
-    return product.images
+  const vImages = variant?.images
+  if (!variant || !vImages?.length) {
+    return product.images ?? []
   }
 
-  const imageIdsMap = new Map(variant.images.map((i) => [i.id, true]))
-  return product.images!.filter((i) => imageIdsMap.has(i.id))
+  const imageIdsMap = new Map(vImages.map((i) => [i.id, true]))
+  return (product.images ?? []).filter((i) => imageIdsMap.has(i.id))
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -71,21 +75,35 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
-  const product = await listProducts({
-    countryCode: params.countryCode,
-    queryParams: { handle },
-  }).then(({ response }) => response.products[0])
+  const [product, cms] = await Promise.all([
+    listProducts({
+      countryCode: params.countryCode,
+      queryParams: { handle },
+    }).then(({ response }) => response.products[0]),
+    getCmsSettingsPublic(),
+  ])
 
   if (!product) {
     notFound()
   }
 
+  const m = getStorefrontMessages(params.countryCode)
+  const brand = resolveCmsSiteTitle(params.countryCode, cms, m)
+  const { title: metaTitle, description: metaDesc } = displayProduct(
+    params.countryCode,
+    product.title,
+    product.description,
+    product.metadata as Record<string, unknown> | null | undefined
+  )
+  const pageTitle = `${metaTitle} | ${brand}`
+  const description = (metaDesc || metaTitle).trim() || metaTitle
+
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
+    title: pageTitle,
+    description,
     openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
+      title: pageTitle,
+      description,
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }
@@ -107,11 +125,11 @@ export default async function ProductPage(props: Props) {
     queryParams: { handle: params.handle },
   }).then(({ response }) => response.products[0])
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
-
   if (!pricedProduct) {
     notFound()
   }
+
+  const images = getImagesForVariant(pricedProduct, selectedVariantId)
 
   return (
     <ProductTemplate

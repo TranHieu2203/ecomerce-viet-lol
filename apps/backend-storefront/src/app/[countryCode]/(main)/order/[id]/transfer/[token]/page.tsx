@@ -1,35 +1,31 @@
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { Heading, Text } from "@medusajs/ui"
 import TransferActions from "@modules/order/components/transfer-actions"
 import TransferImage from "@modules/order/components/transfer-image"
 
+function fillTransferId(s: string, id: string) {
+  return s.replaceAll("{id}", id)
+}
+
 export default async function TransferPage({
   params,
 }: {
-  params: { id: string; token: string }
+  params: Promise<{ countryCode: string; id: string; token: string }>
 }) {
-  const { id, token } = params
+  const { countryCode, id, token } = await params
+  const tr = getStorefrontMessages(countryCode).transfer
 
   return (
     <div className="flex flex-col gap-y-4 items-start w-2/5 mx-auto mt-10 mb-20">
       <TransferImage />
       <div className="flex flex-col gap-y-6">
         <Heading level="h1" className="text-xl text-zinc-900">
-          Transfer request for order {id}
+          {fillTransferId(tr.requestTitle, id)}
         </Heading>
-        <Text className="text-zinc-600">
-          You&#39;ve received a request to transfer ownership of your order ({id}).
-          If you agree to this request, you can approve the transfer by clicking
-          the button below.
-        </Text>
+        <Text className="text-zinc-600">{fillTransferId(tr.intro, id)}</Text>
         <div className="w-full h-px bg-zinc-200" />
-        <Text className="text-zinc-600">
-          If you accept, the new owner will take over all responsibilities and
-          permissions associated with this order.
-        </Text>
-        <Text className="text-zinc-600">
-          If you do not recognize this request or wish to retain ownership, no
-          further action is required.
-        </Text>
+        <Text className="text-zinc-600">{tr.acceptExplain}</Text>
+        <Text className="text-zinc-600">{tr.declineExplain}</Text>
         <div className="w-full h-px bg-zinc-200" />
         <TransferActions id={id} token={token} />
       </div>

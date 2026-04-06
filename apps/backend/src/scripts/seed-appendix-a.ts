@@ -149,12 +149,12 @@ export async function seedAppendixA({
       fields: ["id", "value"],
       filters: { value },
     })
-    const row = existing?.[0] as { id: string } | undefined
+    const row = existing?.[0] as { id: string; value?: string } | undefined
     if (row?.id) {
-      return row
+      return { id: row.id, value: row.value ?? value }
     }
     const [created] = await productModule.createProductTypes([{ value }])
-    return { id: created.id }
+    return { id: created.id, value }
   }
 
   const typeTrungThu = await ensureProductType("Quà Trung Thu")

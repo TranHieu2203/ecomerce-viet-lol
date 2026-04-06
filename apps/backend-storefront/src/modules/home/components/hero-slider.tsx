@@ -1,5 +1,6 @@
 "use client"
 
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { ArrowLeftMini, ArrowRightMini } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
 import type { BannerSlideResolved } from "@lib/data/cms"
@@ -14,6 +15,7 @@ export default function HeroSlider({
   slides: BannerSlideResolved[]
   locale: string
 }) {
+  const h = useStorefrontMessages().home
   const [i, setI] = useState(0)
   const safe = slides.length ? i % slides.length : 0
   const slide = slides[safe]
@@ -44,10 +46,10 @@ export default function HeroSlider({
     return (
       <section
         className="w-full border-b border-ui-border-base bg-ui-bg-subtle min-h-[40vh] flex items-center justify-center"
-        aria-label="Hero"
+        aria-label={h.hero}
       >
         <p className="text-ui-fg-muted text-small-regular">
-          Chưa có banner — thêm trong Medusa Admin → Storefront CMS
+          {h.heroEmpty}
         </p>
       </section>
     )
@@ -64,14 +66,14 @@ export default function HeroSlider({
     <section
       className="relative w-full border-b border-ui-border-base bg-ui-bg-subtle overflow-hidden"
       aria-roledescription="carousel"
-      aria-label="Hero banners"
+      aria-label={h.heroBanners}
     >
       <div className="relative w-full aspect-[4/5] xsmall:aspect-[3/4] small:aspect-[16/9] max-h-[min(85vh,920px)] small:max-h-[75vh]">
         {srcDesktop && hasDistinctMobile ? (
           <>
             <Image
               src={srcMobile}
-              alt={slide.alt || slide.title || "Banner"}
+              alt={slide.alt || slide.title || h.bannerImageAlt}
               fill
               priority
               sizes="100vw"
@@ -80,7 +82,7 @@ export default function HeroSlider({
             />
             <Image
               src={srcDesktop}
-              alt={slide.alt || slide.title || "Banner"}
+              alt={slide.alt || slide.title || h.bannerImageAlt}
               fill
               priority
               sizes="(max-width: 1023px) 100vw, min(1280px, 100vw)"
@@ -91,7 +93,7 @@ export default function HeroSlider({
         ) : srcDesktop ? (
           <Image
             src={srcDesktop}
-            alt={slide.alt || slide.title || "Banner"}
+            alt={slide.alt || slide.title || h.bannerImageAlt}
             fill
             priority
             sizes="100vw"
@@ -122,7 +124,7 @@ export default function HeroSlider({
                   "min-h-11"
                 )}
               >
-                {slide.cta_label || "Xem thêm"}
+                {slide.cta_label || h.ctaFallback}
               </a>
             ) : (
               <Link
@@ -132,7 +134,7 @@ export default function HeroSlider({
                   "min-h-11"
                 )}
               >
-                {slide.cta_label || "Xem thêm"}
+                {slide.cta_label || h.ctaFallback}
               </Link>
             )
           ) : null}
@@ -142,7 +144,7 @@ export default function HeroSlider({
         <>
           <button
             type="button"
-            aria-label="Previous slide"
+            aria-label={h.heroPrev}
             onClick={prev}
             className="absolute left-2 small:left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow hover:bg-white min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
@@ -150,7 +152,7 @@ export default function HeroSlider({
           </button>
           <button
             type="button"
-            aria-label="Next slide"
+            aria-label={h.heroNext}
             onClick={next}
             className="absolute right-2 small:right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-3 shadow hover:bg-white min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
@@ -159,7 +161,7 @@ export default function HeroSlider({
           <div
             className="absolute bottom-3 left-0 right-0 flex justify-center gap-2"
             role="tablist"
-            aria-label="Slides"
+            aria-label={h.heroSlides}
           >
             {slides.map((_, idx) => (
               <button
@@ -167,7 +169,10 @@ export default function HeroSlider({
                 type="button"
                 role="tab"
                 aria-selected={idx === safe}
-                aria-label={`Go to slide ${idx + 1}`}
+                aria-label={h.heroGoToSlide.replace(
+                  "{n}",
+                  String(idx + 1)
+                )}
                 className={clx(
                   "p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full",
                   "-m-2"

@@ -11,6 +11,8 @@ import {
   toast,
 } from "@medusajs/ui"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { adminFetch } from "./admin-fetch"
+import { NavHeaderMenuSection } from "./nav-header-menu-section"
 
 type Slide = {
   id: string
@@ -30,35 +32,6 @@ type Settings = {
   enabled_locales: unknown
   logo_file_id: string | null
   site_title: string | null
-}
-
-const adminFetch = async (path: string, init?: RequestInit) => {
-  const res = await fetch(path, {
-    credentials: "include",
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      ...(init?.headers as Record<string, string>),
-    },
-  })
-  const text = await res.text()
-  let json: unknown = null
-  try {
-    json = text ? JSON.parse(text) : null
-  } catch {
-    json = { raw: text }
-  }
-  if (!res.ok) {
-    const msg =
-      typeof json === "object" &&
-      json &&
-      "message" in json &&
-      typeof (json as { message: string }).message === "string"
-        ? (json as { message: string }).message
-        : res.statusText
-    throw new Error(msg)
-  }
-  return json
 }
 
 type AdminUploadedFile = { id: string; url?: string }
@@ -457,6 +430,8 @@ const StorefrontCmsPage = () => {
           <Button onClick={() => void saveSettings()}>Lưu cấu hình</Button>
         </div>
       </section>
+
+      <NavHeaderMenuSection />
 
       <section className="pt-8 flex flex-col gap-4">
         <Heading level="h2">Banner slides</Heading>

@@ -2,6 +2,7 @@ import { Metadata } from "next"
 
 import { listCartOptions, retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
+import { StorefrontI18nProvider } from "@lib/i18n/storefront-i18n-provider"
 import { getBaseURL } from "@lib/util/env"
 import { StoreCartShippingOption } from "@medusajs/types"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
@@ -30,7 +31,7 @@ export default async function PageLayout(props: {
   }
 
   return (
-    <>
+    <StorefrontI18nProvider locale={params.countryCode}>
       <DocumentLang locale={params.countryCode} />
       <Nav countryCode={params.countryCode} />
       {customer && cart && (
@@ -45,7 +46,7 @@ export default async function PageLayout(props: {
         />
       )}
       {props.children}
-      <Footer />
-    </>
+      <Footer countryCode={params.countryCode} />
+    </StorefrontI18nProvider>
   )
 }

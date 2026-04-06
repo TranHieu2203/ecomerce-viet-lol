@@ -1,3 +1,4 @@
+import type { StorefrontMessages } from "@lib/i18n/storefront-messages"
 import repeat from "@lib/util/repeat"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Table } from "@medusajs/ui"
@@ -7,26 +8,27 @@ import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
 
 type ItemsTemplateProps = {
   cart?: HttpTypes.StoreCart
+  messages: StorefrontMessages["cart"]
 }
 
-const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
+const ItemsTemplate = ({ cart, messages: c }: ItemsTemplateProps) => {
   const items = cart?.items
   return (
     <div>
       <div className="pb-3 flex items-center">
-        <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
+        <Heading className="text-[2rem] leading-[2.75rem]">{c.title}</Heading>
       </div>
       <Table>
         <Table.Header className="border-t-0">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
-            <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
+            <Table.HeaderCell className="!pl-0">{c.tableItem}</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
-            <Table.HeaderCell>Quantity</Table.HeaderCell>
+            <Table.HeaderCell>{c.tableQuantity}</Table.HeaderCell>
             <Table.HeaderCell className="hidden small:table-cell">
-              Price
+              {c.tablePrice}
             </Table.HeaderCell>
             <Table.HeaderCell className="!pr-0 text-right">
-              Total
+              {c.tableTotal}
             </Table.HeaderCell>
           </Table.Row>
         </Table.Header>

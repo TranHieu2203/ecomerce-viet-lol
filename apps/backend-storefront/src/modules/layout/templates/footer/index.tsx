@@ -1,12 +1,23 @@
-import { getCmsSettingsPublic } from "@lib/data/cms"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import {
+  getCmsSettingsPublic,
+  resolveCmsSiteTitle,
+  resolveCmsTagline,
+} from "@lib/data/cms"
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
+import { displayCollection } from "@lib/util/i18n-catalog"
 import { Text, clx } from "@medusajs/ui"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 
-export default async function Footer() {
+export default async function Footer({
+  countryCode,
+}: {
+  countryCode: string
+}) {
+  const m = getStorefrontMessages(countryCode)
   const [cms, { collections }, productCategories] = await Promise.all([
     getCmsSettingsPublic(),
     listCollections({
@@ -15,10 +26,8 @@ export default async function Footer() {
     listCategories(),
   ])
 
-  const brandName =
-    cms.site_title?.trim() ||
-    process.env.NEXT_PUBLIC_STORE_DISPLAY_NAME?.trim() ||
-    ""
+  const brandName = resolveCmsSiteTitle(countryCode, cms, m)
+  const tagline = resolveCmsTagline(countryCode, cms, m)
 
   return (
     <footer className="border-t border-ui-border-base w-full bg-grey-5">
@@ -32,14 +41,14 @@ export default async function Footer() {
               {brandName}
             </LocalizedClientLink>
             <p className="mt-3 text-ui-fg-muted text-small-regular leading-relaxed">
-              Sản phẩm chọn lọc, giao hàng thuận tiện. Cảm ơn bạn đã ghé thăm.
+              {tagline}
             </p>
           </div>
           <div className="text-small-regular gap-x-8 gap-y-10 w-full xsmall:w-auto grid grid-cols-2 small:grid-cols-3 small:gap-x-16 max-w-2xl">
             {productCategories && productCategories?.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <span className="txt-small-plus txt-ui-fg-base">
-                  Categories
+                  {m.footer.categories}
                 </span>
                 <ul
                   className="grid grid-cols-1 gap-2"
@@ -97,7 +106,7 @@ export default async function Footer() {
             {collections && collections.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <span className="txt-small-plus txt-ui-fg-base">
-                  Collections
+                  {m.footer.collections}
                 </span>
                 <ul
                   className={clx(
@@ -107,28 +116,37 @@ export default async function Footer() {
                     }
                   )}
                 >
-                  {collections?.slice(0, 6).map((c) => (
-                    <li key={c.id}>
-                      <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
-                        href={`/collections/${c.handle}`}
-                      >
-                        {c.title}
-                      </LocalizedClientLink>
-                    </li>
-                  ))}
+                  {collections?.slice(0, 6).map((c) => {
+                    const { title: colTitle } = displayCollection(
+                      countryCode,
+                      c.title,
+                      c.metadata
+                    )
+                    return (
+                      <li key={c.id}>
+                        <LocalizedClientLink
+                          className="hover:text-ui-fg-base"
+                          href={`/collections/${c.handle}`}
+                        >
+                          {colTitle}
+                        </LocalizedClientLink>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )}
             <div className="flex flex-col gap-y-2 col-span-2 small:col-span-1">
-              <span className="txt-small-plus txt-ui-fg-base">Khách hàng</span>
+              <span className="txt-small-plus txt-ui-fg-base">
+                {m.footer.customerHeading}
+              </span>
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
                 <li>
                   <LocalizedClientLink
                     className="hover:text-ui-fg-base"
                     href="/store"
                   >
-                    Cửa hàng
+                    {m.footer.linkStore}
                   </LocalizedClientLink>
                 </li>
                 <li>
@@ -136,7 +154,7 @@ export default async function Footer() {
                     className="hover:text-ui-fg-base"
                     href="/cart"
                   >
-                    Giỏ hàng
+                    {m.footer.linkCart}
                   </LocalizedClientLink>
                 </li>
                 <li>
@@ -144,7 +162,7 @@ export default async function Footer() {
                     className="hover:text-ui-fg-base"
                     href="/account"
                   >
-                    Tài khoản
+                    {m.footer.linkAccount}
                   </LocalizedClientLink>
                 </li>
               </ul>

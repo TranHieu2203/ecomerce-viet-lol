@@ -2,6 +2,7 @@
 
 import { Radio, RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { convertToLocale } from "@lib/util/money"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
@@ -16,12 +17,22 @@ import { useEffect, useState } from "react"
 const PICKUP_OPTION_ON = "__PICKUP_ON"
 const PICKUP_OPTION_OFF = "__PICKUP_OFF"
 
+/** Medusa API trả zone lồng; type SDK có thể chưa đồng bộ. */
+type StoreCartShippingOptionWithZone = HttpTypes.StoreCartShippingOption & {
+  service_zone?: {
+    fulfillment_set?: {
+      type?: string
+      location?: { address?: HttpTypes.StoreCartAddress }
+    }
+  }
+}
+
 type ShippingProps = {
   cart: HttpTypes.StoreCart
   availableShippingMethods: HttpTypes.StoreCartShippingOption[] | null
 }
 
-function formatAddress(address: HttpTypes.StoreCartAddress) {
+function formatAddress(address?: HttpTypes.StoreCartAddress | null) {
   if (!address) {
     return ""
   }
@@ -51,6 +62,7 @@ const Shipping: React.FC<ShippingProps> = ({
   cart,
   availableShippingMethods,
 }) => {
+  const s = useStorefrontMessages().checkoutSteps
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingPrices, setIsLoadingPrices] = useState(true)
 
@@ -70,13 +82,13 @@ const Shipping: React.FC<ShippingProps> = ({
 
   const isOpen = searchParams.get("step") === "delivery"
 
-  const _shippingMethods = availableShippingMethods?.filter(
-    (sm) => sm.service_zone?.fulfillment_set?.type !== "pickup"
-  )
+  const _shippingMethods = (
+    availableShippingMethods as StoreCartShippingOptionWithZone[] | null
+  )?.filter((sm) => sm.service_zone?.fulfillment_set?.type !== "pickup")
 
-  const _pickupMethods = availableShippingMethods?.filter(
-    (sm) => sm.service_zone?.fulfillment_set?.type === "pickup"
-  )
+  const _pickupMethods = (
+    availableShippingMethods as StoreCartShippingOptionWithZone[] | null
+  )?.filter((sm) => sm.service_zone?.fulfillment_set?.type === "pickup")
 
   const hasPickupOptions = !!_pickupMethods?.length
 
@@ -176,7 +188,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
                 data-testid="edit-delivery-button"
               >
-                Edit
+                {s.edit}
               </button>
             </Text>
           )}
@@ -223,7 +235,7 @@ const Shipping: React.FC<ShippingProps> = ({
                           checked={showPickupOptions === PICKUP_OPTION_ON}
                         />
                         <span className="text-base-regular">
-                          Pick up your order
+                          {s.pickUpOrder}
                         </span>
                       </div>
                       <span className="justify-self-end text-ui-fg-base">
@@ -299,10 +311,10 @@ const Shipping: React.FC<ShippingProps> = ({
             <div className="grid">
               <div className="flex flex-col">
                 <span className="font-medium txt-medium text-ui-fg-base">
-                  Store
+                  {s.storePickupTitle}
                 </span>
                 <span className="mb-4 text-ui-fg-muted txt-medium">
-                  Choose a store near you
+                  {s.chooseStoreNearYou}
                 </span>
               </div>
               <div data-testid="delivery-options-container">
@@ -342,7 +354,9 @@ const Shipping: React.FC<ShippingProps> = ({
                               </span>
                               <span className="text-base-regular text-ui-fg-muted">
                                 {formatAddress(
-                                  option.service_zone?.fulfillment_set?.location
+                                  (
+                                    option as StoreCartShippingOptionWithZone
+                                  ).service_zone?.fulfillment_set?.location
                                     ?.address
                                 )}
                               </span>
@@ -386,7 +400,7 @@ const Shipping: React.FC<ShippingProps> = ({
             {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
               <div className="flex flex-col w-1/3">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Method
+                  {s.methodSummary}
                 </Text>
                 <Text className="txt-medium text-ui-fg-subtle">
                   {cart.shipping_methods!.at(-1)!.name}{" "}

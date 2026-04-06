@@ -1,12 +1,14 @@
 "use client"
 
 import { acceptTransferRequest, declineTransferRequest } from "@lib/data/orders"
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { Button, Text } from "@medusajs/ui"
 import { useState } from "react"
 
 type TransferStatus = "pending" | "success" | "error"
 
 const TransferActions = ({ id, token }: { id: string; token: string }) => {
+  const tr = useStorefrontMessages().transfer
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [status, setStatus] = useState<{
     accept: TransferStatus | null
@@ -58,7 +60,7 @@ const TransferActions = ({ id, token }: { id: string; token: string }) => {
               status?.accept === "pending" || status?.decline === "pending"
             }
           >
-            Accept transfer
+            {tr.acceptButton}
           </Button>
           <Button
             size="large"
@@ -69,7 +71,7 @@ const TransferActions = ({ id, token }: { id: string; token: string }) => {
               status?.accept === "pending" || status?.decline === "pending"
             }
           >
-            Decline transfer
+            {tr.declineButton}
           </Button>
         </div>
       )}

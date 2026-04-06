@@ -1,5 +1,6 @@
 "use client"
 
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { clx } from "@medusajs/ui"
 import { ArrowRightOnRectangle } from "@medusajs/icons"
 import { useParams, usePathname } from "next/navigation"
@@ -17,6 +18,7 @@ const AccountNav = ({
 }: {
   customer: HttpTypes.StoreCustomer | null
 }) => {
+  const m = useStorefrontMessages()
   const route = usePathname()
   const { countryCode } = useParams() as { countryCode: string }
 
@@ -35,13 +37,13 @@ const AccountNav = ({
           >
             <>
               <ChevronDown className="transform rotate-90" />
-              <span>Account</span>
+              <span>{m.account.account}</span>
             </>
           </LocalizedClientLink>
         ) : (
           <>
             <div className="text-xl-semi mb-4 px-8">
-              Hello {customer?.first_name}
+              {m.account.hello} {customer?.first_name}
             </div>
             <div className="text-base-regular">
               <ul>
@@ -54,7 +56,7 @@ const AccountNav = ({
                     <>
                       <div className="flex items-center gap-x-2">
                         <User size={20} />
-                        <span>Profile</span>
+                        <span>{m.account.profile}</span>
                       </div>
                       <ChevronDown className="transform -rotate-90" />
                     </>
@@ -83,7 +85,7 @@ const AccountNav = ({
                   >
                     <div className="flex items-center gap-x-2">
                       <Package size={20} />
-                      <span>Orders</span>
+                      <span>{m.account.orders}</span>
                     </div>
                     <ChevronDown className="transform -rotate-90" />
                   </LocalizedClientLink>
@@ -97,7 +99,7 @@ const AccountNav = ({
                   >
                     <div className="flex items-center gap-x-2">
                       <ArrowRightOnRectangle />
-                      <span>Log out</span>
+                      <span>{m.account.logOut}</span>
                     </div>
                     <ChevronDown className="transform -rotate-90" />
                   </button>
@@ -110,7 +112,7 @@ const AccountNav = ({
       <div className="hidden small:block" data-testid="account-nav">
         <div>
           <div className="pb-4">
-            <h3 className="text-base-semi">Account</h3>
+            <h3 className="text-base-semi">{m.account.account}</h3>
           </div>
           <div className="text-base-regular">
             <ul className="flex mb-0 justify-start items-start flex-col gap-y-4">
@@ -120,7 +122,7 @@ const AccountNav = ({
                   route={route!}
                   data-testid="overview-link"
                 >
-                  Overview
+                  {m.account.overview}
                 </AccountNavLink>
               </li>
               <li>
@@ -129,7 +131,7 @@ const AccountNav = ({
                   route={route!}
                   data-testid="profile-link"
                 >
-                  Profile
+                  {m.account.profile}
                 </AccountNavLink>
               </li>
               <li>
@@ -138,7 +140,7 @@ const AccountNav = ({
                   route={route!}
                   data-testid="addresses-link"
                 >
-                  Addresses
+                  {m.account.addresses}
                 </AccountNavLink>
               </li>
               <li>
@@ -147,7 +149,7 @@ const AccountNav = ({
                   route={route!}
                   data-testid="orders-link"
                 >
-                  Orders
+                  {m.account.orders}
                 </AccountNavLink>
               </li>
               <li className="text-grey-700">
@@ -156,7 +158,7 @@ const AccountNav = ({
                   onClick={handleLogout}
                   data-testid="logout-button"
                 >
-                  Log out
+                  {m.account.logOut}
                 </button>
               </li>
             </ul>

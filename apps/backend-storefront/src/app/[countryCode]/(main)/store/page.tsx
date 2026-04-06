@@ -1,11 +1,20 @@
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { Metadata } from "next"
 
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import StoreTemplate from "@modules/store/templates"
 
-export const metadata: Metadata = {
-  title: "Store",
-  description: "Explore all of our products.",
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await params
+  const m = getStorefrontMessages(countryCode)
+  return {
+    title: m.store.metaTitle,
+    description: m.store.metaDescription,
+  }
 }
 
 type Params = {

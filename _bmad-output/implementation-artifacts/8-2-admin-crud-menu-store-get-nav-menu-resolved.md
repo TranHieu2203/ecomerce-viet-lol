@@ -2,7 +2,7 @@
 
 **Story Key:** `8-2-admin-crud-menu-store-get-nav-menu-resolved`  
 **Epic:** 8 — Điều hướng & thương hiệu storefront (Wave 2)  
-**Status:** ready-for-dev
+**Status:** done
 
 > Phụ thuộc **8.1** (cột `nav_tree` + model). **Không** làm Admin UI editor (story **8.3**). **Không** sửa component SF nav (story **8.4**).
 
@@ -29,13 +29,13 @@ tôi muốn **lưu cây menu qua Admin API và để khách đọc menu đã res
 
 ## Tasks / Subtasks
 
-- [ ] Thêm **`src/api/admin/custom/cms-nav/route.ts`**: `GET`, `PATCH` (session admin giống `cms-settings`).  
-- [ ] Thêm **`src/utils/nav-tree-schema.ts`** (hoặc tương đương): parse + validate bằng **Zod** (thêm dependency nếu chưa có — hoặc validate thủ công đủ AC).  
-- [ ] Thêm **`src/utils/build-resolved-nav-menu.ts`** (hoặc method service): nhận `nav_tree` + `locale` + `Query`/`container` để load collections theo handle (gom handle unique, một query batch nếu được).  
-- [ ] Thêm **`src/api/store/custom/nav-menu/route.ts`**: `GET`, đọc `locale`, gọi builder, `res.json(...)`.  
-- [ ] Cập nhật **`revalidate-storefront.ts`**: tham số `tag?: string` (mặc định `"cms"` để không phá chỗ gọi cũ); PATCH cms-nav gọi `revalidateStorefrontCms("cms-nav")`.  
-- [ ] **PATCH `cms-settings`** (tùy chọn trong 8.2): đảm bảo khi cập nhật settings **không** xóa `nav_tree` — nếu code review trước đó lo ngại partial update, **xác minh** `updateCmsSettings` chỉ cập nhật field truyền vào; nếu không, merge `nav_tree` từ `current` trước khi update.  
-- [ ] Test: unit cho validator nav + ít nhất một case `validateTargetUrl` trên link trong tree; integration HTTP tùy thời gian.
+- [x] Thêm **`src/api/admin/custom/cms-nav/route.ts`**: `GET`, `PATCH` (session admin giống `cms-settings`).  
+- [x] Validate **`src/utils/nav-tree.ts`**: parse + validate thủ công (đủ AC, không thêm Zod).  
+- [x] Thêm **`src/utils/build-resolved-nav-menu.ts`**: nhận `nav_tree` + `locale` + `Query` để load collections theo handle.  
+- [x] Thêm **`src/api/store/custom/nav-menu/route.ts`**: `GET`, đọc `locale`, gọi builder, `res.json(...)`.  
+- [x] Cập nhật **`revalidate-storefront.ts`**: tham số `tag` (mặc định `"cms"`); PATCH cms-nav gọi `revalidateStorefrontCms("cms-nav")`.  
+- [x] **PATCH `cms-settings`**: merge `nav_tree`, `site_title_i18n`, `tagline_i18n` từ `current` để không xóa khi đổi logo/locale.  
+- [x] Test: unit `src/utils/__tests__/nav-tree.unit.spec.ts` (link + `validateTargetUrl`).
 
 ---
 
@@ -79,12 +79,22 @@ Dùng `ContainerRegistrationKeys.QUERY` + `entity: "product_collection"`, `filte
 
 ### Agent Model Used
 
-_(khi hoàn thành)_
+Composer (Cursor agent)
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- Admin **GET** `/admin/custom/cms-nav` luôn trả `nav_tree` dạng object `{ version, items }` (DB `null` → `{ version: 1, items: [] }`).
+- Admin **PATCH** kiểm tra collection tồn tại qua `query.graph`; lỗi 400 tiếng Việt.
+- Store **GET** `/store/custom/nav-menu?locale=` — thiếu `locale` thì dùng `default_locale`; locale không thuộc `enabled_locales` → 400.
+
 ### File List
 
-_(khi hoàn thành)_
+- `apps/backend/src/api/admin/custom/cms-nav/route.ts`
+- `apps/backend/src/api/store/custom/nav-menu/route.ts`
+- `apps/backend/src/utils/nav-tree.ts`
+- `apps/backend/src/utils/build-resolved-nav-menu.ts`
+- `apps/backend/src/utils/revalidate-storefront.ts`
+- `apps/backend/src/api/admin/custom/cms-settings/route.ts`
+- `apps/backend/src/utils/__tests__/nav-tree.unit.spec.ts`

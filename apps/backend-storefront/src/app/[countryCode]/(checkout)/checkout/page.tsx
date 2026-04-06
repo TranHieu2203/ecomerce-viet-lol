@@ -1,16 +1,28 @@
 import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Checkout",
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await params
+  const m = getStorefrontMessages(countryCode)
+  return { title: m.checkout.pageTitle }
 }
 
-export default async function Checkout() {
+export default async function Checkout({
+  params,
+}: {
+  params: Promise<{ countryCode: string }>
+}) {
+  await params
   const cart = await retrieveCart()
 
   if (!cart) {

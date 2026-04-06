@@ -1,14 +1,22 @@
 import { retrieveOrder } from "@lib/data/orders"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import OrderCompletedTemplate from "@modules/order/templates/order-completed-template"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: Promise<{ countryCode: string; id: string }>
 }
-export const metadata: Metadata = {
-  title: "Order Confirmed",
-  description: "You purchase was successful",
+
+export async function generateMetadata({
+  params,
+}: Props): Promise<Metadata> {
+  const { countryCode } = await params
+  const m = getStorefrontMessages(countryCode)
+  return {
+    title: m.metadata.orderConfirmedTitle,
+    description: m.metadata.orderConfirmedDescription,
+  }
 }
 
 export default async function OrderConfirmedPage(props: Props) {
@@ -19,5 +27,10 @@ export default async function OrderConfirmedPage(props: Props) {
     return notFound()
   }
 
-  return <OrderCompletedTemplate order={order} />
+  return (
+    <OrderCompletedTemplate
+      order={order}
+      countryCode={params.countryCode}
+    />
+  )
 }

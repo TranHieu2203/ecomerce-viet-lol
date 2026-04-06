@@ -18,9 +18,9 @@ export async function seedVietnamProvinceGeoZones(
     entity: "geo_zone",
     fields: ["province_code", "type", "service_zone_id"],
     filters: {
-      service_zone_id: serviceZoneId,
       type: "province",
-    },
+      service_zone_id: serviceZoneId,
+    } as Record<string, unknown>,
   })
 
   const existingCodes = new Set(

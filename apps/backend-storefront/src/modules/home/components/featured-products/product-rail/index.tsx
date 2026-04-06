@@ -1,3 +1,4 @@
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
 import { Text } from "@medusajs/ui"
@@ -8,10 +9,13 @@ import ProductPreview from "@modules/products/components/product-preview"
 export default async function ProductRail({
   collection,
   region,
+  countryCode,
 }: {
   collection: HttpTypes.StoreCollection
   region: HttpTypes.StoreRegion
+  countryCode: string
 }) {
+  const m = getStorefrontMessages(countryCode)
   const {
     response: { products: pricedProducts },
   } = await listProducts({
@@ -33,7 +37,7 @@ export default async function ProductRail({
           {collection.title}
         </Text>
         <InteractiveLink href={`/collections/${collection.handle}`}>
-          Xem tất cả
+          {m.home.viewAll}
         </InteractiveLink>
       </div>
       <ul className="grid grid-cols-2 small:grid-cols-3 gap-x-4 xsmall:gap-x-6 gap-y-10 xsmall:gap-y-16 small:gap-y-24">

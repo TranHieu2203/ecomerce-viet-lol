@@ -1,16 +1,18 @@
 import { Suspense } from "react"
 
-import { getCmsSettingsPublic } from "@lib/data/cms"
+import { getNavMenuPublic } from "@lib/data/nav-menu"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import { applyDesktopNavFr24 } from "@lib/nav/desktop-nav-fr24"
+import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
 import { isSvgAssetUrl } from "@lib/util/cms-assets"
-import { listCollections } from "@lib/data/collections"
 import { getLocale } from "@lib/data/locale-actions"
 import { listLocales } from "@lib/data/locales"
 import { listRegions } from "@lib/data/regions"
-import { displayCollection } from "@lib/util/i18n-catalog"
 import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import LocaleSwitcher from "@modules/layout/components/locale-switcher"
+import MegaNav from "@modules/layout/components/mega-nav"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 
@@ -19,30 +21,21 @@ export default async function Nav({
 }: {
   countryCode: string
 }) {
-  const [regions, locales, currentLocale, { collections }, cms] =
-    await Promise.all([
-      listRegions().then((regions: StoreRegion[]) => regions),
-      listLocales(),
-      getLocale(),
-      listCollections({
-        limit: "100",
-        offset: "0",
-        fields: "id,handle,title,metadata",
-      }),
-      getCmsSettingsPublic(),
-    ])
+  const m = getStorefrontMessages(countryCode)
+  const [regions, locales, currentLocale, cms, navMenu] = await Promise.all([
+    listRegions().then((regions: StoreRegion[]) => regions),
+    listLocales(),
+    getLocale(),
+    getCmsSettingsPublic(),
+    getNavMenuPublic(countryCode),
+  ])
 
-  const topCollections = (collections || []).filter(
-    (c) => !(c.metadata && (c.metadata as { parent_collection_handle?: string }).parent_collection_handle)
-  )
-
-  const headerTitle =
-    cms.site_title?.trim() ||
-    process.env.NEXT_PUBLIC_STORE_DISPLAY_NAME?.trim() ||
-    ""
+  const headerTitle = resolveCmsSiteTitle(countryCode, cms, m)
 
   const logoSrc = cms.logo_url
   const logoIsSvg = isSvgAssetUrl(logoSrc)
+
+  const desktopNavGroups = applyDesktopNavFr24(navMenu.items, m.nav.viewMore)
 
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">
@@ -54,36 +47,11 @@ export default async function Nav({
                 regions={regions}
                 locales={locales}
                 currentLocale={currentLocale}
-                countryCode={countryCode}
+                navItems={navMenu.items}
                 brandName={headerTitle}
-                collectionLinks={topCollections.map((c) => ({
-                  handle: c.handle!,
-                  title: displayCollection(
-                    countryCode,
-                    c.title!,
-                    c.metadata as Record<string, unknown> | null | undefined
-                  ).title,
-                }))}
               />
             </div>
-            <nav
-              aria-label="Collections"
-              className="hidden small:flex items-center gap-4 text-ui-fg-subtle"
-            >
-              {topCollections.slice(0, 6).map((c) => (
-                <LocalizedClientLink
-                  key={c.id}
-                  href={`/collections/${c.handle}`}
-                  className="hover:text-ui-fg-base whitespace-nowrap"
-                >
-                  {displayCollection(
-                    countryCode,
-                    c.title!,
-                    c.metadata as Record<string, unknown> | null | undefined
-                  ).title}
-                </LocalizedClientLink>
-              ))}
-            </nav>
+            <MegaNav groups={desktopNavGroups} ariaLabel={m.nav.collectionsAria} />
           </div>
 
           <div className="flex items-center h-full min-w-0 justify-center px-1 shrink">
@@ -95,7 +63,7 @@ export default async function Nav({
               {logoSrc && !logoIsSvg ? (
                 <Image
                   src={logoSrc}
-                  alt=""
+                  alt={headerTitle}
                   width={160}
                   height={40}
                   className="h-7 w-auto xsmall:h-8 max-w-[120px] xsmall:max-w-[160px] object-contain object-center flex-shrink-0"
@@ -106,7 +74,7 @@ export default async function Nav({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={logoSrc}
-                  alt=""
+                  alt={headerTitle}
                   className="h-7 w-auto xsmall:h-8 max-w-[120px] xsmall:max-w-[160px] object-contain object-center flex-shrink-0"
                 />
               ) : null}
@@ -114,14 +82,6 @@ export default async function Nav({
                 <span className="truncate text-center uppercase tracking-wide text-sm xsmall:text-base font-semibold text-ui-fg-base">
                   {headerTitle}
                 </span>
-              ) : null}
-              {logoSrc && headerTitle ? (
-                <>
-                  <span className="sr-only xsmall:hidden">{headerTitle}</span>
-                  <span className="hidden xsmall:inline truncate font-semibold text-ui-fg-base normal-case tracking-tight text-sm small:text-base max-w-[5.5rem] small:max-w-[9rem] leading-tight">
-                    {headerTitle}
-                  </span>
-                </>
               ) : null}
             </LocalizedClientLink>
           </div>
@@ -134,7 +94,7 @@ export default async function Nav({
                 href="/account"
                 data-testid="nav-account-link"
               >
-                Account
+                {m.nav.account}
               </LocalizedClientLink>
             </div>
             <Suspense
@@ -144,7 +104,7 @@ export default async function Nav({
                   href="/cart"
                   data-testid="nav-cart-link"
                 >
-                  Cart (0)
+                  {m.nav.cartFallback} (0)
                 </LocalizedClientLink>
               }
             >

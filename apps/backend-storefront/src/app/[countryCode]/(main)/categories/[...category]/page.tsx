@@ -1,7 +1,8 @@
+import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
+import { getCategoryByHandle, listCategories } from "@lib/data/categories"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
-
-import { getCategoryByHandle, listCategories } from "@lib/data/categories"
 import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
@@ -46,13 +47,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
   try {
     const productCategory = await getCategoryByHandle(params.category)
-
-    const title = productCategory.name + " | Medusa Store"
-
-    const description = productCategory.description ?? `${title} category.`
+    const cms = await getCmsSettingsPublic()
+    const m = getStorefrontMessages(params.countryCode)
+    const brand = resolveCmsSiteTitle(params.countryCode, cms, m)
+    const title = `${productCategory.name} | ${brand}`
+    const description =
+      productCategory.description?.trim() || `${productCategory.name}`
 
     return {
-      title: `${title} | Medusa Store`,
+      title,
       description,
       alternates: {
         canonical: `${params.category.join("/")}`,

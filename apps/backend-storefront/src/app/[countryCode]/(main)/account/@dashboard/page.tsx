@@ -1,13 +1,19 @@
-import { Metadata } from "next"
-
-import Overview from "@modules/account/components/overview"
-import { notFound } from "next/navigation"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { listOrders } from "@lib/data/orders"
+import Overview from "@modules/account/components/overview"
+import { Metadata } from "next"
+import { notFound } from "next/navigation"
 
-export const metadata: Metadata = {
-  title: "Account",
-  description: "Overview of your account activity.",
+type Props = { params: Promise<{ countryCode: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { countryCode } = await params
+  const m = getStorefrontMessages(countryCode)
+  return {
+    title: m.account.account,
+    description: m.account.overviewMetaDescription,
+  }
 }
 
 export default async function OverviewTemplate() {

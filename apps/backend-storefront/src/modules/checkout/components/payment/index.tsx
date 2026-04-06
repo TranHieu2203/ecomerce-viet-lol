@@ -2,6 +2,7 @@
 
 import { RadioGroup } from "@headlessui/react"
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { initiatePaymentSession } from "@lib/data/cart"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
@@ -20,6 +21,7 @@ const Payment = ({
   cart: any
   availablePaymentMethods: any[]
 }) => {
+  const s = useStorefrontMessages().checkoutSteps
   const activeSession = cart.payment_collection?.payment_sessions?.find(
     (paymentSession: any) => paymentSession.status === "pending"
   )
@@ -117,7 +119,7 @@ const Payment = ({
             }
           )}
         >
-          Payment
+          {s.payment}
           {!isOpen && paymentReady && <CheckCircleSolid />}
         </Heading>
         {!isOpen && paymentReady && (
@@ -127,7 +129,7 @@ const Payment = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-payment-button"
             >
-              Edit
+              {s.edit}
             </button>
           </Text>
         )}
@@ -167,13 +169,13 @@ const Payment = ({
           {paidByGiftcard && (
             <div className="flex flex-col w-1/3">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Payment method
+                {s.paymentMethod}
               </Text>
               <Text
                 className="txt-medium text-ui-fg-subtle"
                 data-testid="payment-method-summary"
               >
-                Gift card
+                {s.giftCard}
               </Text>
             </div>
           )}
@@ -195,8 +197,8 @@ const Payment = ({
             data-testid="submit-payment-button"
           >
             {!activeSession && isStripeLike(selectedPaymentMethod)
-              ? " Enter card details"
-              : "Continue to review"}
+              ? s.enterCardDetails
+              : s.continueToReview}
           </Button>
         </div>
 
@@ -205,7 +207,7 @@ const Payment = ({
             <div className="flex items-start gap-x-1 w-full">
               <div className="flex flex-col w-1/3">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Payment method
+                  {s.paymentMethod}
                 </Text>
                 <Text
                   className="txt-medium text-ui-fg-subtle"
@@ -217,7 +219,7 @@ const Payment = ({
               </div>
               <div className="flex flex-col w-1/3">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Payment details
+                  {s.paymentDetails}
                 </Text>
                 <div
                   className="flex gap-2 txt-medium text-ui-fg-subtle items-center"
@@ -231,7 +233,7 @@ const Payment = ({
                   <Text>
                     {isStripeLike(selectedPaymentMethod) && cardBrand
                       ? cardBrand
-                      : "Another step will appear"}
+                      : s.paymentDetailsPending}
                   </Text>
                 </div>
               </div>
@@ -239,13 +241,13 @@ const Payment = ({
           ) : paidByGiftcard ? (
             <div className="flex flex-col w-1/3">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Payment method
+                {s.paymentMethod}
               </Text>
               <Text
                 className="txt-medium text-ui-fg-subtle"
                 data-testid="payment-method-summary"
               >
-                Gift card
+                {s.giftCard}
               </Text>
             </div>
           ) : null}

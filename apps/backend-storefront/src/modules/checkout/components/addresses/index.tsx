@@ -1,6 +1,7 @@
 "use client"
 
 import { setAddresses } from "@lib/data/cart"
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import compareAddresses from "@lib/util/compare-addresses"
 import { CheckCircleSolid } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -21,6 +22,7 @@ const Addresses = ({
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
 }) => {
+  const s = useStorefrontMessages().checkoutSteps
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
@@ -56,7 +58,7 @@ const Addresses = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-address-button"
             >
-              Edit
+              {s.edit}
             </button>
           </Text>
         )}
@@ -77,7 +79,7 @@ const Addresses = ({
                   level="h2"
                   className="text-3xl-regular gap-x-4 pb-6 pt-8"
                 >
-                  Billing address
+                  {s.billingAddress}
                 </Heading>
 
                 <BillingAddress cart={cart} />
@@ -100,7 +102,7 @@ const Addresses = ({
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Shipping Address
+                      {s.shippingAddress}
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.first_name}{" "}
@@ -139,12 +141,12 @@ const Addresses = ({
                     data-testid="billing-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Billing Address
+                      {s.billingAddress}
                     </Text>
 
                     {sameAsBilling ? (
                       <Text className="txt-medium text-ui-fg-subtle">
-                        Billing and delivery address are the same.
+                        {s.billingSameAsShipping}
                       </Text>
                     ) : (
                       <>

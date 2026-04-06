@@ -1,10 +1,11 @@
 import { retrieveOrder } from "@lib/data/orders"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import OrderDetailsTemplate from "@modules/order/templates/order-details-template"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: Promise<{ countryCode: string; id: string }>
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -15,9 +16,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  const m = getStorefrontMessages(params.countryCode)
+  const idStr = String(order.display_id ?? order.id)
   return {
-    title: `Order #${order.display_id}`,
-    description: `View your order`,
+    title: m.metadata.orderDetailTitle.replace("{id}", idStr),
+    description: m.metadata.orderDetailDescription,
   }
 }
 
