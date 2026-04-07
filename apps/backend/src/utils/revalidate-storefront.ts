@@ -1,6 +1,6 @@
 /**
  * POST Next.js on-demand ISR. Set STOREFRONT_REVALIDATE_URL + REVALIDATE_SECRET.
- * @param tag — Next `revalidateTag` (mặc định `cms`; nav menu dùng `cms-nav`).
+ * @param tag — Next `revalidateTag` (mặc định `cms`; nav menu `cms-nav`; trang CMS `cms-pages`).
  */
 export async function revalidateStorefrontCms(tag = "cms"): Promise<void> {
   const base = process.env.STOREFRONT_REVALIDATE_URL

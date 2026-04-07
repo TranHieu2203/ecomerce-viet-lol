@@ -2,7 +2,7 @@
 
 **Story Key:** `9-1-migration-cms-pages-revision-snapshot-fr-37`  
 **Epic:** 9 — CMS vận hành & nội dung tĩnh (Wave 3)  
-**Status:** review
+**Status:** done
 
 > **Phạm vi:** chỉ **schema + model Medusa module `store-cms` + migration** (và cập nhật snapshot MikroORM nếu repo dùng). **Không** implement Admin/Store API (story **9.2**), **không** UI (9.3), **không** logic prune/restore (9.5) — nhưng schema revision phải **đủ** để 9.2/9.5 ghi/đọc snapshot.
 
@@ -93,6 +93,10 @@ Cursor Agent (Composer)
 
 ### Debug Log References
 
+### Review Findings
+
+- [x] **[CR 2026-04-06]** Blind / acceptance: migration `Migration20260406150000` tạo `store_cms_page` (CHECK status, partial unique slug), `store_cms_revision` (CHECK `entity_type`, index `(entity_type, entity_id, created_at)`); model đăng ký trong `service.ts`; test `cms-page-status.unit.spec.ts` pass (`npm run test:unit -- --testPathPattern=cms-page-status`). **Edge:** test “migration” chủ yếu assert nội dung file SQL — đủ gate story; integration DB tùy chọn sau. **Scope:** `nav-menu.ts` dev `console.error` ngoài AC 9.1 — chấp nhận vì hỗ trợ vận hành, không đổi contract.
+
 ### Completion Notes List
 
 - Migration **`Migration20260406150000`**: bảng `store_cms_page` (CHECK `status`, unique partial `slug`), `store_cms_revision` (CHECK `entity_type`, index `(entity_type, entity_id, created_at)`). **`body`**: kiểu `text` (sanitize ở story 9.2).
@@ -146,5 +150,5 @@ Cursor Agent (Composer)
 
 ## Trạng thái hoàn thành story (meta)
 
-- **Status:** review  
+- **Status:** done  
 - **Ghi chú:** Schema + model + test constants; chạy `npx medusa db:migrate` (hoặc flow deploy) trên môi trường dev trước khi story 9.2.

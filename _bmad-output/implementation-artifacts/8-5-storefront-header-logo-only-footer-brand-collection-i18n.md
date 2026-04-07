@@ -3,7 +3,7 @@
 **Story Key:** `8-5-storefront-header-logo-only-footer-brand-collection-i18n`  
 **Story ID:** 8.5  
 **Epic:** 8 — Điều hướng & thương hiệu storefront (Wave 2)  
-**Status:** review
+**Status:** done
 
 > **Phụ thuộc:** **8.1–8.4** đã xong (schema `site_title_i18n` / `tagline_i18n`, Admin PATCH, nav CMS). **Không** mở rộng Epic 9 (CMS pages). **Không** đổi contract `nav-menu` / `buildResolvedNavMenu` trừ khi phát hiện bug chặn branding.
 
@@ -96,6 +96,7 @@ Cursor Agent (bmad-dev-story)
 ### Review Findings
 
 - [x] [Review][Decision] `pickLocaleString`: sau locale chính có fallback `vi` — **chốt A (2026-04-06):** giữ hành vi; đã ghi chú trong `apps/backend-storefront/src/lib/data/cms.ts`.
+- [x] **[CR 2026-04-06]** Code review (Acceptance Auditor): AC1–6 khớp code (`cms-settings` trả i18n; `getCmsSettingsPublic` cache một response + comment; nav chỉ text khi không logo + `alt={headerTitle}`; footer `resolveCms*` + `displayCollection` + `m.footer.collections`; `MedusaCTA` production + cờ env; metadata pages dùng `resolveCmsSiteTitle`). **Edge:** không fallback `en` sau `vi` trong `pickLocaleString` — đã chốt sản phẩm. **Gợi ý follow-up (không chặn):** thêm `aria-label` trên `LocalizedClientLink` logo nếu muốn nhân đôi nhãn với `alt` (không bắt buộc vì `Image`/`img` đã có `alt`).
 
 ### Completion Notes List
 

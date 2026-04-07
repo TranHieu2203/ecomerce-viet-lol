@@ -9,12 +9,19 @@ import {
 } from "../../../../modules/store-cms"
 import type StoreCmsModuleService from "../../../../modules/store-cms/service"
 import { findMissingCollectionHandles } from "../../../../utils/build-resolved-nav-menu"
+import { appendNavRevision } from "../../../../utils/cms-revision"
 import {
   EMPTY_NAV_TREE,
   validateAndNormalizeNavTree,
   type NavTree,
 } from "../../../../utils/nav-tree"
 import { revalidateStorefrontCms } from "../../../../utils/revalidate-storefront"
+
+function actorUserId(
+  req: AuthenticatedMedusaRequest
+): string | null {
+  return req.auth_context?.actor_id ?? null
+}
 
 /**
  * GET — Contract: luôn trả `nav_tree` dạng object `{ version, items[] }`.
@@ -64,6 +71,22 @@ export async function PATCH(
 
   const cms = req.scope.resolve(STORE_CMS_MODULE) as StoreCmsModuleService
   const current = await cms.getOrCreateSettings()
+  const rawPrev = (current as { nav_tree?: unknown }).nav_tree
+  let prevNavForRevision: NavTree
+  try {
+    prevNavForRevision =
+      rawPrev == null
+        ? { ...EMPTY_NAV_TREE }
+        : validateAndNormalizeNavTree(rawPrev)
+  } catch {
+    prevNavForRevision = { ...EMPTY_NAV_TREE }
+  }
+  await appendNavRevision(
+    cms,
+    prevNavForRevision as unknown as Record<string, unknown>,
+    actorUserId(req)
+  )
+
   const cur = current as {
     site_title?: string | null
     site_title_i18n?: unknown

@@ -771,9 +771,13 @@ const en: StorefrontMessages = {
   },
 }
 
+/** FR-17 — bản MVP: nhãn UI tiếng Nhật lấy copy tiếng Anh (có thể tinh chỉnh sau). */
+const ja: StorefrontMessages = structuredClone(en)
+
 const byLocale: Record<AppLocale, StorefrontMessages> = {
   vi,
   en,
+  ja,
 }
 
 export function getStorefrontMessages(locale: string): StorefrontMessages {

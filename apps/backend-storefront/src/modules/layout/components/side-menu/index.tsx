@@ -99,35 +99,62 @@ const SideMenu = ({
                           type="multiple"
                           className="w-full flex flex-col gap-2"
                         >
-                          {navItems.map((group, index) => (
-                            <AccordionPrimitive.Item
-                              key={`nav-drawer-${index}-${group.id}`}
-                              value={`nav-acc-${index}`}
-                              className="border-b border-white/10 pb-2 last:border-0"
-                            >
-                              <AccordionPrimitive.Header>
-                                <AccordionPrimitive.Trigger className="flex w-full min-h-11 items-center justify-between gap-2 py-2 text-left text-2xl leading-tight hover:text-ui-fg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-rounded">
-                                  <span>{group.label}</span>
-                                  <span className="text-ui-fg-muted text-sm shrink-0">
-                                    ▾
-                                  </span>
-                                </AccordionPrimitive.Trigger>
-                              </AccordionPrimitive.Header>
-                              <AccordionPrimitive.Content className="overflow-hidden radix-state-closed:animate-accordion-close radix-state-open:animate-accordion-open radix-state-closed:pointer-events-none">
-                                <ul className="mt-2 flex flex-col gap-1 pl-1">
-                                  {group.children.map((child, idx) => (
-                                    <li key={`${index}-${group.id}-${idx}`}>
-                                      <NavMenuChildLink
-                                        child={child}
-                                        className="block min-h-11 py-2 text-lg leading-snug hover:text-ui-fg-disabled"
-                                        onNavigate={close}
-                                      />
-                                    </li>
-                                  ))}
-                                </ul>
-                              </AccordionPrimitive.Content>
-                            </AccordionPrimitive.Item>
-                          ))}
+                          {navItems.map((group, index) => {
+                            const onlyChild =
+                              group.children.length === 1
+                                ? group.children[0]
+                                : null
+
+                            if (onlyChild?.href) {
+                              return (
+                                <div
+                                  key={`nav-drawer-${index}-${group.id}`}
+                                  className="border-b border-white/10 pb-2 last:border-0"
+                                >
+                                  <LocalizedClientLink
+                                    href={onlyChild.href}
+                                    className="flex w-full min-h-11 items-center justify-between gap-2 py-2 text-left text-2xl leading-tight hover:text-ui-fg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-rounded"
+                                    onClick={close}
+                                  >
+                                    <span>{group.label}</span>
+                                    <span className="text-ui-fg-muted text-sm shrink-0">
+                                      →
+                                    </span>
+                                  </LocalizedClientLink>
+                                </div>
+                              )
+                            }
+
+                            return (
+                              <AccordionPrimitive.Item
+                                key={`nav-drawer-${index}-${group.id}`}
+                                value={`nav-acc-${index}`}
+                                className="border-b border-white/10 pb-2 last:border-0"
+                              >
+                                <AccordionPrimitive.Header>
+                                  <AccordionPrimitive.Trigger className="flex w-full min-h-11 items-center justify-between gap-2 py-2 text-left text-2xl leading-tight hover:text-ui-fg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-rounded">
+                                    <span>{group.label}</span>
+                                    <span className="text-ui-fg-muted text-sm shrink-0">
+                                      ▾
+                                    </span>
+                                  </AccordionPrimitive.Trigger>
+                                </AccordionPrimitive.Header>
+                                <AccordionPrimitive.Content className="overflow-hidden radix-state-closed:animate-accordion-close radix-state-open:animate-accordion-open radix-state-closed:pointer-events-none">
+                                  <ul className="mt-2 flex flex-col gap-1 pl-1">
+                                    {group.children.map((child, idx) => (
+                                      <li key={`${index}-${group.id}-${idx}`}>
+                                        <NavMenuChildLink
+                                          child={child}
+                                          className="block min-h-11 py-2 text-lg leading-snug hover:text-ui-fg-disabled"
+                                          onNavigate={close}
+                                        />
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </AccordionPrimitive.Content>
+                              </AccordionPrimitive.Item>
+                            )
+                          })}
                         </AccordionPrimitive.Root>
                       ) : null}
                       <ul className="flex flex-col gap-2 items-start justify-start">

@@ -8,8 +8,8 @@ const PRODUCT_LIMIT = 12
 
 type PaginatedProductsParams = {
   limit: number
-  collection_id?: string[]
-  category_id?: string[]
+  collection_id?: string
+  category_id?: string
   id?: string[]
   order?: string
 }
@@ -34,11 +34,11 @@ export default async function PaginatedProducts({
   }
 
   if (collectionId) {
-    queryParams["collection_id"] = [collectionId]
+    queryParams.collection_id = collectionId
   }
 
   if (categoryId) {
-    queryParams["category_id"] = [categoryId]
+    queryParams.category_id = categoryId
   }
 
   if (productsIds) {

@@ -1,6 +1,12 @@
+import "server-only"
+
+import { cookies } from "next/headers"
+
 import { sdk } from "@lib/config"
 import type { StorefrontMessages } from "@lib/i18n/storefront-messages"
 import { absolutizeMedusaFileUrl } from "@lib/util/cms-assets"
+import { FetchError } from "@medusajs/js-sdk"
+import { cache } from "react"
 
 export type BannerSlideResolved = {
   id: string
@@ -15,6 +21,29 @@ export type BannerSlideResolved = {
 /** JSON CMS `{ vi?, en? }` — chỉ chuỗi, storefront resolve theo locale. */
 export type CmsLocaleStrings = Record<string, string> | null
 
+/** Payload Store API GET `/store/custom/cms-pages/:slug` (published hoặc preview). */
+export type CmsPagePublic = {
+  slug: string
+  title: string
+  body: string
+  meta_title: string
+  meta_description: string
+  status?: string
+}
+
+export type CmsAnnouncementPublic = {
+  enabled: boolean
+  text: { vi: string; en: string }
+  link_url: string | null
+  starts_at: string | null
+  ends_at: string | null
+} | null
+
+export type CmsNotFoundPublic = {
+  title: { vi: string; en: string }
+  body: { vi: string; en: string }
+} | null
+
 export type CmsSettingsPublic = {
   default_locale: string
   enabled_locales: unknown
@@ -23,6 +52,12 @@ export type CmsSettingsPublic = {
   site_title: string | null
   site_title_i18n: CmsLocaleStrings
   tagline_i18n: CmsLocaleStrings
+  /** ADR-13 — đã validate phía backend; SF chỉ đọc an toàn. */
+  announcement: CmsAnnouncementPublic
+  not_found: CmsNotFoundPublic
+  seo_defaults: Record<string, unknown> | null
+  og_image_url: string | null
+  footer_contact: Record<string, unknown> | null
 }
 
 /** Sau locale hiện tại, fallback `vi` trước khi để caller dùng legacy/env/messages (chốt sản phẩm 2026-04). */
@@ -53,13 +88,76 @@ function parseLocaleStrings(raw: unknown): CmsLocaleStrings {
   }
   const o = raw as Record<string, unknown>
   const out: Record<string, string> = {}
-  for (const key of ["vi", "en"] as const) {
+  for (const key of ["vi", "en", "ja"] as const) {
     const v = o[key]
     if (typeof v === "string" && v.trim()) {
       out[key] = v.trim()
     }
   }
   return Object.keys(out).length ? out : null
+}
+
+function parseAnnouncementSafe(raw: unknown): CmsAnnouncementPublic {
+  if (raw === null || raw === undefined) {
+    return null
+  }
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    return null
+  }
+  const o = raw as Record<string, unknown>
+  const textRaw = o.text
+  if (typeof textRaw !== "object" || textRaw === null || Array.isArray(textRaw)) {
+    return null
+  }
+  const t = textRaw as Record<string, unknown>
+  const vi = typeof t.vi === "string" ? t.vi : ""
+  const en = typeof t.en === "string" ? t.en : ""
+  return {
+    enabled: Boolean(o.enabled),
+    text: { vi, en },
+    link_url:
+      o.link_url === null || o.link_url === undefined || o.link_url === ""
+        ? null
+        : String(o.link_url).trim() || null,
+    starts_at:
+      o.starts_at === null || o.starts_at === undefined || o.starts_at === ""
+        ? null
+        : String(o.starts_at).trim(),
+    ends_at:
+      o.ends_at === null || o.ends_at === undefined || o.ends_at === ""
+        ? null
+        : String(o.ends_at).trim(),
+  }
+}
+
+function parseNotFoundSafe(raw: unknown): CmsNotFoundPublic {
+  if (raw === null || raw === undefined) {
+    return null
+  }
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    return null
+  }
+  const o = raw as Record<string, unknown>
+  const titleRaw = o.title
+  const bodyRaw = o.body
+  if (typeof titleRaw !== "object" || titleRaw === null) {
+    return null
+  }
+  if (typeof bodyRaw !== "object" || bodyRaw === null) {
+    return null
+  }
+  const title = titleRaw as Record<string, unknown>
+  const body = bodyRaw as Record<string, unknown>
+  return {
+    title: {
+      vi: typeof title.vi === "string" ? title.vi : "",
+      en: typeof title.en === "string" ? title.en : "",
+    },
+    body: {
+      vi: typeof body.vi === "string" ? body.vi : "",
+      en: typeof body.en === "string" ? body.en : "",
+    },
+  }
 }
 
 /**
@@ -106,15 +204,23 @@ const CMS_FALLBACK: CmsSettingsPublic = {
   site_title: null,
   site_title_i18n: null,
   tagline_i18n: null,
+  announcement: null,
+  not_found: null,
+  seo_defaults: null,
+  og_image_url: null,
+  footer_contact: null,
 }
 
 export async function listBannerSlides(locale: string) {
+  const jar = await cookies()
+  const visitorId = jar.get("_medusa_cache_id")?.value ?? "anon"
   return sdk.client
     .fetch<{ banner_slides: BannerSlideResolved[] }>(
       `/store/custom/banner-slides`,
       {
         method: "GET",
-        query: { locale },
+        query: { locale, visitor_id: visitorId },
+        headers: { "x-medusa-cache-id": visitorId },
         next: { tags: ["cms"], revalidate: 180 },
         cache: "force-cache",
       }
@@ -123,16 +229,17 @@ export async function listBannerSlides(locale: string) {
     .catch(() => [] as BannerSlideResolved[])
 }
 
-/**
- * Một response cache ISR cho mọi locale: `site_title_i18n` / `tagline_i18n` gồm cả vi+en;
- * resolve theo `countryCode` tại server component (không cần `?locale=` trên Store API).
- */
-export async function getCmsSettingsPublic(): Promise<CmsSettingsPublic> {
+async function fetchCmsSettingsPublic(): Promise<CmsSettingsPublic> {
   const data = await sdk.client
     .fetch<
       CmsSettingsPublic & {
         site_title_i18n?: unknown
         tagline_i18n?: unknown
+        announcement?: unknown
+        not_found?: unknown
+        seo_defaults?: unknown
+        og_image_url?: unknown
+        footer_contact?: unknown
       }
     >(`/store/custom/cms-settings`, {
       method: "GET",
@@ -147,11 +254,80 @@ export async function getCmsSettingsPublic(): Promise<CmsSettingsPublic> {
     envTitle ||
     null
 
+  const seo_defaults =
+    data.seo_defaults !== null &&
+    data.seo_defaults !== undefined &&
+    typeof data.seo_defaults === "object" &&
+    !Array.isArray(data.seo_defaults)
+      ? (data.seo_defaults as Record<string, unknown>)
+      : null
+
+  const footer_contact =
+    data.footer_contact !== null &&
+    data.footer_contact !== undefined &&
+    typeof data.footer_contact === "object" &&
+    !Array.isArray(data.footer_contact)
+      ? (data.footer_contact as Record<string, unknown>)
+      : null
+
   return {
     ...data,
     logo_url: absolutizeMedusaFileUrl(data.logo_url),
     site_title,
     site_title_i18n: parseLocaleStrings(data.site_title_i18n),
     tagline_i18n: parseLocaleStrings(data.tagline_i18n),
+    announcement: parseAnnouncementSafe(data.announcement),
+    not_found: parseNotFoundSafe(data.not_found),
+    seo_defaults,
+    og_image_url: absolutizeMedusaFileUrl(
+      typeof data.og_image_url === "string" ? data.og_image_url : null
+    ),
+    footer_contact,
   }
 }
+
+/**
+ * Một response cache ISR cho mọi locale: `site_title_i18n` / `tagline_i18n` gồm cả vi+en;
+ * resolve theo `countryCode` tại server component (không cần `?locale=` trên Store API).
+ */
+export const getCmsSettingsPublic = cache(fetchCmsSettingsPublic)
+
+export const CMS_PAGE_CACHE_REVALIDATE_SECONDS = 180
+
+async function fetchCmsPagePublic(
+  slug: string,
+  locale: string,
+  previewToken?: string
+): Promise<CmsPagePublic | null> {
+  const query: Record<string, string> = { locale }
+  if (previewToken) {
+    query.cms_preview = previewToken
+  }
+  const isPreview = Boolean(previewToken)
+
+  try {
+    const data = await sdk.client.fetch<CmsPagePublic>(
+      `/store/custom/cms-pages/${encodeURIComponent(slug)}`,
+      {
+        method: "GET",
+        query,
+        next: isPreview
+          ? undefined
+          : {
+              tags: ["cms-pages"],
+              revalidate: CMS_PAGE_CACHE_REVALIDATE_SECONDS,
+            },
+        cache: isPreview ? "no-store" : "force-cache",
+      }
+    )
+    return data
+  } catch (e) {
+    if (e instanceof FetchError && e.status === 404) {
+      return null
+    }
+    throw e
+  }
+}
+
+/** ISR tag `cms-pages`; preview: `cache: no-store`, không tag. */
+export const getCmsPagePublic = cache(fetchCmsPagePublic)

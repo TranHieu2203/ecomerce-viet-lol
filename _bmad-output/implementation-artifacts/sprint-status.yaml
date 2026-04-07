@@ -1,5 +1,5 @@
 # generated: 2026-04-06
-# last_updated: 2026-04-06 (create-story 9-1)
+# last_updated: 2026-04-07 (Retro ER: epic 10 + khép toàn bộ epic-*-retrospective → done)
 # project: ecomerce-viet-lol
 # project_key: NOKEY
 # tracking_system: file-system
@@ -41,7 +41,8 @@
 #   10-1…10-5 = Growth FR-17…21
 
 generated: "2026-04-06"
-last_updated: "2026-04-06"
+last_updated: "2026-04-07"
+# ER 2026-04-07: epic-10-retro-2026-04-07.md — mọi epic-*-retrospective → done
 # 8-6 done: storefront static labels i18n + account metadata + pagination a11y
 # 8-3 done: Admin nav tree editor (code review 2026-04-06)
 project: ecomerce-viet-lol
@@ -53,12 +54,12 @@ development_status:
   epic-1: done
   1-1-init-monorepo-medusa-backend: done
   1-2-storefront-store-api-connect: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   epic-2: done
   2-1-migration-banner-cms-settings: done
   2-2-banner-image-derivatives: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   epic-3: done
   3-1-admin-banner-crud-reorder: done
@@ -66,17 +67,17 @@ development_status:
   3-3-store-banners-settings-public: done
   3-4-url-upload-validation: done
   3-5-isr-revalidate-hook: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   epic-4: done
   4-1-i18n-resolve-helper: done
   4-2-admin-bilingual-catalog-fields: done
-  epic-4-retrospective: optional
+  epic-4-retrospective: done
 
   epic-5: done
   5-1-admin-banner-ui-reorder: done
   5-2-admin-logo-locale-ui: done
-  epic-5-retrospective: optional
+  epic-5-retrospective: done
 
   epic-6: done
   6-1-locale-route-default-redirect: done
@@ -84,7 +85,7 @@ development_status:
   6-3-home-hero-slider: done
   6-4-collection-product-pages: done
   6-5-responsive-touch-targets: done
-  epic-6-retrospective: optional
+  epic-6-retrospective: done
 
   epic-7: done
   7-1-seed-catalog-idempotent: done
@@ -93,28 +94,28 @@ development_status:
   7-4-seed-env-default-region-vn-vnd-fr-2b: done
   epic-7-retrospective: done
 
-  epic-8: in-progress
+  epic-8: done
   8-1-migration-nav-tree-expanded-settings-site-title-tagline-i18n: done
   8-2-admin-crud-menu-store-get-nav-menu-resolved: done
   8-3-admin-nav-tree-editor-drag-tabs-vi-en: done
   8-4-storefront-meganav-navdrawer-desktop-rules-fr-24: done
-  8-5-storefront-header-logo-only-footer-brand-collection-i18n: review
+  8-5-storefront-header-logo-only-footer-brand-collection-i18n: done
   8-6-storefront-static-labels-i18n-fr-22-audit-sc-10: done
-  epic-8-retrospective: optional
+  epic-8-retrospective: done
 
-  epic-9: in-progress
-  9-1-migration-cms-pages-revision-snapshot-fr-37: review
-  9-2-admin-store-cms-pages-crud-draft-publish-preview: backlog
-  9-3-admin-cms-pages-editor-seo-footer-social-announcement-404: backlog
-  9-4-media-picker-reuse-uploaded-files-fr-35: backlog
-  9-5-admin-history-restore-fr-37: backlog
-  9-6-storefront-cms-page-route-seo-announcement-not-found: backlog
-  epic-9-retrospective: optional
+  epic-9: done
+  9-1-migration-cms-pages-revision-snapshot-fr-37: done
+  9-2-admin-store-cms-pages-crud-draft-publish-preview: done
+  9-3-admin-cms-pages-editor-seo-footer-social-announcement-404: done
+  9-4-media-picker-reuse-uploaded-files-fr-35: done
+  9-5-admin-history-restore-fr-37: done
+  9-6-storefront-cms-page-route-seo-announcement-not-found: done
+  epic-9-retrospective: done
 
-  epic-10: backlog
-  10-1-third-locale-settings-routing-fr-17: backlog
-  10-2-banner-draft-publish-audit-fr-18-nfr-6: backlog
-  10-3-rbac-draft-vs-publish-fr-19: backlog
-  10-4-banner-schedule-window-fr-20: backlog
-  10-5-ab-banner-campaign-mvp-fr-21: backlog
-  epic-10-retrospective: optional
+  epic-10: done
+  10-1-third-locale-settings-routing-fr-17: done
+  10-2-banner-draft-publish-audit-fr-18-nfr-6: done
+  10-3-rbac-draft-vs-publish-fr-19: done
+  10-4-banner-schedule-window-fr-20: done
+  10-5-ab-banner-campaign-mvp-fr-21: done
+  epic-10-retrospective: done

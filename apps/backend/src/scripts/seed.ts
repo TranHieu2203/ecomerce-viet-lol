@@ -24,7 +24,6 @@ import {
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 import { ApiKey } from "../../.medusa/types/query-entry-points";
-import { seedAppendixA } from "./seed-appendix-a";
 import { seedVietnamProvinceGeoZones } from "./seed-vietnam-province-geozones";
 
 const updateStoreCurrencies = createWorkflow(
@@ -464,15 +463,9 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   logger.info("Finished seeding publishable API key data.");
 
-  logger.info("Seeding product data (Phụ lục A)...");
-
-  await seedAppendixA({
-    container,
-    salesChannelId: defaultSalesChannel[0].id,
-    shippingProfileId: shippingProfile.id,
-  });
-
-  logger.info("Finished seeding product data.");
+  logger.info(
+    "Skipping Phụ lục A catalog — storefront catalog chỉ từ Sales Kit. Chạy: npm run seed:sales-kit:confirm (apps/backend, cần docs/ + SEED_SALES_KIT_ALLOW)."
+  );
 
   logger.info("Seeding inventory levels.");
 

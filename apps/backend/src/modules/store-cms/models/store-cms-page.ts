@@ -15,6 +15,8 @@ const StoreCmsPage = model.define("store_cms_page", {
   /** `{ vi, en }` — JSONB */
   title: model.json(),
   body: model.text().nullable(),
+  /** Meta từng trang: `meta_title` / `meta_description` theo locale (optional). */
+  seo: model.json().nullable(),
   status: model.text().default(CMS_PAGE_STATUS.DRAFT),
   published_at: model.dateTime().nullable(),
 })

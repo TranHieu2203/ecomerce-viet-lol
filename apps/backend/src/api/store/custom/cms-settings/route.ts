@@ -30,6 +30,29 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const tagline_i18n =
     (settings as { tagline_i18n?: unknown }).tagline_i18n ?? null
 
+  let og_image_url: string | null = null
+  const ogId = (settings as { og_image_file_id?: string | null })
+    .og_image_file_id
+  if (ogId) {
+    try {
+      const fileModule = req.scope.resolve(
+        Modules.FILE
+      ) as IFileModuleService
+      const f = await fileModule.retrieveFile(ogId)
+      og_image_url = f.url
+    } catch {
+      og_image_url = null
+    }
+  }
+
+  const seo_defaults =
+    (settings as { seo_defaults?: unknown }).seo_defaults ?? null
+  const footer_contact =
+    (settings as { footer_contact?: unknown }).footer_contact ?? null
+  const announcement =
+    (settings as { announcement?: unknown }).announcement ?? null
+  const not_found = (settings as { not_found?: unknown }).not_found ?? null
+
   res.json({
     default_locale: settings.default_locale,
     enabled_locales: settings.enabled_locales,
@@ -37,5 +60,10 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     site_title,
     site_title_i18n,
     tagline_i18n,
+    seo_defaults,
+    og_image_url,
+    footer_contact,
+    announcement,
+    not_found,
   })
 }

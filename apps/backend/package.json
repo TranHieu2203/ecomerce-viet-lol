@@ -16,6 +16,8 @@
     "build": "node ./node_modules/@medusajs/cli/cli.js build",
     "seed": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed.ts",
     "seed:appendix": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-appendix-only.ts",
+    "seed:sales-kit": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-sales-kit.ts",
+    "seed:sales-kit:confirm": "cross-env SEED_SALES_KIT_ALLOW=1 node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-sales-kit.ts",
     "start": "node ./node_modules/@medusajs/cli/cli.js start",
     "dev": "node ./node_modules/@medusajs/cli/cli.js develop",
     "test:integration:http": "cross-env TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
@@ -31,7 +33,8 @@
     "@medusajs/framework": "2.13.1",
     "@medusajs/medusa": "2.13.1",
     "date-fns": "^4.1.0",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.13.1",

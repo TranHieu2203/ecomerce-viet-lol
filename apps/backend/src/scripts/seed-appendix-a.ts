@@ -15,14 +15,40 @@ const I18N = (vi: { title: string; description?: string }, en?: { title: string;
   },
 })
 
+/** Các SKU catalog demo Phụ lục A — dùng khi reset seed Sales Kit / xóa catalog. */
+export const APPENDIX_A_PRODUCT_HANDLES = [
+  "saffron-cao-cap",
+  "kem-chong-nang",
+  "serum-b5",
+  "bot-rua-mat",
+  "mash",
+  "xit-khoang-3in1",
+  "gia-cong-banh-trung-thu",
+  "mat-ong-rung",
+  "hat-dieu",
+  "hat-macca",
+  "dua-say",
+  "xoai-say-deo",
+  "mit-say",
+  "du-du-say-deo",
+] as const
+
+export type AppendixProductImages = Record<
+  string,
+  { thumbnail: string; images: string[] }
+>
+
 export async function seedAppendixA({
   container,
   salesChannelId,
   shippingProfileId,
+  productImages,
 }: {
   container: MedusaContainer
   salesChannelId: string
   shippingProfileId: string
+  /** URL ảnh từ File module (thumbnail + gallery) — optional. */
+  productImages?: AppendixProductImages
 }) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER)
   const productModule = container.resolve(Modules.PRODUCT)
@@ -235,7 +261,15 @@ export async function seedAppendixA({
       "my-pham",
       180000
     ),
-    simpleProduct("mash", "Mash", "Mash", "my-pham", 95000),
+    simpleProduct(
+      "mash",
+      "Son dưỡng Bs Cosmetics",
+      "Bs Cosmetics lip balm",
+      "my-pham",
+      95000,
+      "Dưỡng môi — ảnh từ Sales Kit (Son dưỡng).",
+      "Lip care — Sales Kit imagery."
+    ),
     simpleProduct(
       "xit-khoang-3in1",
       "Xịt khoáng 3in1",
@@ -327,6 +361,7 @@ export async function seedAppendixA({
       return
     }
     const existing = await productModule.listProducts({ handle: p.handle })
+    const img = productImages?.[p.handle]
     const body = {
       title: p.title,
       description: p.description ?? "",
@@ -339,6 +374,12 @@ export async function seedAppendixA({
       ...(p.options ? { options: p.options } : {}),
       ...(p.variants ? { variants: p.variants } : {}),
       sales_channels: [{ id: salesChannelId }],
+      ...(img
+        ? {
+            thumbnail: img.thumbnail,
+            images: img.images.map((url) => ({ url })),
+          }
+        : {}),
     }
 
     if (existing.length) {
@@ -351,6 +392,12 @@ export async function seedAppendixA({
             metadata: body.metadata,
             collection_id: collectionId,
             ...(p.typeId ? { type_id: p.typeId } : {}),
+            ...(img
+              ? {
+                  thumbnail: img.thumbnail,
+                  images: img.images.map((url) => ({ url })),
+                }
+              : {}),
           },
         },
       })

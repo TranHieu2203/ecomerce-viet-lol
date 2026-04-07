@@ -18,7 +18,9 @@ export default function CollectionTemplate({
   page?: string
   countryCode: string
 }) {
-  const pageNumber = page ? parseInt(page) : 1
+  const parsed = page ? parseInt(page, 10) : 1
+  const pageNumber =
+    Number.isFinite(parsed) && parsed >= 1 ? parsed : 1
   const sort = sortBy || "created_at"
   const { title: displayTitle } = displayCollection(
     countryCode,

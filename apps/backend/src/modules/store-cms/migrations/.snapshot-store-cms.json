@@ -15,6 +15,106 @@
           "nullable": false,
           "mappedType": "text"
         },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "split_a_percent": {
+          "name": "split_a_percent",
+          "type": "integer",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "50",
+          "mappedType": "integer"
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "false",
+          "mappedType": "boolean"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "store_banner_campaign",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "IDX_store_banner_campaign_deleted_at",
+          "columnNames": [],
+          "composite": false,
+          "constraint": false,
+          "primary": false,
+          "unique": false,
+          "expression": "CREATE INDEX IF NOT EXISTS \"IDX_store_banner_campaign_deleted_at\" ON \"store_banner_campaign\" (\"deleted_at\") WHERE deleted_at IS NULL"
+        },
+        {
+          "keyName": "store_banner_campaign_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
         "image_file_id": {
           "name": "image_file_id",
           "type": "text",
@@ -86,6 +186,54 @@
           "primary": false,
           "nullable": false,
           "mappedType": "boolean"
+        },
+        "publication_status": {
+          "name": "publication_status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'published'",
+          "mappedType": "text"
+        },
+        "display_start_at": {
+          "name": "display_start_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "display_end_at": {
+          "name": "display_end_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        },
+        "campaign_id": {
+          "name": "campaign_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "variant_label": {
+          "name": "variant_label",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -185,6 +333,15 @@
           "nullable": true,
           "mappedType": "text"
         },
+        "seo": {
+          "name": "seo",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
         "status": {
           "name": "status",
           "type": "text",
@@ -251,16 +408,123 @@
           "expression": "CREATE INDEX IF NOT EXISTS \"IDX_store_cms_page_deleted_at\" ON \"store_cms_page\" (\"deleted_at\") WHERE deleted_at IS NULL"
         },
         {
-          "keyName": "IDX_store_cms_page_slug_unique_active",
+          "keyName": "store_cms_page_pkey",
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "foreignKeys": {},
+      "nativeEnums": {}
+    },
+    {
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "entity_type": {
+          "name": "entity_type",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "entity_id": {
+          "name": "entity_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "action": {
+          "name": "action",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "mappedType": "text"
+        },
+        "actor_user_id": {
+          "name": "actor_user_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "length": 6,
+          "default": "now()",
+          "mappedType": "datetime"
+        },
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamptz",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "length": 6,
+          "mappedType": "datetime"
+        }
+      },
+      "name": "store_cms_publication_audit",
+      "schema": "public",
+      "indexes": [
+        {
+          "keyName": "IDX_store_cms_publication_audit_deleted_at",
           "columnNames": [],
           "composite": false,
           "constraint": false,
           "primary": false,
-          "unique": true,
-          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"IDX_store_cms_page_slug_unique_active\" ON \"store_cms_page\" (\"slug\") WHERE deleted_at IS NULL"
+          "unique": false,
+          "expression": "CREATE INDEX IF NOT EXISTS \"IDX_store_cms_publication_audit_deleted_at\" ON \"store_cms_publication_audit\" (\"deleted_at\") WHERE deleted_at IS NULL"
         },
         {
-          "keyName": "store_cms_page_pkey",
+          "keyName": "store_cms_publication_audit_pkey",
           "columnNames": [
             "id"
           ],
@@ -367,14 +631,6 @@
           "expression": "CREATE INDEX IF NOT EXISTS \"IDX_store_cms_revision_deleted_at\" ON \"store_cms_revision\" (\"deleted_at\") WHERE deleted_at IS NULL"
         },
         {
-          "keyName": "IDX_store_cms_revision_entity_created",
-          "columnNames": ["entity_type", "entity_id", "created_at"],
-          "composite": true,
-          "constraint": false,
-          "primary": false,
-          "unique": false
-        },
-        {
           "keyName": "store_cms_revision_pkey",
           "columnNames": [
             "id"
@@ -456,6 +712,51 @@
         },
         "tagline_i18n": {
           "name": "tagline_i18n",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "seo_defaults": {
+          "name": "seo_defaults",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "og_image_file_id": {
+          "name": "og_image_file_id",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "text"
+        },
+        "footer_contact": {
+          "name": "footer_contact",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "announcement": {
+          "name": "announcement",
+          "type": "jsonb",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "mappedType": "json"
+        },
+        "not_found": {
+          "name": "not_found",
           "type": "jsonb",
           "unsigned": false,
           "autoincrement": false,

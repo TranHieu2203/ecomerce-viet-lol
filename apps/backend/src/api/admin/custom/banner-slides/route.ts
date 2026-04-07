@@ -3,22 +3,21 @@ import {
   MedusaResponse,
 } from "@medusajs/framework/http"
 import { STORE_CMS_MODULE } from "../../../../modules/store-cms"
+import {
+  BANNER_PUBLICATION,
+} from "../../../../modules/store-cms/models/store-banner-slide"
 import type StoreCmsModuleService from "../../../../modules/store-cms/service"
+import { parseBannerLang } from "../../../../utils/banner-i18n"
 import { generateBannerDerivatives } from "../../../../utils/banner-derivatives"
+import { assertCanPublishBanner } from "../../../../utils/cms-publisher-guard"
+import { recordPublicationAudit } from "../../../../utils/cms-publication-audit"
 import { revalidateStorefrontCms } from "../../../../utils/revalidate-storefront"
 import { validateTargetUrl } from "../../../../utils/validate-target-url"
 
-type LangJson = Record<string, string>
-
-function parseLang(obj: unknown): LangJson {
-  if (!obj || typeof obj !== "object") {
-    return { vi: "", en: "" }
-  }
-  const o = obj as Record<string, unknown>
-  return {
-    vi: String(o.vi ?? ""),
-    en: String(o.en ?? ""),
-  }
+function actorUserId(
+  req: AuthenticatedMedusaRequest
+): string | null {
+  return req.auth_context?.actor_id ?? null
 }
 
 export async function GET(
@@ -71,18 +70,68 @@ export async function POST(
     })
   }
 
+  const title = parseBannerLang(body.title)
+  const subtitle = parseBannerLang(body.subtitle)
+  const cta_label = parseBannerLang(body.cta_label)
+
+  const publication_status =
+    body.publication_status === BANNER_PUBLICATION.PUBLISHED
+      ? BANNER_PUBLICATION.PUBLISHED
+      : BANNER_PUBLICATION.DRAFT
+
+  if (publication_status === BANNER_PUBLICATION.PUBLISHED) {
+    assertCanPublishBanner(req)
+  }
+
+  const campaign_id =
+    typeof body.campaign_id === "string" && body.campaign_id.trim()
+      ? body.campaign_id.trim()
+      : null
+  const vraw = String(body.variant_label ?? "").trim().toUpperCase()
+  const variant_label = vraw === "A" || vraw === "B" ? vraw : null
+
+  const display_start_at =
+    body.display_start_at === null || body.display_start_at === ""
+      ? null
+      : new Date(String(body.display_start_at))
+  const display_end_at =
+    body.display_end_at === null || body.display_end_at === ""
+      ? null
+      : new Date(String(body.display_end_at))
+
   const [created] = await cms.createStoreBannerSlides([
     {
       image_file_id,
       image_urls,
-      title: parseLang(body.title),
-      subtitle: parseLang(body.subtitle),
-      cta_label: parseLang(body.cta_label),
+      title,
+      subtitle,
+      cta_label,
       target_url,
       sort_order: (body.sort_order as number) ?? maxOrder + 1,
       is_active: body.is_active !== false,
+      publication_status,
+      campaign_id,
+      variant_label,
+      display_start_at:
+        display_start_at && !Number.isNaN(display_start_at.getTime())
+          ? display_start_at
+          : null,
+      display_end_at:
+        display_end_at && !Number.isNaN(display_end_at.getTime())
+          ? display_end_at
+          : null,
     },
   ])
+
+  if (publication_status === BANNER_PUBLICATION.PUBLISHED) {
+    await recordPublicationAudit(cms, {
+      entity_type: "banner_slide",
+      entity_id: created.id,
+      action: "publish",
+      actor_user_id: actorUserId(req),
+      metadata: { create: true },
+    })
+  }
 
   await revalidateStorefrontCms()
   res.json({ banner_slide: created })

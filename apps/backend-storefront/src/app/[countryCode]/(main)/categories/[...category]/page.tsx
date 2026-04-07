@@ -16,6 +16,9 @@ type Props = {
   }>
 }
 
+/** Catalog thay đổi sau seed/build — tránh pre-render tĩnh với danh sách rỗng. */
+export const dynamic = "force-dynamic"
+
 export async function generateStaticParams() {
   const product_categories = await listCategories()
 

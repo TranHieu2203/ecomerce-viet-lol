@@ -10,9 +10,13 @@ import {
   Text,
   toast,
 } from "@medusajs/ui"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { Link } from "react-router-dom"
 import { adminFetch } from "./admin-fetch"
+import { MediaPickerField } from "./media-picker-field"
 import { NavHeaderMenuSection } from "./nav-header-menu-section"
+import { CmsRevisionDrawer } from "./revision-drawer"
+import { SiteContentAdr13Section } from "./site-content-adr13-section"
 
 type Slide = {
   id: string
@@ -24,6 +28,18 @@ type Slide = {
   target_url: string | null
   sort_order: number
   is_active: boolean
+  publication_status?: string
+  display_start_at?: string | null
+  display_end_at?: string | null
+  campaign_id?: string | null
+  variant_label?: string | null
+}
+
+type BannerCampaign = {
+  id: string
+  name: string
+  split_a_percent: number
+  is_active: boolean
 }
 
 type Settings = {
@@ -32,226 +48,61 @@ type Settings = {
   enabled_locales: unknown
   logo_file_id: string | null
   site_title: string | null
-}
-
-type AdminUploadedFile = { id: string; url?: string }
-
-declare const __BACKEND_URL__: string | undefined
-
-type WindowWithMedusaSdk = Window & {
-  __sdk?: {
-    admin: {
-      upload: {
-        create: (
-          body: FileList | { files: File[] }
-        ) => Promise<{ files?: unknown }>
-      }
-    }
-  }
-}
-
-function parseUploadResponsePayload(json: unknown): AdminUploadedFile[] {
-  if (!json || typeof json !== "object") {
-    return []
-  }
-  let o = json as Record<string, unknown>
-  if (
-    "data" in o &&
-    o.data &&
-    typeof o.data === "object" &&
-    !Array.isArray(o.data)
-  ) {
-    o = o.data as Record<string, unknown>
-  }
-  const raw = o.files ?? o.file
-  const list = Array.isArray(raw) ? raw : raw != null ? [raw] : []
-  return list
-    .map((item): AdminUploadedFile | null => {
-      if (!item || typeof item !== "object") {
-        return null
-      }
-      const f = item as Record<string, unknown>
-      const id = f.id != null ? String(f.id) : ""
-      if (!id) {
-        return null
-      }
-      return {
-        id,
-        url: typeof f.url === "string" ? f.url : undefined,
-      }
-    })
-    .filter((x): x is AdminUploadedFile => x !== null)
-}
-
-/**
- * Upload qua Medusa Admin API. Ưu tiên `window.__sdk` (kèm JWT / base URL đúng như Dashboard);
- * fallback fetch khi chỉ dùng session cookie + cùng origin.
- */
-const adminUploadFiles = async (
-  fileList: FileList | File[]
-): Promise<AdminUploadedFile[]> => {
-  const asArray = Array.from(fileList)
-
-  if (typeof window !== "undefined") {
-    const sdk = (window as WindowWithMedusaSdk).__sdk
-    if (sdk?.admin?.upload?.create) {
-      const body =
-        fileList instanceof FileList
-          ? fileList
-          : { files: asArray }
-      const res = await sdk.admin.upload.create(body)
-      const parsed = parseUploadResponsePayload(res)
-      if (parsed.length) {
-        return parsed
-      }
-      throw new Error(
-        "Upload có phản hồi nhưng không đọc được file id (kiểm tra console / refresh trang Admin)."
-      )
-    }
-  }
-
-  const fd = new FormData()
-  for (const f of asArray) {
-    fd.append("files", f)
-  }
-
-  const base =
-    typeof __BACKEND_URL__ !== "undefined" && __BACKEND_URL__
-      ? String(__BACKEND_URL__).replace(/\/$/, "")
-      : ""
-  const uploadUrl = `${base}/admin/uploads`
-
-  const res = await fetch(uploadUrl, {
-    method: "POST",
-    credentials: "include",
-    body: fd,
-  })
-  const text = await res.text()
-  let json: unknown = null
-  try {
-    json = text ? JSON.parse(text) : null
-  } catch {
-    json = { raw: text }
-  }
-  if (!res.ok) {
-    const msg =
-      typeof json === "object" &&
-      json &&
-      "message" in json &&
-      typeof (json as { message: string }).message === "string"
-        ? (json as { message: string }).message
-        : res.statusText
-    throw new Error(msg)
-  }
-  const parsed = parseUploadResponsePayload(json)
-  if (!parsed.length) {
-    throw new Error("Upload response không có file hợp lệ (thiếu id)")
-  }
-  return parsed
-}
-
-function ImageUploadField({
-  htmlId,
-  label,
-  value,
-  onValueChange,
-}: {
-  htmlId: string
-  label: string
-  value: string
-  onValueChange: (v: string) => void
-}) {
-  const fileRef = useRef<HTMLInputElement>(null)
-  const [busy, setBusy] = useState(false)
-
-  const onPick = () => fileRef.current?.click()
-
-  const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { files } = e.target
-    if (!files?.length) {
-      return
-    }
-    setBusy(true)
-    try {
-      const uploaded = await adminUploadFiles(files)
-      const first = uploaded[0]
-      if (!first?.id) {
-        throw new Error("Không nhận được file id từ server")
-      }
-      onValueChange(first.id)
-      toast.success("Đã upload ảnh — đã điền file id")
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Upload thất bại")
-    } finally {
-      e.target.value = ""
-      setBusy(false)
-    }
-  }
-
-  return (
-    <div className="flex flex-col gap-2">
-      <Label htmlFor={htmlId}>{label}</Label>
-      <div className="flex flex-wrap items-center gap-2">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(ev) => void onFileChange(ev)}
-        />
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={busy}
-          onClick={onPick}
-        >
-          {busy ? "Đang upload…" : "Chọn & upload ảnh"}
-        </Button>
-        <Input
-          id={htmlId}
-          className="flex-1 min-w-[14rem]"
-          placeholder="file_… (tự điền sau upload, có thể sửa tay)"
-          value={value}
-          onChange={(e) => onValueChange(e.target.value)}
-        />
-      </div>
-    </div>
-  )
+  seo_defaults?: unknown
+  og_image_file_id?: string | null
+  footer_contact?: unknown
+  announcement?: unknown
+  not_found?: unknown
 }
 
 const StorefrontCmsPage = () => {
   const [slides, setSlides] = useState<Slide[]>([])
+  const [campaigns, setCampaigns] = useState<BannerCampaign[]>([])
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({
     image_file_id: "",
     title_vi: "",
     title_en: "",
+    title_ja: "",
     subtitle_vi: "",
     subtitle_en: "",
+    subtitle_ja: "",
     cta_vi: "",
     cta_en: "",
+    cta_ja: "",
     target_url: "",
+    campaign_id: "",
+    variant_label: "",
+  })
+  const [campForm, setCampForm] = useState({
+    name: "",
+    split_a_percent: 50,
   })
   const [setFormState, setSetForm] = useState({
     logo_file_id: "",
     site_title: "",
     default_locale: "vi",
     en_enabled: true,
+    ja_enabled: false,
   })
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [sRes, gRes] = await Promise.all([
+      const [sRes, gRes, cRes] = await Promise.all([
         adminFetch("/admin/custom/banner-slides") as Promise<{
           banner_slides: Slide[]
         }>,
         adminFetch("/admin/custom/cms-settings") as Promise<{
           cms_settings: Settings
         }>,
+        adminFetch("/admin/custom/banner-campaigns") as Promise<{
+          banner_campaigns: BannerCampaign[]
+        }>,
       ])
       setSlides(sRes.banner_slides ?? [])
+      setCampaigns(cRes.banner_campaigns ?? [])
       const s = gRes.cms_settings
       setSettings(s)
       const enabled = (s.enabled_locales as string[]) ?? []
@@ -260,6 +111,7 @@ const StorefrontCmsPage = () => {
         site_title: s.site_title ?? "",
         default_locale: s.default_locale ?? "vi",
         en_enabled: enabled.includes("en"),
+        ja_enabled: enabled.includes("ja"),
       })
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Load failed")
@@ -278,10 +130,21 @@ const StorefrontCmsPage = () => {
         method: "POST",
         body: JSON.stringify({
           image_file_id: form.image_file_id,
-          title: { vi: form.title_vi, en: form.title_en },
-          subtitle: { vi: form.subtitle_vi, en: form.subtitle_en },
-          cta_label: { vi: form.cta_vi, en: form.cta_en },
+          title: {
+            vi: form.title_vi,
+            en: form.title_en,
+            ja: form.title_ja,
+          },
+          subtitle: {
+            vi: form.subtitle_vi,
+            en: form.subtitle_en,
+            ja: form.subtitle_ja,
+          },
+          cta_label: { vi: form.cta_vi, en: form.cta_en, ja: form.cta_ja },
           target_url: form.target_url || "",
+          publication_status: "draft",
+          campaign_id: form.campaign_id.trim() || null,
+          variant_label: form.variant_label.trim() || null,
         }),
       })
       toast.success("Slide created")
@@ -289,11 +152,16 @@ const StorefrontCmsPage = () => {
         image_file_id: "",
         title_vi: "",
         title_en: "",
+        title_ja: "",
         subtitle_vi: "",
         subtitle_en: "",
+        subtitle_ja: "",
         cta_vi: "",
         cta_en: "",
+        cta_ja: "",
         target_url: "",
+        campaign_id: "",
+        variant_label: "",
       })
       await load()
     } catch (e: unknown) {
@@ -346,9 +214,61 @@ const StorefrontCmsPage = () => {
     }
   }
 
+  const publishSlide = async (id: string) => {
+    try {
+      await adminFetch(`/admin/custom/banner-slides/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ publication_status: "published" }),
+      })
+      toast.success("Đã xuất bản")
+      await load()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Publish failed")
+    }
+  }
+
+  const unpublishSlide = async (id: string) => {
+    try {
+      await adminFetch(`/admin/custom/banner-slides/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ publication_status: "draft" }),
+      })
+      toast.success("Đã chuyển nháp")
+      await load()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Unpublish failed")
+    }
+  }
+
+  const createCampaign = async () => {
+    if (!campForm.name.trim()) {
+      toast.error("Tên chiến dịch bắt buộc")
+      return
+    }
+    try {
+      await adminFetch("/admin/custom/banner-campaigns", {
+        method: "POST",
+        body: JSON.stringify({
+          name: campForm.name.trim(),
+          split_a_percent: campForm.split_a_percent,
+          is_active: true,
+        }),
+      })
+      toast.success("Chiến dịch đã tạo và kích hoạt (các campaign khác tắt)")
+      setCampForm({ name: "", split_a_percent: 50 })
+      await load()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Campaign failed")
+    }
+  }
+
   const saveSettings = async () => {
     try {
-      const enabled_locales = ["vi", ...(setFormState.en_enabled ? ["en"] : [])]
+      const enabled_locales = [
+        "vi",
+        ...(setFormState.en_enabled ? (["en"] as const) : []),
+        ...(setFormState.ja_enabled ? (["ja"] as const) : []),
+      ]
       await adminFetch("/admin/custom/cms-settings", {
         method: "PATCH",
         body: JSON.stringify({
@@ -375,17 +295,30 @@ const StorefrontCmsPage = () => {
 
   return (
     <Container className="divide-y p-8 flex flex-col gap-8">
-      <div>
-        <Heading className="mb-2">Storefront &amp; nội dung</Heading>
-        <Text size="small" className="text-ui-fg-muted">
-          Banner slider và logo / ngôn ngữ (API đã bảo vệ session Admin).
-        </Text>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <Heading className="mb-2">Storefront &amp; nội dung</Heading>
+          <Text size="small" className="text-ui-fg-muted">
+            Banner slider và logo / ngôn ngữ (API đã bảo vệ session Admin).
+          </Text>
+        </div>
+        <Button size="small" variant="secondary" asChild>
+          <Link to="../cms-pages">Trang CMS (nội dung tĩnh)</Link>
+        </Button>
       </div>
 
       <section className="pt-8 flex flex-col gap-4">
-        <Heading level="h2">Cấu hình chung</Heading>
+        <div className="flex flex-wrap items-center gap-3">
+          <Heading level="h2">Cấu hình chung</Heading>
+          <CmsRevisionDrawer
+            entityType="settings"
+            entityId="cms"
+            triggerLabel="Lịch sử cấu hình"
+            onAfterRestore={() => load()}
+          />
+        </div>
         <div className="grid max-w-xl gap-4">
-          <ImageUploadField
+          <MediaPickerField
             htmlId="cms-logo-file-id"
             label="Logo (upload hoặc dán file id)"
             value={setFormState.logo_file_id}
@@ -427,25 +360,95 @@ const StorefrontCmsPage = () => {
             />
             <Label>Bật English</Label>
           </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={setFormState.ja_enabled}
+              onCheckedChange={(v) =>
+                setSetForm((s) => ({ ...s, ja_enabled: v }))
+              }
+            />
+            <Label>Bật Japanese (locale thứ ba — FR-17)</Label>
+          </div>
+          <Text size="small" className="text-ui-fg-muted">
+            RBAC publish: đặt biến môi trường backend{" "}
+            <code>CMS_PUBLISHER_ADMIN_IDS</code> (id user admin, cách nhau bởi
+            dấu phẩy). Không đặt = mọi admin được publish.
+          </Text>
           <Button onClick={() => void saveSettings()}>Lưu cấu hình</Button>
         </div>
       </section>
 
       <NavHeaderMenuSection />
 
+      <SiteContentAdr13Section
+        settings={settings as unknown as Record<string, unknown>}
+        onReload={load}
+      />
+
+      <section className="pt-8 flex flex-col gap-4">
+        <Heading level="h2">Chiến dịch A/B banner (FR-21)</Heading>
+        <Text size="small" className="text-ui-fg-muted max-w-2xl">
+          Chỉ một campaign <code>active</code> tại một thời điểm. Gán slide vào
+          campaign + nhãn variant A hoặc B. Storefront chọn nhóm cố định theo
+          cookie <code>_medusa_cache_id</code>.
+        </Text>
+        <ul className="flex flex-col gap-2 mb-4">
+          {campaigns.map((c) => (
+            <li key={c.id} className="flex flex-wrap items-center gap-2 text-sm">
+              <Badge color={c.is_active ? "green" : "grey"}>
+                {c.is_active ? "active" : "off"}
+              </Badge>
+              <span>
+                {c.name} — A: {c.split_a_percent}% / B: {100 - c.split_a_percent}%
+              </span>
+              <Text size="small" className="text-ui-fg-muted font-mono">
+                {c.id}
+              </Text>
+            </li>
+          ))}
+        </ul>
+        <div className="grid max-w-xl gap-3 border border-ui-border-base p-4 rounded-md">
+          <Input
+            placeholder="Tên chiến dịch"
+            value={campForm.name}
+            onChange={(e) =>
+              setCampForm((f) => ({ ...f, name: e.target.value }))
+            }
+          />
+          <div>
+            <Label>Tỷ lệ nhóm A (0–100)</Label>
+            <Input
+              type="number"
+              min={0}
+              max={100}
+              value={campForm.split_a_percent}
+              onChange={(e) =>
+                setCampForm((f) => ({
+                  ...f,
+                  split_a_percent: Number(e.target.value) || 0,
+                }))
+              }
+            />
+          </div>
+          <Button variant="secondary" onClick={() => void createCampaign()}>
+            Tạo &amp; kích hoạt campaign
+          </Button>
+        </div>
+      </section>
+
       <section className="pt-8 flex flex-col gap-4">
         <Heading level="h2">Banner slides</Heading>
-        <div className="grid max-w-xl gap-3 border border-ui-border-base p-4 rounded-md">
+        <div className="grid max-w-3xl gap-3 border border-ui-border-base p-4 rounded-md">
           <Text size="small" weight="plus">
-            Thêm slide — ảnh nền
+            Thêm slide — ảnh nền (mặc định nháp; xuất bản sau khi sẵn sàng)
           </Text>
-          <ImageUploadField
+          <MediaPickerField
             htmlId="cms-slide-image-file-id"
             label="Ảnh slide"
             value={form.image_file_id}
             onValueChange={(v) => setForm((f) => ({ ...f, image_file_id: v }))}
           />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 small:grid-cols-3 gap-2">
             <Input
               placeholder="Title VI"
               value={form.title_vi}
@@ -460,8 +463,15 @@ const StorefrontCmsPage = () => {
                 setForm((f) => ({ ...f, title_en: e.target.value }))
               }
             />
+            <Input
+              placeholder="Title JA"
+              value={form.title_ja}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, title_ja: e.target.value }))
+              }
+            />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 small:grid-cols-3 gap-2">
             <Input
               placeholder="Subtitle VI"
               value={form.subtitle_vi}
@@ -476,8 +486,15 @@ const StorefrontCmsPage = () => {
                 setForm((f) => ({ ...f, subtitle_en: e.target.value }))
               }
             />
+            <Input
+              placeholder="Subtitle JA"
+              value={form.subtitle_ja}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, subtitle_ja: e.target.value }))
+              }
+            />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 small:grid-cols-3 gap-2">
             <Input
               placeholder="CTA VI"
               value={form.cta_vi}
@@ -488,6 +505,11 @@ const StorefrontCmsPage = () => {
               value={form.cta_en}
               onChange={(e) => setForm((f) => ({ ...f, cta_en: e.target.value }))}
             />
+            <Input
+              placeholder="CTA JA"
+              value={form.cta_ja}
+              onChange={(e) => setForm((f) => ({ ...f, cta_ja: e.target.value }))}
+            />
           </div>
           <Input
             placeholder="Target URL"
@@ -496,6 +518,25 @@ const StorefrontCmsPage = () => {
               setForm((f) => ({ ...f, target_url: e.target.value }))
             }
           />
+          <div className="grid grid-cols-1 small:grid-cols-2 gap-2">
+            <Input
+              placeholder="Campaign id (dán từ danh sách)"
+              value={form.campaign_id}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, campaign_id: e.target.value }))
+              }
+            />
+            <Input
+              placeholder="Variant A hoặc B"
+              value={form.variant_label}
+              onChange={(e) =>
+                setForm((f) => ({
+                  ...f,
+                  variant_label: e.target.value.toUpperCase().slice(0, 1),
+                }))
+              }
+            />
+          </div>
           <Button onClick={() => void addSlide()}>Thêm slide</Button>
         </div>
 
@@ -503,36 +544,86 @@ const StorefrontCmsPage = () => {
           {slides.map((s, i) => (
             <li
               key={s.id}
-              className="flex flex-wrap items-center gap-3 border border-ui-border-base p-3 rounded-md"
+              className="flex flex-col gap-2 border border-ui-border-base p-3 rounded-md"
             >
-              <Badge color={s.is_active ? "green" : "grey"}>
-                {s.is_active ? "active" : "off"}
-              </Badge>
-              <Text>
-                {(s.title?.vi || s.title?.en || "").slice(0, 40) || s.id}
-              </Text>
-              <div className="flex gap-1">
-                <Button size="small" variant="secondary" onClick={() => move(i, -1)}>
-                  ↑
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge color={s.is_active ? "green" : "grey"}>
+                  {s.is_active ? "active" : "off"}
+                </Badge>
+                <Badge
+                  color={
+                    s.publication_status === "published" ? "green" : "orange"
+                  }
+                >
+                  {s.publication_status ?? "published"}
+                </Badge>
+                {s.variant_label ? (
+                  <Badge color="blue">variant {s.variant_label}</Badge>
+                ) : null}
+                <Text>
+                  {(s.title?.vi || s.title?.en || s.title?.ja || "").slice(
+                    0,
+                    40
+                  ) || s.id}
+                </Text>
+                <div className="flex gap-1">
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    onClick={() => move(i, -1)}
+                  >
+                    ↑
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    onClick={() => move(i, 1)}
+                  >
+                    ↓
+                  </Button>
+                </div>
+                <Button
+                  size="small"
+                  variant="secondary"
+                  onClick={() => void toggleEnabled(s)}
+                >
+                  Toggle active
                 </Button>
-                <Button size="small" variant="secondary" onClick={() => move(i, 1)}>
-                  ↓
+                {s.publication_status === "draft" ? (
+                  <Button
+                    size="small"
+                    onClick={() => void publishSlide(s.id)}
+                  >
+                    Publish
+                  </Button>
+                ) : (
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    onClick={() => void unpublishSlide(s.id)}
+                  >
+                    Unpublish
+                  </Button>
+                )}
+                <Button
+                  size="small"
+                  variant="danger"
+                  onClick={() => void remove(s.id)}
+                >
+                  Xóa
                 </Button>
               </div>
-              <Button
-                size="small"
-                variant="secondary"
-                onClick={() => void toggleEnabled(s)}
-              >
-                Toggle
-              </Button>
-              <Button
-                size="small"
-                variant="danger"
-                onClick={() => void remove(s.id)}
-              >
-                Xóa
-              </Button>
+              <Text size="small" className="text-ui-fg-muted">
+                Lịch (UTC ISO): start{" "}
+                {s.display_start_at
+                  ? String(s.display_start_at).slice(0, 19)
+                  : "—"}{" "}
+                — end{" "}
+                {s.display_end_at
+                  ? String(s.display_end_at).slice(0, 19)
+                  : "—"}
+                {s.campaign_id ? ` — campaign ${s.campaign_id.slice(0, 8)}…` : ""}
+              </Text>
             </li>
           ))}
         </ul>

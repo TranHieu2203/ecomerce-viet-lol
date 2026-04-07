@@ -4,17 +4,28 @@ import { clx } from "@medusajs/ui"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { SUPPORTED_LOCALES, isAppLocale } from "@lib/util/locales"
+import { ALL_APP_LOCALE_CODES, isAppLocale } from "@lib/util/locales"
 
-export default function LocaleSwitcher({ current }: { current: string }) {
+type Props = {
+  current: string
+  /** Locale được CMS bật; mặc định hiển thị mọi mã app hỗ trợ. */
+  enabledLocales?: string[]
+}
+
+export default function LocaleSwitcher({ current, enabledLocales }: Props) {
   const pathname = usePathname()
   const segments = pathname.split("/").filter(Boolean)
   const first = segments[0] || ""
   const rest = isAppLocale(first) ? segments.slice(1).join("/") : segments.join("/")
 
+  const filtered = enabledLocales?.length
+    ? ALL_APP_LOCALE_CODES.filter((c) => enabledLocales.includes(c))
+    : null
+  const codes = filtered?.length ? filtered : [...ALL_APP_LOCALE_CODES]
+
   return (
     <div className="flex items-center gap-1 txt-compact-small">
-      {SUPPORTED_LOCALES.map((code) => {
+      {codes.map((code) => {
         const href = rest ? `/${code}/${rest}` : `/${code}`
         const active = current === code
         return (

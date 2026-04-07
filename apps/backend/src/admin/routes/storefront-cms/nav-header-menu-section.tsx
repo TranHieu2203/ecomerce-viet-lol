@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { Button, Heading, Input, Label, Text, toast } from "@medusajs/ui"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { adminFetch } from "./admin-fetch"
+import { CmsRevisionDrawer } from "./revision-drawer"
 import {
   type EditorChildRow,
   type EditorGroupRow,
@@ -550,6 +551,12 @@ export function NavHeaderMenuSection() {
     <section className="pt-8 flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
         <Heading level="h2">Menu header (2 cấp)</Heading>
+        <CmsRevisionDrawer
+          entityType="nav"
+          entityId="cms"
+          triggerLabel="Lịch sử menu"
+          onAfterRestore={() => loadNav()}
+        />
         <Button
           size="small"
           variant="secondary"

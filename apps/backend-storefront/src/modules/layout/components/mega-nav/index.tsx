@@ -2,6 +2,7 @@
 
 import type { ResolvedNavGroup } from "@lib/nav/nav-types"
 import NavMenuChildLink from "@modules/layout/components/nav-menu-child-link"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 const CLOSE_DELAY_MS = 200
@@ -66,6 +67,8 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
     return null
   }
 
+  const hasAnyDropdown = rows.some((g) => g.children.length >= 2)
+
   return (
     <div
       role="navigation"
@@ -75,6 +78,7 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
       <ul className="flex items-center gap-1 text-ui-fg-subtle" role="menubar">
         {rows.map((group, index) => {
           const isOpen = openIndex === index
+          const onlyChild = group.children.length === 1 ? group.children[0] : null
           return (
             <li
               key={`mega-nav-${index}-${group.id}`}
@@ -84,21 +88,31 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
               onMouseLeave={scheduleClose}
             >
               <div className="flex flex-col items-stretch">
-                <button
-                  type="button"
-                  ref={(el) => {
-                    triggerRefs.current.set(index, el)
-                  }}
-                  className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
-                  aria-expanded={isOpen}
-                  aria-haspopup="true"
-                  onClick={() =>
-                    setOpenIndex((cur) => (cur === index ? null : index))
-                  }
-                >
-                  {group.label}
-                </button>
-                {isOpen ? (
+                {onlyChild?.href ? (
+                  <LocalizedClientLink
+                    href={onlyChild.href}
+                    className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                    role="menuitem"
+                  >
+                    {group.label}
+                  </LocalizedClientLink>
+                ) : (
+                  <button
+                    type="button"
+                    ref={(el) => {
+                      triggerRefs.current.set(index, el)
+                    }}
+                    className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                    aria-expanded={isOpen}
+                    aria-haspopup="true"
+                    onClick={() =>
+                      setOpenIndex((cur) => (cur === index ? null : index))
+                    }
+                  >
+                    {group.label}
+                  </button>
+                )}
+                {hasAnyDropdown && isOpen ? (
                   <div
                     className="absolute left-0 top-full pt-1 z-50 min-w-[12rem]"
                     role="menu"
