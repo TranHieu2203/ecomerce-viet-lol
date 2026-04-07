@@ -34,6 +34,7 @@ export const listCollections = async (
     queryParams.fields.includes("products")
       ? "no-store"
       : "force-cache"
+  const cacheMode = process.env.NODE_ENV === "production" ? cache : "no-store"
 
   return sdk.client
     .fetch<{ collections: HttpTypes.StoreCollection[]; count: number }>(
@@ -41,7 +42,7 @@ export const listCollections = async (
       {
         query: queryParams,
         next,
-        cache,
+        cache: cacheMode,
       }
     )
     .then(({ collections }) => ({ collections, count: collections.length }))
