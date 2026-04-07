@@ -12,6 +12,7 @@ import { Text, clx } from "@medusajs/ui"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
+import { resolveSocialIcon } from "@modules/common/icons/social"
 
 export default async function Footer({
   countryCode,
@@ -114,19 +115,25 @@ export default async function Footer({
                 <span className="txt-small-plus txt-ui-fg-base">
                   {m.footer.socialHeading}
                 </span>
-                <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
-                  {socialLinks.slice(0, 6).map((s) => (
-                    <li key={s.href}>
-                      <a
-                        className="hover:text-ui-fg-base"
-                        href={s.href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        {s.label}
-                      </a>
-                    </li>
-                  ))}
+                <ul className="flex flex-wrap gap-2 text-ui-fg-subtle">
+                  {socialLinks.slice(0, 6).map((s) => {
+                    const Icon = resolveSocialIcon(s.hostname)
+                    return (
+                      <li key={s.href}>
+                        <a
+                          className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                          href={s.href}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          aria-label={s.label}
+                          title={s.label}
+                        >
+                          <Icon size={18} />
+                          <span className="sr-only">{s.label}</span>
+                        </a>
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             ) : null}

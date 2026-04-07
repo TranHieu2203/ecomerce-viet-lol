@@ -14,6 +14,7 @@ import { listLocales, type Locale } from "@lib/data/locales"
 import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { resolveSocialIcon } from "@modules/common/icons/social"
 import CartButton from "@modules/layout/components/cart-button"
 import LocaleSwitcher from "@modules/layout/components/locale-switcher"
 import MegaNav from "@modules/layout/components/mega-nav"
@@ -114,17 +115,23 @@ export default async function Nav({
           <div className="flex items-center gap-x-2 xsmall:gap-x-4 shrink-0 h-full">
             {socialLinks.length ? (
               <div className="hidden small:flex items-center gap-x-3 h-full">
-                {socialLinks.slice(0, 3).map((s) => (
-                  <a
-                    key={s.href}
-                    href={s.href}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="hover:text-ui-fg-base text-ui-fg-subtle txt-small whitespace-nowrap"
-                  >
-                    {s.label}
-                  </a>
-                ))}
+                {socialLinks.slice(0, 3).map((s) => {
+                  const Icon = resolveSocialIcon(s.hostname)
+                  return (
+                    <a
+                      key={s.href}
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                      aria-label={s.label}
+                      title={s.label}
+                    >
+                      <Icon size={18} />
+                      <span className="sr-only">{s.label}</span>
+                    </a>
+                  )
+                })}
               </div>
             ) : null}
             <LocaleSwitcher
