@@ -3,6 +3,7 @@ import {
   getCmsSettingsPublic,
   resolveCmsSiteTitle,
   resolveCmsTagline,
+  resolveCmsSocialLinks,
 } from "@lib/data/cms"
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
@@ -28,6 +29,11 @@ export default async function Footer({
 
   const brandName = resolveCmsSiteTitle(countryCode, cms, m)
   const tagline = resolveCmsTagline(countryCode, cms, m)
+  const socialLinks = resolveCmsSocialLinks(
+    cms,
+    countryCode,
+    m.footer.socialFallback
+  )
 
   return (
     <footer className="border-t border-ui-border-base w-full bg-grey-5">
@@ -103,6 +109,27 @@ export default async function Footer({
                 </ul>
               </div>
             )}
+            {socialLinks.length ? (
+              <div className="flex flex-col gap-y-2">
+                <span className="txt-small-plus txt-ui-fg-base">
+                  {m.footer.socialHeading}
+                </span>
+                <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
+                  {socialLinks.slice(0, 6).map((s) => (
+                    <li key={s.href}>
+                      <a
+                        className="hover:text-ui-fg-base"
+                        href={s.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        {s.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {collections && collections.length > 0 && (
               <div className="flex flex-col gap-y-2">
                 <span className="txt-small-plus txt-ui-fg-base">

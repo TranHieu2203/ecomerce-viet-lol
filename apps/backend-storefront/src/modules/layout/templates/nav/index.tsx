@@ -3,7 +3,11 @@ import { Suspense } from "react"
 import { getNavMenuPublic } from "@lib/data/nav-menu"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { applyDesktopNavFr24 } from "@lib/nav/desktop-nav-fr24"
-import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
+import {
+  getCmsSettingsPublic,
+  resolveCmsSiteTitle,
+  resolveCmsSocialLinks,
+} from "@lib/data/cms"
 import { isSvgAssetUrl } from "@lib/util/cms-assets"
 import { getLocale } from "@lib/data/locale-actions"
 import { listLocales, type Locale } from "@lib/data/locales"
@@ -31,6 +35,11 @@ export default async function Nav({
   ])
 
   const headerTitle = resolveCmsSiteTitle(countryCode, cms, m)
+  const socialLinks = resolveCmsSocialLinks(
+    cms,
+    countryCode,
+    m.footer.socialFallback
+  )
 
   const enabledCmsLocales = Array.isArray(cms.enabled_locales)
     ? (cms.enabled_locales as unknown[]).filter(
@@ -103,6 +112,21 @@ export default async function Nav({
           </div>
 
           <div className="flex items-center gap-x-2 xsmall:gap-x-4 shrink-0 h-full">
+            {socialLinks.length ? (
+              <div className="hidden small:flex items-center gap-x-3 h-full">
+                {socialLinks.slice(0, 3).map((s) => (
+                  <a
+                    key={s.href}
+                    href={s.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="hover:text-ui-fg-base text-ui-fg-subtle txt-small whitespace-nowrap"
+                  >
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            ) : null}
             <LocaleSwitcher
               current={countryCode}
               enabledLocales={

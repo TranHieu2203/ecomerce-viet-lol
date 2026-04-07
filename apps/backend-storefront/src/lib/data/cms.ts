@@ -60,6 +60,12 @@ export type CmsSettingsPublic = {
   footer_contact: Record<string, unknown> | null
 }
 
+export type CmsSocialLinkResolved = {
+  href: string
+  label: string
+  hostname: string
+}
+
 /** Sau locale hiện tại, fallback `vi` trước khi để caller dùng legacy/env/messages (chốt sản phẩm 2026-04). */
 function pickLocaleString(
   block: CmsLocaleStrings | undefined,
@@ -95,6 +101,89 @@ function parseLocaleStrings(raw: unknown): CmsLocaleStrings {
     }
   }
   return Object.keys(out).length ? out : null
+}
+
+function safeHostnameFromUrl(rawUrl: string): string {
+  try {
+    const u = new URL(rawUrl)
+    return u.hostname.replace(/^www\./, "")
+  } catch {
+    return ""
+  }
+}
+
+function safeHttpUrl(rawUrl: string): string | null {
+  try {
+    const u = new URL(rawUrl)
+    if (u.protocol !== "http:" && u.protocol !== "https:") {
+      return null
+    }
+    return u.toString()
+  } catch {
+    return null
+  }
+}
+
+function pickSocialLabel(
+  rawLabel: unknown,
+  locale: string,
+  fallback: string
+): string {
+  if (rawLabel && typeof rawLabel === "object" && !Array.isArray(rawLabel)) {
+    const o = rawLabel as Record<string, unknown>
+    const primary = typeof o[locale] === "string" ? String(o[locale]).trim() : ""
+    if (primary) {
+      return primary
+    }
+    const vi = typeof o.vi === "string" ? o.vi.trim() : ""
+    if (vi) {
+      return vi
+    }
+    const en = typeof o.en === "string" ? o.en.trim() : ""
+    if (en) {
+      return en
+    }
+  }
+  return fallback
+}
+
+/**
+ * Parse `footer_contact.social` (ADR-13) thành list link an toàn để render UI.
+ */
+export function resolveCmsSocialLinks(
+  cms: CmsSettingsPublic,
+  locale: string,
+  fallbackLabel: string
+): CmsSocialLinkResolved[] {
+  const fc = cms.footer_contact
+  const rawSocial =
+    fc && typeof fc === "object" && !Array.isArray(fc)
+      ? (fc as Record<string, unknown>).social
+      : null
+
+  if (!Array.isArray(rawSocial)) {
+    return []
+  }
+
+  const out: CmsSocialLinkResolved[] = []
+  for (const item of rawSocial) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      continue
+    }
+    const o = item as Record<string, unknown>
+    const urlRaw = typeof o.url === "string" ? o.url.trim() : ""
+    if (!urlRaw) {
+      continue
+    }
+    const href = safeHttpUrl(urlRaw)
+    if (!href) {
+      continue
+    }
+    const hostname = safeHostnameFromUrl(href)
+    const label = pickSocialLabel(o.label, locale, hostname || fallbackLabel)
+    out.push({ href, label, hostname: hostname || "" })
+  }
+  return out
 }
 
 function parseAnnouncementSafe(raw: unknown): CmsAnnouncementPublic {

@@ -21,6 +21,8 @@ export type StorefrontMessages = {
     tagline: string
     categories: string
     collections: string
+    socialHeading: string
+    socialFallback: string
     customerHeading: string
     linkStore: string
     linkCart: string
@@ -268,6 +270,8 @@ const vi: StorefrontMessages = {
       "Sản phẩm chọn lọc, giao hàng thuận tiện. Cảm ơn bạn đã ghé thăm.",
     categories: "Danh mục",
     collections: "Bộ sưu tập",
+    socialHeading: "Liên hệ / MXH",
+    socialFallback: "Liên hệ",
     customerHeading: "Khách hàng",
     linkStore: "Cửa hàng",
     linkCart: "Giỏ hàng",
@@ -531,6 +535,8 @@ const en: StorefrontMessages = {
       "Curated products, convenient delivery. Thanks for stopping by.",
     categories: "Categories",
     collections: "Collections",
+    socialHeading: "Contact / Social",
+    socialFallback: "Social",
     customerHeading: "Customer",
     linkStore: "Store",
     linkCart: "Cart",
