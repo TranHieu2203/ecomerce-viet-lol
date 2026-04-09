@@ -64,6 +64,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
 
   // FR-2b / PRD: thị trường mặc định VN + VND; đồng bộ với storefront NEXT_PUBLIC_DEFAULT_REGION=vn (map country → region).
   const countries = ["vn"];
+  const usdCountries = ["us"];
 
   logger.info("Seeding store data...");
   const [store] = await storeModuleService.listStores();
@@ -117,10 +118,15 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   type RegionSeed = { id: string; name?: string; currency_code?: string };
   let region: RegionSeed;
+  let usdRegion: RegionSeed | null = null;
 
   const vnRegion = existingRegions?.find(
     (r) =>
       String((r as RegionSeed).currency_code ?? "").toLowerCase() === "vnd"
+  ) as RegionSeed | undefined;
+  const existingUsdRegion = existingRegions?.find(
+    (r) =>
+      String((r as RegionSeed).currency_code ?? "").toLowerCase() === "usd"
   ) as RegionSeed | undefined;
 
   if (vnRegion) {
@@ -182,6 +188,51 @@ export default async function seedDemoData({ container }: ExecArgs) {
     },
   });
   logger.info("Ensured region_countries includes vn for VND region.");
+
+  if (existingUsdRegion) {
+    usdRegion = existingUsdRegion;
+    logger.info("Using existing USD region for US.");
+  } else {
+    const { result: regionResult } = await createRegionsWorkflow(container).run({
+      input: {
+        regions: [
+          {
+            name: "United States",
+            currency_code: "usd",
+            countries: usdCountries,
+            payment_providers: ["pp_system_default"],
+          },
+        ],
+      },
+    });
+    usdRegion = regionResult?.[0] ?? null;
+    logger.info("Created USD region for US.");
+  }
+
+  if (usdRegion?.id) {
+    await updateRegionsWorkflow(container).run({
+      input: {
+        selector: { id: usdRegion.id },
+        update: { countries: usdCountries },
+      },
+    });
+    logger.info("Ensured region_countries includes us for USD region.");
+
+    const { data: usTaxRegions } = await query.graph({
+      entity: "tax_region",
+      fields: ["id"],
+      filters: { country_code: "us" },
+    });
+    if (!usTaxRegions?.length) {
+      await createTaxRegionsWorkflow(container).run({
+        input: usdCountries.map((country_code) => ({
+          country_code,
+          provider_id: "tp_system",
+        })),
+      });
+      logger.info("Seeded missing tax_region for us.");
+    }
+  }
 
   const { data: vnTaxRegions } = await query.graph({
     entity: "tax_region",

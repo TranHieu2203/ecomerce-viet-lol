@@ -43,6 +43,36 @@ import {
 const IMG_EXT = /\.(jpe?g|png|webp)$/i
 const POSTER_MARKER = "__POSTER_INDEX__"
 
+function stableHash(raw: string): number {
+  // FNV-1a 32-bit (deterministic; good enough for seed variance)
+  let h = 0x811c9dc5
+  for (let i = 0; i < raw.length; i++) {
+    h ^= raw.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
+
+function stableUnit(seed: string, salt: string): number {
+  const x = stableHash(`${seed}:${salt}`)
+  return x / 0xffffffff
+}
+
+function stableIntInRange(
+  seed: string,
+  salt: string,
+  minInclusive: number,
+  maxInclusive: number
+): number {
+  const u = stableUnit(seed, salt)
+  return Math.floor(minInclusive + u * (maxInclusive - minInclusive + 1))
+}
+
+function roundTo(amount: number, step: number): number {
+  if (step <= 1) return amount
+  return Math.round(amount / step) * step
+}
+
 function slugify(raw: string): string {
   return String(raw)
     .normalize("NFKD")
@@ -211,6 +241,64 @@ function firstImageUnderSegments(
   segments: string[]
 ): string | null {
   return firstImageDeep(joinKit(salesKit, segments))
+}
+
+async function wipeCartsAndReservations(
+  container: ExecArgs["container"],
+  logger: { info: (m: string) => void }
+) {
+  const cartModule = container.resolve(Modules.CART) as {
+    listCarts: (
+      filters?: object,
+      config?: { take?: number; skip?: number; withDeleted?: boolean }
+    ) => Promise<{ id: string }[]>
+    deleteCarts: (ids: string[]) => Promise<void>
+  }
+  const inventoryModule = container.resolve(Modules.INVENTORY) as {
+    listAndCountReservationItems: (
+      filters?: object,
+      config?: { take?: number; skip?: number; withDeleted?: boolean }
+    ) => Promise<[{ id: string }[], number]>
+    deleteReservationItems: (ids: string[]) => Promise<void>
+  }
+
+  // 1) Delete reservation items to unblock inventory item deletion.
+  try {
+    const [items] = await inventoryModule.listAndCountReservationItems(
+      {},
+      { take: 50_000, skip: 0, withDeleted: false }
+    )
+    const ids = (items ?? []).map((r) => r.id).filter(Boolean)
+    if (ids.length) {
+      const BATCH = 200
+      for (let i = 0; i < ids.length; i += BATCH) {
+        await inventoryModule.deleteReservationItems(ids.slice(i, i + BATCH))
+      }
+      logger.info(`Đã xóa ${ids.length} inventory reservation items.`)
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    logger.info(`Bỏ qua xóa reservation items (không critical): ${msg}`)
+  }
+
+  // 2) Delete carts (often the source of reservations).
+  try {
+    const carts = await cartModule.listCarts(
+      {},
+      { take: 50_000, skip: 0, withDeleted: false }
+    )
+    const ids = (carts ?? []).map((c) => c.id).filter(Boolean)
+    if (ids.length) {
+      const BATCH = 200
+      for (let i = 0; i < ids.length; i += BATCH) {
+        await cartModule.deleteCarts(ids.slice(i, i + BATCH))
+      }
+      logger.info(`Đã xóa ${ids.length} carts.`)
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e)
+    logger.info(`Bỏ qua xóa carts (không critical): ${msg}`)
+  }
 }
 
 async function wipeAllProducts(
@@ -580,7 +668,22 @@ async function seedCatalogWebtayaFromXlsx(
                   title: "Default",
                   sku: p.handle.toUpperCase().replace(/-/g, "_").slice(0, 60),
                   options: { Default: "Default" },
-                  prices: [{ amount: 100000, currency_code: "vnd" }],
+                  prices: [
+                    {
+                      amount: roundTo(
+                        stableIntInRange(p.handle, "vnd", 90_000, 1_950_000),
+                        1_000
+                      ),
+                      currency_code: "vnd",
+                    },
+                    {
+                      amount: roundTo(
+                        stableIntInRange(p.handle, "usd", 9_99, 199_99),
+                        5
+                      ),
+                      currency_code: "usd",
+                    },
+                  ],
                 } as never,
               ],
             } as never,
@@ -1048,6 +1151,7 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
   const cms = container.resolve(STORE_CMS_MODULE) as StoreCmsModuleService
 
   // Reset toàn bộ catalog (products + categories + collections) rồi seed lại từ docs/
+  await wipeCartsAndReservations(container, logger)
   await wipeAllProducts(container, logger)
   await wipeAllProductCategories(container, logger)
   await wipeAllCollections(container, logger)

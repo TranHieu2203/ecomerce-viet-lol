@@ -57,12 +57,15 @@ const REGION_COUNTRY =
   process.env.NEXT_PUBLIC_MEDUSA_DEFAULT_REGION ||
   "vn"
 
-/** Locale trong URL; region luôn lấy từ env (NFR-5 + giá EUR/USD seed). */
-export async function getOrSetCart(_localeFromPath: string) {
-  const region = await getRegion(REGION_COUNTRY)
+/** Locale trong URL; ưu tiên map locale → region, fallback theo env để an toàn. */
+export async function getOrSetCart(localeFromPath: string) {
+  const region =
+    (await getRegion(localeFromPath)) ?? (await getRegion(REGION_COUNTRY))
 
   if (!region) {
-    throw new Error(`Region not found for country code: ${REGION_COUNTRY}`)
+    throw new Error(
+      `Region not found for country code: ${localeFromPath || REGION_COUNTRY}`
+    )
   }
 
   let cart = await retrieveCart(undefined, "id,region_id")

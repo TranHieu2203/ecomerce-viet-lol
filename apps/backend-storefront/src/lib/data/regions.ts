@@ -41,12 +41,28 @@ export const retrieveRegion = async (id: string) => {
 
 const regionMap = new Map<string, HttpTypes.StoreRegion>()
 
+const LOCALE_TO_REGION_COUNTRY: Record<string, string> = {
+  vi: "vn",
+  en: "us",
+}
+
+function resolveRegionLookupCountry(input: string): string {
+  if (!input) {
+    return MEDUSA_REGION_COUNTRY
+  }
+
+  const key = input.toLowerCase()
+
+  if (isAppLocale(key)) {
+    return LOCALE_TO_REGION_COUNTRY[key] ?? MEDUSA_REGION_COUNTRY
+  }
+
+  return key
+}
+
 export const getRegion = async (countryCode: string) => {
   try {
-    const code =
-      isAppLocale(countryCode) || !countryCode
-        ? MEDUSA_REGION_COUNTRY
-        : countryCode
+    const code = resolveRegionLookupCountry(countryCode)
 
     if (regionMap.has(code)) {
       return regionMap.get(code)
