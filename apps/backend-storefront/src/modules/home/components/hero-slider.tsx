@@ -8,6 +8,28 @@ import Image from "next/image"
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
 
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return
+    }
+    const m = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const onChange = () => setReduced(Boolean(m.matches))
+    onChange()
+    if (typeof m.addEventListener === "function") {
+      m.addEventListener("change", onChange)
+      return () => m.removeEventListener("change", onChange)
+    }
+    // Safari fallback
+    // eslint-disable-next-line deprecation/deprecation
+    m.addListener(onChange)
+    // eslint-disable-next-line deprecation/deprecation
+    return () => m.removeListener(onChange)
+  }, [])
+  return reduced
+}
+
 export default function HeroSlider({
   slides,
   locale,
@@ -19,6 +41,7 @@ export default function HeroSlider({
   const [i, setI] = useState(0)
   const safe = slides.length ? i % slides.length : 0
   const slide = slides[safe]
+  const reducedMotion = usePrefersReducedMotion()
 
   const next = useCallback(() => {
     if (!slides.length) {
@@ -35,12 +58,12 @@ export default function HeroSlider({
   }, [slides.length])
 
   useEffect(() => {
-    if (slides.length < 2) {
+    if (slides.length < 2 || reducedMotion) {
       return
     }
     const t = setInterval(next, 6500)
     return () => clearInterval(t)
-  }, [slides.length, next])
+  }, [slides.length, next, reducedMotion])
 
   if (!slides.length || !slide) {
     return (
@@ -69,38 +92,62 @@ export default function HeroSlider({
       aria-label={h.heroBanners}
     >
       <div className="relative w-full aspect-[4/5] xsmall:aspect-[3/4] small:aspect-[16/9] max-h-[min(85vh,920px)] small:max-h-[75vh]">
-        {srcDesktop && hasDistinctMobile ? (
-          <>
-            <Image
-              src={srcMobile}
-              alt={slide.alt || slide.title || h.bannerImageAlt}
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover small:hidden"
-              unoptimized={unoptimized}
-            />
-            <Image
-              src={srcDesktop}
-              alt={slide.alt || slide.title || h.bannerImageAlt}
-              fill
-              priority
-              sizes="(max-width: 1023px) 100vw, min(1280px, 100vw)"
-              className="object-cover hidden small:block"
-              unoptimized={unoptimized}
-            />
-          </>
-        ) : srcDesktop ? (
-          <Image
-            src={srcDesktop}
-            alt={slide.alt || slide.title || h.bannerImageAlt}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-            unoptimized={unoptimized}
-          />
-        ) : null}
+        {(() => {
+          // Render đúng 2 layer để fade mượt nhưng không load tất cả ảnh.
+          const prevIdx = slides.length > 1 ? (safe - 1 + slides.length) % slides.length : safe
+          const order = prevIdx === safe ? [safe] : [prevIdx, safe]
+          return order.map((idx) => {
+            const s = slides[idx]
+            const isActive = idx === safe
+            const sd = s.image?.desktop || s.image?.mobile || ""
+            const sm = s.image?.mobile || s.image?.desktop || ""
+            const distinct = Boolean(sm && sd && sm !== sd)
+            const alt = s.alt || s.title || h.bannerImageAlt
+            const layerClass =
+              "absolute inset-0 transition-opacity duration-240 ease-friendly motion-reduce:transition-none"
+            const opacity = isActive ? "opacity-100" : "opacity-0"
+            return (
+              <div
+                key={s.id ?? `${idx}-${sd}-${sm}`}
+                className={`${layerClass} ${opacity}`}
+                aria-hidden={!isActive}
+              >
+                {sd && distinct ? (
+                  <>
+                    <Image
+                      src={sm}
+                      alt={alt}
+                      fill
+                      priority={isActive}
+                      sizes="100vw"
+                      className="object-cover small:hidden"
+                      unoptimized={unoptimized}
+                    />
+                    <Image
+                      src={sd}
+                      alt={alt}
+                      fill
+                      priority={isActive}
+                      sizes="(max-width: 1023px) 100vw, min(1280px, 100vw)"
+                      className="object-cover hidden small:block"
+                      unoptimized={unoptimized}
+                    />
+                  </>
+                ) : sd ? (
+                  <Image
+                    src={sd}
+                    alt={alt}
+                    fill
+                    priority={isActive}
+                    sizes="100vw"
+                    className="object-cover"
+                    unoptimized={unoptimized}
+                  />
+                ) : null}
+              </div>
+            )
+          })
+        })()}
       </div>
       <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 via-black/20 to-transparent small:from-black/50">
         <div className="content-container pb-6 pt-4 xsmall:pb-8 xsmall:pt-5 small:pb-10 small:pt-6 text-white flex flex-col gap-2 xsmall:gap-3 max-w-2xl">

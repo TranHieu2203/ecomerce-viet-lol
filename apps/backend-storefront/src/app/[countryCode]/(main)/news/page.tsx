@@ -129,11 +129,6 @@ export default async function NewsIndexPage(props: Props) {
         <h1 className="text-3xl-semi text-ui-fg-base">
           {isEn ? "News" : "Tin tức"}
         </h1>
-        <p className="text-base-regular text-ui-fg-muted mt-2">
-          {isEn
-            ? "Articles published from the admin CMS."
-            : "Bài viết được xuất bản từ CMS quản trị."}
-        </p>
         {rootCategories.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-2" aria-label={isEn ? "Categories" : "Chủ đề"}>
             <Link

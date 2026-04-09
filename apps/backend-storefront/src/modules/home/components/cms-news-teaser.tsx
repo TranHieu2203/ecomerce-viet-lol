@@ -49,7 +49,7 @@ export default function CmsNewsTeaser({ locale, articles, isEn }: Props) {
         {slice.map((a) => (
           <li
             key={a.slug}
-            className="border border-ui-border-base rounded-lg overflow-hidden flex flex-col bg-ui-bg-subtle hover:border-ui-border-strong transition-colors"
+            className="group border border-ui-border-base rounded-lg overflow-hidden flex flex-col bg-ui-bg-subtle hover:border-ui-border-strong focus-within:border-ui-border-strong transition-colors duration-180 ease-standard"
           >
             {a.featured_image_url ? (
               <Link
@@ -60,7 +60,7 @@ export default function CmsNewsTeaser({ locale, articles, isEn }: Props) {
                 <img
                   src={a.featured_image_url}
                   alt=""
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-240 ease-friendly motion-reduce:transition-none motion-reduce:transform-none group-hover:scale-[1.02]"
                 />
               </Link>
             ) : null}
@@ -78,7 +78,7 @@ export default function CmsNewsTeaser({ locale, articles, isEn }: Props) {
               <h3 className="text-lg-semi text-ui-fg-base">
                 <Link
                   href={`/${locale}/news/${encodeURIComponent(a.slug)}`}
-                  className="hover:text-ui-fg-interactive"
+                  className="hover:text-ui-fg-interactive focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base rounded-soft"
                 >
                   {a.title || a.slug}
                 </Link>

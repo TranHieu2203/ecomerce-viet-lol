@@ -20,6 +20,17 @@ module.exports = {
         visibility: "visibility",
         padding: "padding-top padding-right padding-bottom padding-left",
       },
+      transitionTimingFunction: {
+        /** Friendly: spring-like nhưng không bounce, phù hợp UI storefront. */
+        friendly: "cubic-bezier(0.16, 1, 0.3, 1)",
+        /** Standard: trung tính, ít “nảy”. */
+        standard: "cubic-bezier(0.2, 0, 0, 1)",
+      },
+      transitionDuration: {
+        120: "120ms",
+        180: "180ms",
+        240: "240ms",
+      },
       colors: {
         grey: {
           0: "#FFFFFF",
