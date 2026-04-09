@@ -47,6 +47,29 @@
   input[type="search"]::-webkit-search-results-decoration {
     -webkit-appearance: none;
   }
+
+  /* Scroll-reveal / lazy reveal helpers (motion-safe by default). */
+  .reveal-transition {
+    @apply transition-[opacity,transform] duration-240 ease-friendly will-change-transform motion-reduce:transition-none motion-reduce:transform-none;
+  }
+  .reveal-in {
+    @apply opacity-100 translate-x-0 translate-y-0;
+  }
+  .reveal-fade {
+    @apply opacity-0;
+  }
+  .reveal-up {
+    @apply opacity-0 translate-y-2;
+  }
+  .reveal-down {
+    @apply opacity-0 -translate-y-2;
+  }
+  .reveal-left {
+    @apply opacity-0 -translate-x-2;
+  }
+  .reveal-right {
+    @apply opacity-0 translate-x-2;
+  }
 }
 
 @layer components {

@@ -1,5 +1,6 @@
 import { CmsNewsListItem } from "@lib/data/cms"
 import Link from "next/link"
+import Reveal from "@modules/common/components/reveal"
 
 const PAGE_SIZE = 4
 
@@ -46,49 +47,56 @@ export default function CmsNewsTeaser({ locale, articles, isEn }: Props) {
         </Link>
       </div>
       <ul className="grid grid-cols-1 small:grid-cols-2 gap-6">
-        {slice.map((a) => (
-          <li
-            key={a.slug}
-            className="group border border-ui-border-base rounded-lg overflow-hidden flex flex-col bg-ui-bg-subtle hover:border-ui-border-strong focus-within:border-ui-border-strong transition-colors duration-180 ease-standard"
-          >
-            {a.featured_image_url ? (
-              <Link
-                href={`/${locale}/news/${encodeURIComponent(a.slug)}`}
-                className="block aspect-[16/9] bg-ui-bg-base overflow-hidden"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={a.featured_image_url}
-                  alt=""
-                  className="w-full h-full object-cover transition-transform duration-240 ease-friendly motion-reduce:transition-none motion-reduce:transform-none group-hover:scale-[1.02]"
-                />
-              </Link>
-            ) : null}
-            <div className="p-4 flex flex-col gap-2 flex-1">
-              {a.published_at ? (
-                <time
-                  dateTime={a.published_at}
-                  className="text-xsmall-regular text-ui-fg-muted"
-                >
-                  {new Date(a.published_at).toLocaleDateString(
-                    isEn ? "en-US" : "vi-VN"
-                  )}
-                </time>
-              ) : null}
-              <h3 className="text-lg-semi text-ui-fg-base">
-                <Link
-                  href={`/${locale}/news/${encodeURIComponent(a.slug)}`}
-                  className="hover:text-ui-fg-interactive focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base rounded-soft"
-                >
-                  {a.title || a.slug}
-                </Link>
-              </h3>
-              {a.excerpt ? (
-                <p className="text-small-regular text-ui-fg-muted line-clamp-2">
-                  {a.excerpt}
-                </p>
-              ) : null}
-            </div>
+        {slice.map((a, idx) => (
+          <li key={a.slug} className="min-w-0">
+            <Reveal
+              variant="up"
+              delayMs={Math.min(240, idx * 60)}
+              initialInView={idx < 2}
+            >
+              <div className="group border border-ui-border-base rounded-lg overflow-hidden flex flex-col bg-ui-bg-subtle hover:border-ui-border-strong focus-within:border-ui-border-strong transition-colors duration-180 ease-standard">
+                {a.featured_image_url ? (
+                  <Link
+                    href={`/${locale}/news/${encodeURIComponent(a.slug)}`}
+                    className="block aspect-[16/9] bg-ui-bg-base overflow-hidden"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={a.featured_image_url}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-240 ease-friendly motion-reduce:transition-none motion-reduce:transform-none group-hover:scale-[1.02]"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </Link>
+                ) : null}
+                <div className="p-4 flex flex-col gap-2 flex-1">
+                  {a.published_at ? (
+                    <time
+                      dateTime={a.published_at}
+                      className="text-xsmall-regular text-ui-fg-muted"
+                    >
+                      {new Date(a.published_at).toLocaleDateString(
+                        isEn ? "en-US" : "vi-VN"
+                      )}
+                    </time>
+                  ) : null}
+                  <h3 className="text-lg-semi text-ui-fg-base">
+                    <Link
+                      href={`/${locale}/news/${encodeURIComponent(a.slug)}`}
+                      className="hover:text-ui-fg-interactive focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base rounded-soft"
+                    >
+                      {a.title || a.slug}
+                    </Link>
+                  </h3>
+                  {a.excerpt ? (
+                    <p className="text-small-regular text-ui-fg-muted line-clamp-2">
+                      {a.excerpt}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </Reveal>
           </li>
         ))}
       </ul>
