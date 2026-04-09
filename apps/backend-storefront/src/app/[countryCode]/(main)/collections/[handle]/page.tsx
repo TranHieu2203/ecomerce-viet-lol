@@ -1,6 +1,7 @@
 import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
 import { getCollectionByHandle, listCollections } from "@lib/data/collections"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import { displayCollection } from "@lib/util/i18n-catalog"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { SUPPORTED_LOCALES } from "@lib/util/locales"
@@ -22,24 +23,34 @@ export const dynamic = "force-dynamic"
 export const PRODUCT_LIMIT = 12
 
 export async function generateStaticParams() {
-  const { collections } = await listCollections({
-    fields: "*products",
-  })
+  try {
+    const { collections } = await listCollections({
+      fields: "*products",
+    })
 
-  if (!collections) {
+    if (!collections) {
+      return []
+    }
+
+    const collectionHandles = collections.map(
+      (collection: StoreCollection) => collection.handle
+    )
+
+    return SUPPORTED_LOCALES.flatMap((countryCode) =>
+      collectionHandles.map((handle: string | undefined) => ({
+        countryCode,
+        handle,
+      }))
+    )
+  } catch (e) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        "[collections] generateStaticParams: bỏ qua khi Store API không sẵn sàng (vd. build CI không có backend).",
+        e instanceof Error ? e.message : e
+      )
+    }
     return []
   }
-
-  const collectionHandles = collections.map(
-    (collection: StoreCollection) => collection.handle
-  )
-
-  return SUPPORTED_LOCALES.flatMap((countryCode) =>
-    collectionHandles.map((handle: string | undefined) => ({
-      countryCode,
-      handle,
-    }))
-  )
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -53,11 +64,16 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const cms = await getCmsSettingsPublic()
   const m = getStorefrontMessages(params.countryCode)
   const brand = resolveCmsSiteTitle(params.countryCode, cms, m)
-  const title = `${collection.title} | ${brand}`
+  const { title: colTitle } = displayCollection(
+    params.countryCode,
+    collection.title,
+    collection.metadata as Record<string, unknown> | null | undefined
+  )
+  const title = `${colTitle} | ${brand}`
 
   return {
     title,
-    description: `${collection.title}`.trim() || title,
+    description: `${colTitle}`.trim() || title,
   }
 }
 

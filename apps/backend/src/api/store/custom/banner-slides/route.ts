@@ -21,8 +21,17 @@ function pickText(json: LangJson | null | undefined, locale: string): string {
 }
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const locale =
-    (req.query?.locale as string)?.toLowerCase().split(",")[0] || "vi"
+  const localeRaw =
+    ((req.query?.locale as string | undefined) ?? (() => {
+      try {
+        const u = new URL(req.url ?? "", "http://localhost")
+        const v = u.searchParams.get("locale")
+        return v ?? undefined
+      } catch {
+        return undefined
+      }
+    })()) ?? "vi"
+  const locale = localeRaw.toLowerCase().split(",")[0] || "vi"
   const visitorId =
     (req.headers["x-medusa-cache-id"] as string)?.trim() ||
     (req.query?.visitor_id as string)?.trim() ||

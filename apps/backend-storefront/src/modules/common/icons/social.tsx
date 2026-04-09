@@ -168,21 +168,33 @@ export const SocialZalo: React.FC<IconProps> = ({
   )
 }
 
-export function resolveSocialIcon(hostname: string): React.FC<IconProps> {
+/**
+ * `href` giúp nhận diện đúng khi hostname lạ (redirect, subdomain không chuẩn).
+ */
+export function resolveSocialIcon(
+  hostname: string,
+  href?: string
+): React.FC<IconProps> {
   const h = (hostname || "").toLowerCase()
-  if (h.includes("facebook.com") || h.includes("fb.com")) {
+  const u = (href || "").toLowerCase()
+  const blob = `${h} ${u}`
+  if (blob.includes("facebook.com") || blob.includes("fb.com")) {
     return SocialFacebook
   }
-  if (h.includes("zalo.me")) {
+  if (
+    blob.includes("zalo.me") ||
+    blob.includes("zalo.com") ||
+    blob.includes("zalo.vn")
+  ) {
     return SocialZalo
   }
-  if (h.includes("instagram.com")) {
+  if (blob.includes("instagram.com")) {
     return SocialInstagram
   }
-  if (h.includes("tiktok.com")) {
+  if (blob.includes("tiktok.com")) {
     return SocialTiktok
   }
-  if (h.includes("youtube.com") || h.includes("youtu.be")) {
+  if (blob.includes("youtube.com") || blob.includes("youtu.be")) {
     return SocialYoutube
   }
   return SocialGlobe

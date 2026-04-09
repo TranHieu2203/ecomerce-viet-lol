@@ -1,5 +1,5 @@
 # generated: 2026-04-06
-# last_updated: 2026-04-07 (Retro ER: epic 10 + khép toàn bộ epic-*-retrospective → done)
+# last_updated: 2026-04-09 (Epic 12 story 12-1 ready-for-dev — WordPress-parity tin tức)
 # project: ecomerce-viet-lol
 # project_key: NOKEY
 # tracking_system: file-system
@@ -41,7 +41,9 @@
 #   10-1…10-5 = Growth FR-17…21
 
 generated: "2026-04-06"
-last_updated: "2026-04-07"
+last_updated: "2026-04-09"
+# Epic 11 Wave 4 tin tức: migration, Admin/Store API, revalidate tag cms-news, Admin UI, SF /news, nav seed
+# ER 2026-04-07: epic-11-retro-2026-04-07.md — epic-11-retrospective → done
 # ER 2026-04-07: epic-10-retro-2026-04-07.md — mọi epic-*-retrospective → done
 # 8-6 done: storefront static labels i18n + account metadata + pagination a11y
 # 8-3 done: Admin nav tree editor (code review 2026-04-06)
@@ -119,3 +121,17 @@ development_status:
   10-4-banner-schedule-window-fr-20: done
   10-5-ab-banner-campaign-mvp-fr-21: done
   epic-10-retrospective: done
+
+  epic-11: done
+  11-1-migration-news-article-revision-entity: done
+  11-2-admin-api-cms-news-crud-sanitize-publish: done
+  11-3-store-api-cms-news-list-detail-preview: done
+  11-4-revalidate-storefront-cms-news: done
+  11-5-admin-ui-cms-news-editor: done
+  11-6-storefront-news-nav-seed: done
+  epic-11-retrospective: done
+
+  epic-12: in-progress
+  12-1-cms-news-wordpress-parity: ready-for-dev
+  12-2-storefront-i18n-audit-ui-api: ready-for-dev
+  epic-12-retrospective: optional

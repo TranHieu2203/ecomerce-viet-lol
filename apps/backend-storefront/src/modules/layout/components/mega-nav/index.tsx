@@ -119,7 +119,7 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
                     onMouseEnter={clearCloseTimer}
                     onMouseLeave={scheduleClose}
                   >
-                    <ul className="py-2 px-1 rounded-rounded border border-ui-border-base bg-white shadow-lg">
+                    <ul className="py-2 px-1 rounded-rounded border border-brand-gold/25 bg-brand-cream/98 shadow-lg shadow-[0_12px_40px_-12px_rgba(184,148,79,0.2)]">
                       {group.children.map((child, idx) => (
                         <li key={`${index}-${group.id}-${idx}`} role="none">
                           <NavMenuChildLink

@@ -106,7 +106,7 @@ export default function AnnouncementBar({ locale, announcement }: Props) {
 
   return (
     <div
-      className="w-full border-b border-ui-border-base bg-ui-bg-subtle text-center text-small-regular text-ui-fg-base py-2.5 px-10 relative"
+      className="w-full border-b border-brand-gold/25 bg-brand-cream/80 text-center text-small-regular text-ui-fg-base py-2.5 px-10 relative"
       role="region"
       aria-label="Announcement"
     >

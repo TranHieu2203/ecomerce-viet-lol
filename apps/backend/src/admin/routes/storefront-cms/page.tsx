@@ -10,8 +10,21 @@ import {
   Text,
   toast,
 } from "@medusajs/ui"
+import {
+  ArrowDown,
+  ArrowUp,
+  FileText,
+  FileX2,
+  Plus,
+  Power,
+  Rocket,
+  Save,
+  Trash2,
+  Zap,
+} from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { CmsCollapsibleSection } from "../../components/cms-collapsible-section"
 import { adminFetch } from "./admin-fetch"
 import { MediaPickerField } from "./media-picker-field"
 import { NavHeaderMenuSection } from "./nav-header-menu-section"
@@ -294,29 +307,40 @@ const StorefrontCmsPage = () => {
   }
 
   return (
-    <Container className="divide-y p-8 flex flex-col gap-8">
+    <Container className="flex flex-col gap-4 p-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <Heading className="mb-2">Storefront &amp; nội dung</Heading>
-          <Text size="small" className="text-ui-fg-muted">
-            Banner slider và logo / ngôn ngữ (API đã bảo vệ session Admin).
-          </Text>
         </div>
-        <Button size="small" variant="secondary" asChild>
-          <Link to="../cms-pages">Trang CMS (nội dung tĩnh)</Link>
+        <Button
+          size="small"
+          variant="secondary"
+          className="h-9 w-9 shrink-0 p-0"
+          asChild
+          title="Trang CMS (nội dung tĩnh)"
+        >
+          <Link to="../cms-pages" aria-label="Trang CMS (nội dung tĩnh)">
+            <FileText className="size-4" strokeWidth={2} />
+          </Link>
         </Button>
       </div>
 
-      <section className="pt-8 flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Heading level="h2">Cấu hình chung</Heading>
-          <CmsRevisionDrawer
-            entityType="settings"
-            entityId="cms"
-            triggerLabel="Lịch sử cấu hình"
-            onAfterRestore={() => load()}
-          />
-        </div>
+      <CmsCollapsibleSection
+        defaultOpen
+        summary={
+          <>
+            <Heading level="h2" className="text-base">
+              Cấu hình chung
+            </Heading>
+            <CmsRevisionDrawer
+              entityType="settings"
+              entityId="cms"
+              triggerLabel="Lịch sử cấu hình"
+              onAfterRestore={() => load()}
+            />
+          </>
+        }
+      >
         <div className="grid max-w-xl gap-4">
           <MediaPickerField
             htmlId="cms-logo-file-id"
@@ -374,9 +398,17 @@ const StorefrontCmsPage = () => {
             <code>CMS_PUBLISHER_ADMIN_IDS</code> (id user admin, cách nhau bởi
             dấu phẩy). Không đặt = mọi admin được publish.
           </Text>
-          <Button onClick={() => void saveSettings()}>Lưu cấu hình</Button>
+          <Button
+            type="button"
+            className="h-9 w-9 p-0"
+            onClick={() => void saveSettings()}
+            title="Lưu cấu hình"
+            aria-label="Lưu cấu hình"
+          >
+            <Save className="size-4" strokeWidth={2} />
+          </Button>
         </div>
-      </section>
+      </CmsCollapsibleSection>
 
       <NavHeaderMenuSection />
 
@@ -385,14 +417,20 @@ const StorefrontCmsPage = () => {
         onReload={load}
       />
 
-      <section className="pt-8 flex flex-col gap-4">
-        <Heading level="h2">Chiến dịch A/B banner (FR-21)</Heading>
-        <Text size="small" className="text-ui-fg-muted max-w-2xl">
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Heading level="h2" className="text-base">
+            Chiến dịch A/B banner (FR-21)
+          </Heading>
+        }
+      >
+        <Text size="small" className="text-ui-fg-muted mb-4 max-w-2xl">
           Chỉ một campaign <code>active</code> tại một thời điểm. Gán slide vào
           campaign + nhãn variant A hoặc B. Storefront chọn nhóm cố định theo
           cookie <code>_medusa_cache_id</code>.
         </Text>
-        <ul className="flex flex-col gap-2 mb-4">
+        <ul className="mb-4 flex flex-col gap-2">
           {campaigns.map((c) => (
             <li key={c.id} className="flex flex-wrap items-center gap-2 text-sm">
               <Badge color={c.is_active ? "green" : "grey"}>
@@ -430,15 +468,28 @@ const StorefrontCmsPage = () => {
               }
             />
           </div>
-          <Button variant="secondary" onClick={() => void createCampaign()}>
-            Tạo &amp; kích hoạt campaign
+          <Button
+            variant="secondary"
+            type="button"
+            className="h-9 w-9 p-0"
+            onClick={() => void createCampaign()}
+            title="Tạo và kích hoạt campaign"
+            aria-label="Tạo và kích hoạt campaign"
+          >
+            <Zap className="size-4" strokeWidth={2} />
           </Button>
         </div>
-      </section>
+      </CmsCollapsibleSection>
 
-      <section className="pt-8 flex flex-col gap-4">
-        <Heading level="h2">Banner slides</Heading>
-        <div className="grid max-w-3xl gap-3 border border-ui-border-base p-4 rounded-md">
+      <CmsCollapsibleSection
+        defaultOpen
+        summary={
+          <Heading level="h2" className="text-base">
+            Banner slides
+          </Heading>
+        }
+      >
+        <div className="grid max-w-3xl gap-3 rounded-md border border-ui-border-base p-4">
           <Text size="small" weight="plus">
             Thêm slide — ảnh nền (mặc định nháp; xuất bản sau khi sẵn sàng)
           </Text>
@@ -537,10 +588,18 @@ const StorefrontCmsPage = () => {
               }
             />
           </div>
-          <Button onClick={() => void addSlide()}>Thêm slide</Button>
+          <Button
+            type="button"
+            className="h-9 w-9 p-0"
+            onClick={() => void addSlide()}
+            title="Thêm slide"
+            aria-label="Thêm slide"
+          >
+            <Plus className="size-4" strokeWidth={2} />
+          </Button>
         </div>
 
-        <ul className="flex flex-col gap-3">
+        <ul className="mt-4 flex flex-col gap-3">
           {slides.map((s, i) => (
             <li
               key={s.id}
@@ -570,47 +629,71 @@ const StorefrontCmsPage = () => {
                   <Button
                     size="small"
                     variant="secondary"
+                    type="button"
+                    className="h-8 w-8 p-0"
                     onClick={() => move(i, -1)}
+                    title="Đưa lên"
+                    aria-label="Đưa lên"
                   >
-                    ↑
+                    <ArrowUp className="size-4" strokeWidth={2} />
                   </Button>
                   <Button
                     size="small"
                     variant="secondary"
+                    type="button"
+                    className="h-8 w-8 p-0"
                     onClick={() => move(i, 1)}
+                    title="Đưa xuống"
+                    aria-label="Đưa xuống"
                   >
-                    ↓
+                    <ArrowDown className="size-4" strokeWidth={2} />
                   </Button>
                 </div>
                 <Button
                   size="small"
                   variant="secondary"
+                  type="button"
+                  className="h-8 w-8 p-0"
                   onClick={() => void toggleEnabled(s)}
+                  title="Bật/tắt hiển thị slide"
+                  aria-label="Bật tắt hiển thị slide"
                 >
-                  Toggle active
+                  <Power className="size-4" strokeWidth={2} />
                 </Button>
                 {s.publication_status === "draft" ? (
                   <Button
                     size="small"
+                    type="button"
+                    className="h-8 w-8 p-0"
                     onClick={() => void publishSlide(s.id)}
+                    title="Xuất bản"
+                    aria-label="Xuất bản"
                   >
-                    Publish
+                    <Rocket className="size-4" strokeWidth={2} />
                   </Button>
                 ) : (
                   <Button
                     size="small"
                     variant="secondary"
+                    type="button"
+                    className="h-8 w-8 p-0"
                     onClick={() => void unpublishSlide(s.id)}
+                    title="Chuyển nháp"
+                    aria-label="Chuyển nháp"
                   >
-                    Unpublish
+                    <FileX2 className="size-4" strokeWidth={2} />
                   </Button>
                 )}
                 <Button
                   size="small"
                   variant="danger"
+                  type="button"
+                  className="h-8 w-8 p-0"
                   onClick={() => void remove(s.id)}
+                  title="Xóa slide"
+                  aria-label="Xóa slide"
                 >
-                  Xóa
+                  <Trash2 className="size-4" strokeWidth={2} />
                 </Button>
               </div>
               <Text size="small" className="text-ui-fg-muted">
@@ -627,7 +710,7 @@ const StorefrontCmsPage = () => {
             </li>
           ))}
         </ul>
-      </section>
+      </CmsCollapsibleSection>
     </Container>
   )
 }

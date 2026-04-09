@@ -34,6 +34,16 @@ module.exports = {
           80: "#1F2937",
           90: "#111827",
         },
+        brand: {
+          gold: "var(--brand-gold)",
+          "gold-hover": "var(--brand-gold-hover)",
+          cream: "var(--brand-cream)",
+          "header-surface": "var(--brand-header-surface)",
+          "header-mid": "var(--brand-header-surface-mid)",
+          "header-deep": "var(--brand-header-surface-deep)",
+          ink: "var(--brand-ink)",
+          accent: "var(--brand-accent-red)",
+        },
       },
       borderRadius: {
         none: "0px",
@@ -60,6 +70,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "var(--font-brand-sans)",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",

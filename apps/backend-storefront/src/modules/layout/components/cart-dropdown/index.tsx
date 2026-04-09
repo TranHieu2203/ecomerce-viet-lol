@@ -82,9 +82,9 @@ const CartDropdown = ({
       onMouseLeave={close}
     >
       <Popover className="relative h-full">
-        <PopoverButton className="h-full">
+          <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base"
+            className="inline-flex items-center min-h-10 px-3.5 rounded-full text-ui-fg-base text-small-regular font-medium bg-brand-gold-muted/80 hover:bg-brand-gold/20 ring-1 ring-inset ring-brand-gold/40 transition-colors"
             href="/cart"
             data-testid="nav-cart-link"
           >{`${m.nav.cartFallback} (${totalItems})`}</LocalizedClientLink>
@@ -101,7 +101,7 @@ const CartDropdown = ({
         >
           <PopoverPanel
             static
-            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-white border-x border-b border-gray-200 w-[420px] text-ui-fg-base"
+            className="hidden small:block absolute top-[calc(100%+1px)] right-0 bg-brand-cream border-x border-b border-brand-gold/30 w-[420px] text-ui-fg-base shadow-md shadow-[0_12px_40px_-12px_rgba(184,148,79,0.18)]"
             data-testid="nav-cart-dropdown"
           >
             <div className="p-4 flex items-center justify-center">
@@ -206,7 +206,7 @@ const CartDropdown = ({
             ) : (
               <div>
                 <div className="flex py-16 flex-col gap-y-4 items-center justify-center">
-                  <div className="bg-gray-900 text-small-regular flex items-center justify-center w-6 h-6 rounded-full text-white">
+                  <div className="bg-brand-gold text-small-regular flex items-center justify-center w-6 h-6 rounded-full text-white">
                     <span>0</span>
                   </div>
                   <span>{m.cartDropdown.bagEmpty}</span>

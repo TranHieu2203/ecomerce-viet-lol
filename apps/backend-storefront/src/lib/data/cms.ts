@@ -186,6 +186,21 @@ export function resolveCmsSocialLinks(
   return out
 }
 
+/** Hotline & email từ `footer_contact` (ADR-13), để hiển thị chân trang. */
+export function resolveCmsFooterContactPlain(cms: CmsSettingsPublic): {
+  hotline: string
+  email: string
+} {
+  const fc = cms.footer_contact
+  if (!fc || typeof fc !== "object" || Array.isArray(fc)) {
+    return { hotline: "", email: "" }
+  }
+  const o = fc as Record<string, unknown>
+  const hotline = typeof o.hotline === "string" ? o.hotline.trim() : ""
+  const email = typeof o.email === "string" ? o.email.trim() : ""
+  return { hotline, email }
+}
+
 function parseAnnouncementSafe(raw: unknown): CmsAnnouncementPublic {
   if (raw === null || raw === undefined) {
     return null
@@ -420,3 +435,189 @@ async function fetchCmsPagePublic(
 
 /** ISR tag `cms-pages`; preview: `cache: no-store`, không tag. */
 export const getCmsPagePublic = cache(fetchCmsPagePublic)
+
+export type CmsNewsListItem = {
+  slug: string
+  title: string
+  excerpt: string
+  published_at: string | null
+  featured_image_url: string | null
+}
+
+export type CmsNewsTaxonomyItem = {
+  slug: string
+  title: string
+}
+
+export type CmsNewsArticlePublic = {
+  slug: string
+  title: string
+  excerpt: string
+  body: string
+  meta_title: string
+  meta_description: string
+  published_at: string | null
+  featured_image_url: string | null
+  status?: string
+  categories?: CmsNewsTaxonomyItem[]
+  tags?: CmsNewsTaxonomyItem[]
+}
+
+export const CMS_NEWS_CACHE_REVALIDATE_SECONDS = 180
+
+export type CmsNewsListResult = {
+  articles: CmsNewsListItem[]
+  count: number
+}
+
+export type CmsNewsListFilters = {
+  category_slug?: string
+  tag_slug?: string
+}
+
+async function fetchCmsNewsList(
+  locale: string,
+  limit: number,
+  offset: number,
+  filters?: CmsNewsListFilters
+): Promise<CmsNewsListResult> {
+  try {
+    const query: Record<string, string> = {
+      locale,
+      limit: String(limit),
+      offset: String(offset),
+    }
+    if (filters?.category_slug?.trim()) {
+      query.category_slug = filters.category_slug.trim().toLowerCase()
+    }
+    if (filters?.tag_slug?.trim()) {
+      query.tag_slug = filters.tag_slug.trim().toLowerCase()
+    }
+    const data = await sdk.client.fetch<{
+      articles: CmsNewsListItem[]
+      count?: number
+    }>(`/store/custom/cms-news`, {
+      method: "GET",
+      query,
+      next: {
+        tags: ["cms-news"],
+        revalidate: CMS_NEWS_CACHE_REVALIDATE_SECONDS,
+      },
+      cache: "force-cache",
+    })
+    const rows = data.articles ?? []
+    const count =
+      typeof data.count === "number" && Number.isFinite(data.count)
+        ? data.count
+        : rows.length
+    return {
+      articles: rows.map((a) => ({
+        ...a,
+        featured_image_url: absolutizeMedusaFileUrl(a.featured_image_url),
+      })),
+      count,
+    }
+  } catch {
+    return { articles: [], count: 0 }
+  }
+}
+
+export const getCmsNewsList = cache(fetchCmsNewsList)
+
+export type CmsNewsCategoryNav = {
+  slug: string
+  title: string
+  parent_slug: string | null
+}
+
+async function fetchCmsNewsCategories(
+  locale: string
+): Promise<CmsNewsCategoryNav[]> {
+  try {
+    const data = await sdk.client.fetch<{ categories: CmsNewsCategoryNav[] }>(
+      `/store/custom/cms-news/categories`,
+      {
+        method: "GET",
+        query: { locale },
+        next: {
+          tags: ["cms-news"],
+          revalidate: CMS_NEWS_CACHE_REVALIDATE_SECONDS,
+        },
+        cache: "force-cache",
+      }
+    )
+    return data.categories ?? []
+  } catch {
+    return []
+  }
+}
+
+export const getCmsNewsCategories = cache(fetchCmsNewsCategories)
+
+export type CmsNewsTagNav = {
+  slug: string
+  title: string
+}
+
+async function fetchCmsNewsTags(locale: string): Promise<CmsNewsTagNav[]> {
+  try {
+    const data = await sdk.client.fetch<{ tags: CmsNewsTagNav[] }>(
+      `/store/custom/cms-news/tags`,
+      {
+        method: "GET",
+        query: { locale },
+        next: {
+          tags: ["cms-news"],
+          revalidate: CMS_NEWS_CACHE_REVALIDATE_SECONDS,
+        },
+        cache: "force-cache",
+      }
+    )
+    return data.tags ?? []
+  } catch {
+    return []
+  }
+}
+
+export const getCmsNewsTags = cache(fetchCmsNewsTags)
+
+async function fetchCmsNewsArticle(
+  slug: string,
+  locale: string,
+  previewToken?: string
+): Promise<CmsNewsArticlePublic | null> {
+  const query: Record<string, string> = { locale }
+  if (previewToken) {
+    query.cms_preview = previewToken
+  }
+  const isPreview = Boolean(previewToken)
+
+  try {
+    const data = await sdk.client.fetch<CmsNewsArticlePublic>(
+      `/store/custom/cms-news/${encodeURIComponent(slug)}`,
+      {
+        method: "GET",
+        query,
+        next: isPreview
+          ? undefined
+          : {
+              tags: ["cms-news"],
+              revalidate: CMS_NEWS_CACHE_REVALIDATE_SECONDS,
+            },
+        cache: isPreview ? "no-store" : "force-cache",
+      }
+    )
+    return {
+      ...data,
+      featured_image_url: absolutizeMedusaFileUrl(data.featured_image_url),
+    }
+  } catch (e) {
+    if (e instanceof FetchError && e.status === 404) {
+      return null
+    }
+    throw e
+  }
+}
+
+/** ISR tag `cms-news`. */
+export const getCmsNewsArticle = cache(fetchCmsNewsArticle)

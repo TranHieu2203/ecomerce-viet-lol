@@ -9,7 +9,6 @@ import {
   resolveCmsSocialLinks,
 } from "@lib/data/cms"
 import { isSvgAssetUrl } from "@lib/util/cms-assets"
-import { getLocale } from "@lib/data/locale-actions"
 import { listLocales, type Locale } from "@lib/data/locales"
 import { listRegions } from "@lib/data/regions"
 import { StoreRegion } from "@medusajs/types"
@@ -18,6 +17,7 @@ import { resolveSocialIcon } from "@modules/common/icons/social"
 import CartButton from "@modules/layout/components/cart-button"
 import LocaleSwitcher from "@modules/layout/components/locale-switcher"
 import MegaNav from "@modules/layout/components/mega-nav"
+import NavStickyHeader from "@modules/layout/components/nav-sticky-header"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 
@@ -27,10 +27,9 @@ export default async function Nav({
   countryCode: string
 }) {
   const m = getStorefrontMessages(countryCode)
-  const [regions, locales, currentLocale, cms, navMenu] = await Promise.all([
+  const [regions, locales, cms, navMenu] = await Promise.all([
     listRegions().then((regions: StoreRegion[]) => regions),
     listLocales(),
-    getLocale(),
     getCmsSettingsPublic(),
     getNavMenuPublic(countryCode),
   ])
@@ -47,12 +46,12 @@ export default async function Nav({
         (x): x is string => typeof x === "string" && x.length > 0
       )
     : []
-  const displayNamesVi = new Intl.DisplayNames(["vi"], { type: "language" })
+  const displayNames = new Intl.DisplayNames([countryCode], { type: "language" })
   const localesForMenu: Locale[] =
     enabledCmsLocales.length > 0
       ? enabledCmsLocales.map((code) => ({
           code,
-          name: displayNamesVi.of(code) ?? code.toUpperCase(),
+          name: displayNames.of(code) ?? code.toUpperCase(),
         }))
       : (locales ?? [])
 
@@ -62,9 +61,8 @@ export default async function Nav({
   const desktopNavGroups = applyDesktopNavFr24(navMenu.items, m.nav.viewMore)
 
   return (
-    <div className="sticky top-0 inset-x-0 z-50 group">
-      <header className="relative min-h-14 h-auto py-2 small:h-16 small:py-0 mx-auto border-b border-ui-border-base bg-white/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/80 shadow-[0_1px_0_0_rgba(15,23,42,0.06)] duration-200">
-        <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full min-h-[3.25rem] small:min-h-0 small:h-full text-small-regular gap-2">
+    <NavStickyHeader>
+      <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full min-h-[3.25rem] small:min-h-0 small:h-full text-small-regular gap-2">
           <div className="flex items-center gap-2 xsmall:gap-3 min-w-0 flex-1">
             <LocalizedClientLink
               href="/"
@@ -77,7 +75,7 @@ export default async function Nav({
                   alt={headerTitle}
                   width={180}
                   height={48}
-                  className="h-8 w-auto xsmall:h-9 max-w-[140px] xsmall:max-w-[180px] object-contain object-left flex-shrink-0"
+                  className="h-8 w-auto xsmall:h-9 max-w-[140px] xsmall:max-w-[180px] object-contain object-left flex-shrink-0 drop-shadow-[0_1px_2px_rgba(184,148,79,0.35)]"
                   unoptimized={logoSrc.includes("localhost")}
                 />
               ) : null}
@@ -96,11 +94,11 @@ export default async function Nav({
               ) : null}
             </LocalizedClientLink>
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="h-full shrink-0">
+              <div className="h-full shrink-0 block small:hidden">
                 <SideMenu
                   regions={regions}
                   locales={localesForMenu.length ? localesForMenu : locales}
-                  currentLocale={currentLocale}
+                  currentLocale={countryCode}
                   navItems={navMenu.items}
                   brandName={headerTitle}
                 />
@@ -116,7 +114,7 @@ export default async function Nav({
             {socialLinks.length ? (
               <div className="hidden small:flex items-center gap-x-3 h-full">
                 {socialLinks.slice(0, 3).map((s) => {
-                  const Icon = resolveSocialIcon(s.hostname)
+                  const Icon = resolveSocialIcon(s.hostname, s.href)
                   return (
                     <a
                       key={s.href}
@@ -152,7 +150,7 @@ export default async function Nav({
             <Suspense
               fallback={
                 <LocalizedClientLink
-                  className="hover:text-ui-fg-base flex gap-2"
+                  className="inline-flex items-center min-h-10 px-3.5 rounded-full text-small-regular font-medium bg-brand-gold-muted/80 hover:bg-brand-gold/20 ring-1 ring-inset ring-brand-gold/40"
                   href="/cart"
                   data-testid="nav-cart-link"
                 >
@@ -163,8 +161,7 @@ export default async function Nav({
               <CartButton />
             </Suspense>
           </div>
-        </nav>
-      </header>
-    </div>
+      </nav>
+    </NavStickyHeader>
   )
 }

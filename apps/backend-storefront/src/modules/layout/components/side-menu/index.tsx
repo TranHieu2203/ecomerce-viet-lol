@@ -1,11 +1,12 @@
 "use client"
 
 import { Popover, PopoverPanel, Transition } from "@headlessui/react"
-import { ArrowRightMini, XMark } from "@medusajs/icons"
+import { ArrowRightMini, BarsThree, XMark } from "@medusajs/icons"
 import { Text, clx, useToggleState } from "@medusajs/ui"
 import * as AccordionPrimitive from "@radix-ui/react-accordion"
 import type { ResolvedNavGroup } from "@lib/nav/nav-types"
-import { Fragment } from "react"
+import { Fragment, useEffect, useState } from "react"
+import { createPortal } from "react-dom"
 
 import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -43,6 +44,11 @@ const SideMenu = ({
   const m = useStorefrontMessages()
   const countryToggleState = useToggleState()
   const languageToggleState = useToggleState()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <div className="h-full">
@@ -53,47 +59,58 @@ const SideMenu = ({
               <div className="relative flex h-full">
                 <Popover.Button
                   data-testid="nav-menu-button"
-                  className="relative min-h-11 min-w-11 flex items-center justify-center px-2 -mx-2 transition-all ease-out duration-200 focus:outline-none hover:text-ui-fg-base focus-visible:ring-2 focus-visible:ring-ui-fg-interactive rounded-rounded"
+                  className="relative min-h-11 min-w-11 flex items-center justify-center rounded-full bg-brand-gold-muted/90 ring-1 ring-inset ring-brand-gold/45 text-brand-gold-hover transition-all duration-200 focus:outline-none hover:bg-brand-gold/20 focus-visible:ring-2 focus-visible:ring-brand-gold focus-visible:ring-offset-2 focus-visible:ring-offset-brand-cream"
+                  aria-label={m.sideMenu.button}
                 >
-                  {m.sideMenu.button}
+                  <BarsThree className="w-[22px] h-[22px]" aria-hidden />
+                  <span className="sr-only">{m.sideMenu.button}</span>
                 </Popover.Button>
               </div>
 
-              {open && (
-                <div
-                  className="fixed inset-0 z-[50] bg-black/0 pointer-events-auto"
-                  onClick={close}
-                  data-testid="side-menu-backdrop"
-                />
-              )}
+              {mounted &&
+                open &&
+                createPortal(
+                  <div
+                    className="fixed inset-0 z-[200] bg-[rgba(20,17,13,0.45)]"
+                    onClick={close}
+                    data-testid="side-menu-backdrop"
+                    aria-hidden
+                  />,
+                  document.body
+                )}
 
+              {/* Headless UI v2: Transition bọc ngoài → PopoverPanel cần `static` để không bị ẩn nội dung */}
               <Transition
                 show={open}
                 as={Fragment}
-                enter="transition ease-out duration-150"
-                enterFrom="opacity-0"
-                enterTo="opacity-100 backdrop-blur-2xl"
+                enter="transition ease-out duration-200"
+                enterFrom="opacity-0 -translate-x-2"
+                enterTo="opacity-100 translate-x-0"
                 leave="transition ease-in duration-150"
-                leaveFrom="opacity-100 backdrop-blur-2xl"
-                leaveTo="opacity-0"
+                leaveFrom="opacity-100 translate-x-0"
+                leaveTo="opacity-0 -translate-x-2"
               >
-                <PopoverPanel className="flex flex-col absolute w-[calc(100vw-1rem)] max-w-md small:w-1/3 2xl:w-1/4 small:max-w-none small:min-w-min h-[calc(100dvh-1rem)] max-h-[calc(100vh-1rem)] z-[51] left-0 right-auto text-sm text-ui-fg-on-color m-2 rounded-rounded overflow-hidden shadow-xl border border-white/10 backdrop-blur-2xl">
+                <PopoverPanel
+                  static
+                  portal
+                  className="flex flex-col fixed top-2 left-2 bottom-2 z-[210] w-[min(100vw-1rem,22rem)] max-h-[calc(100dvh-1rem)] min-h-0 text-sm text-ui-fg-base rounded-rounded overflow-hidden shadow-xl shadow-[0_12px_40px_-12px_rgba(184,148,79,0.35)] border border-brand-gold/35 bg-brand-cream outline-none"
+                >
                   <div
                     data-testid="nav-menu-popup"
-                    className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
+                    className="grid grid-rows-[auto_minmax(0,1fr)_auto] h-full min-h-0 max-h-[calc(100dvh-1rem)] bg-gradient-to-b from-white to-brand-cream/90 rounded-rounded p-5 pt-3 border-t-[3px] border-brand-gold"
                   >
-                    <div className="flex justify-end" id="xmark">
+                    <div className="flex justify-end shrink-0" id="xmark">
                       <button
                         type="button"
                         data-testid="close-menu-button"
-                        className="min-h-11 min-w-11 flex items-center justify-center rounded-rounded hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+                        className="min-h-11 min-w-11 flex items-center justify-center rounded-full text-ui-fg-base hover:bg-brand-gold-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
                         onClick={close}
                         aria-label={m.sideMenu.closeMenu}
                       >
                         <XMark />
                       </button>
                     </div>
-                    <div className="flex flex-col gap-6 flex-1 min-h-0 overflow-y-auto">
+                    <div className="flex flex-col gap-6 min-h-0 overflow-y-auto overflow-x-hidden py-2 -mx-1 px-1">
                       {navItems.length > 0 ? (
                         <AccordionPrimitive.Root
                           type="multiple"
@@ -109,15 +126,15 @@ const SideMenu = ({
                               return (
                                 <div
                                   key={`nav-drawer-${index}-${group.id}`}
-                                  className="border-b border-white/10 pb-2 last:border-0"
+                                  className="border-b border-brand-gold/20 pb-2 last:border-0"
                                 >
                                   <LocalizedClientLink
                                     href={onlyChild.href}
-                                    className="flex w-full min-h-11 items-center justify-between gap-2 py-2 text-left text-2xl leading-tight hover:text-ui-fg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-rounded"
+                                    className="flex w-full min-h-11 items-center justify-between gap-2 py-2 px-2 -mx-2 text-left text-xl leading-tight font-medium text-ui-fg-base hover:text-brand-gold-hover hover:bg-brand-gold-muted/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-soft"
                                     onClick={close}
                                   >
                                     <span>{group.label}</span>
-                                    <span className="text-ui-fg-muted text-sm shrink-0">
+                                    <span className="text-brand-gold text-sm shrink-0">
                                       →
                                     </span>
                                   </LocalizedClientLink>
@@ -129,12 +146,12 @@ const SideMenu = ({
                               <AccordionPrimitive.Item
                                 key={`nav-drawer-${index}-${group.id}`}
                                 value={`nav-acc-${index}`}
-                                className="border-b border-white/10 pb-2 last:border-0"
+                                className="border-b border-brand-gold/20 pb-2 last:border-0"
                               >
                                 <AccordionPrimitive.Header>
-                                  <AccordionPrimitive.Trigger className="flex w-full min-h-11 items-center justify-between gap-2 py-2 text-left text-2xl leading-tight hover:text-ui-fg-disabled focus:outline-none focus-visible:ring-2 focus-visible:ring-white/80 rounded-rounded">
+                                  <AccordionPrimitive.Trigger className="flex w-full min-h-11 items-center justify-between gap-2 py-2 px-2 -mx-2 text-left text-xl font-semibold text-ui-fg-base leading-tight hover:text-brand-gold-hover hover:bg-brand-gold-muted/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold rounded-soft">
                                     <span>{group.label}</span>
-                                    <span className="text-ui-fg-muted text-sm shrink-0">
+                                    <span className="text-brand-gold text-sm shrink-0">
                                       ▾
                                     </span>
                                   </AccordionPrimitive.Trigger>
@@ -145,7 +162,7 @@ const SideMenu = ({
                                       <li key={`${index}-${group.id}-${idx}`}>
                                         <NavMenuChildLink
                                           child={child}
-                                          className="block min-h-11 py-2 text-lg leading-snug hover:text-ui-fg-disabled"
+                                          className="block min-h-11 py-2 px-2 -mx-1 text-base leading-snug text-ui-fg-base rounded-soft hover:text-brand-gold-hover hover:bg-brand-gold-muted/60"
                                           onNavigate={close}
                                         />
                                       </li>
@@ -164,7 +181,7 @@ const SideMenu = ({
                             <li key={key}>
                               <LocalizedClientLink
                                 href={href}
-                                className="block min-h-11 text-2xl leading-10 hover:text-ui-fg-disabled py-1"
+                                className="block min-h-11 text-xl font-medium leading-10 text-ui-fg-base py-1 px-2 -mx-2 rounded-soft hover:text-brand-gold-hover hover:bg-brand-gold-muted/70"
                                 onClick={close}
                                 data-testid={`${key}-link`}
                               >
@@ -175,10 +192,10 @@ const SideMenu = ({
                         })}
                       </ul>
                     </div>
-                    <div className="flex flex-col gap-y-6 pt-4">
+                    <div className="flex flex-col gap-y-4 pt-4 border-t border-brand-gold/25 shrink-0">
                       {!!locales?.length && (
                         <div
-                          className="flex justify-between min-h-11 items-center"
+                          className="flex justify-between min-h-11 items-center gap-2 rounded-soft px-2 py-1 -mx-2 hover:bg-brand-gold-muted/50"
                           onMouseEnter={languageToggleState.open}
                           onMouseLeave={languageToggleState.close}
                         >
@@ -189,14 +206,14 @@ const SideMenu = ({
                           />
                           <ArrowRightMini
                             className={clx(
-                              "transition-transform duration-150",
+                              "shrink-0 text-brand-gold transition-transform duration-150",
                               languageToggleState.state ? "-rotate-90" : ""
                             )}
                           />
                         </div>
                       )}
                       <div
-                        className="flex justify-between min-h-11 items-center"
+                        className="flex justify-between min-h-11 items-center gap-2 rounded-soft px-2 py-1 -mx-2 hover:bg-brand-gold-muted/50"
                         onMouseEnter={countryToggleState.open}
                         onMouseLeave={countryToggleState.close}
                       >
@@ -208,12 +225,12 @@ const SideMenu = ({
                         )}
                         <ArrowRightMini
                           className={clx(
-                            "transition-transform duration-150",
+                            "shrink-0 text-brand-gold transition-transform duration-150",
                             countryToggleState.state ? "-rotate-90" : ""
                           )}
                         />
                       </div>
-                      <Text className="flex justify-between txt-compact-small">
+                      <Text className="flex justify-between txt-compact-small text-ui-fg-muted">
                         © {new Date().getFullYear()} {brandName}
                       </Text>
                     </div>

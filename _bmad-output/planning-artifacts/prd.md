@@ -20,10 +20,10 @@ documentCounts:
   researchCount: 0
   brainstormingCount: 0
   projectDocsCount: 0
-lastEdited: "2026-04-06"
+lastEdited: "2026-04-07"
 editNote: >-
-  Wave 2 storefront + validate/edit. Cùng ngày: Wave 3 CMS phi kỹ thuật — FR-30…38, J8, SC-13…14, NFR-9
-  (rà soát bmad-validate-prd / góp ý CMS hiện đại).
+  Wave 2 storefront + validate/edit. Wave 3 CMS phi kỹ thuật — FR-30…38, J8, SC-13…14, NFR-9.
+  Wave 4 (2026-04-07): Tin tức + editor: bắt buộc ADR chọn **một** — block **hoặc** WYSIWYG một vùng; bài báo + copy/paste Word/web — FR-39…FR-46, J9, SC-15…SC-16, NFR-10.
 workflowType: prd
 workflowNote: >-
   PRD được hoàn thiện từ yêu cầu chi tiết do stakeholder cung cấp trong phiên làm việc
@@ -39,7 +39,7 @@ classification:
 
 **Dự án:** ecomerce-viet-lol  
 **Tác giả:** HieuTV-Team-MedusaV2  
-**Ngày ban đầu:** 2026-03-30 · **Sửa đổi lần cuối:** 2026-04-06  
+**Ngày ban đầu:** 2026-03-30 · **Sửa đổi lần cuối:** 2026-04-07  
 
 ## Tóm tắt điều hành
 
@@ -54,6 +54,8 @@ Cần xây bộ **headless commerce + quản trị nội dung** dựa trên **Me
 **Wave 2 (2026-04-06):** hoàn thiện **storefront** — nhất quán ngôn ngữ UI, i18n footer/collection, drawer/touch, a11y và visual system; **header chỉ logo (trái)**, **tên site từ thiết lập ở footer**, **menu 2 cấp từ CMS**; SC-10…SC-12 và FR-22…FR-29.
 
 **Wave 3 (2026-04-06):** **CMS vận hành cho người phi kỹ thuật** — trang nội dung tĩnh, SEO cơ bản, liên hệ & mạng xã hội, thanh thông báo, preview/xuất bản an toàn, thư viện ảnh, trợ giúp trong Admin, lịch sử/hoàn tác tối thiểu, trang 404 có thể chỉnh; **SC-13…SC-14**, **FR-30…FR-38**, **NFR-9**.
+
+**Wave 4 (2026-04-07):** **Tin tức trên storefront** — mục menu **Tin tức**; Admin tạo bài **đủ năng lực bài báo**, đa ngôn ngữ; **kiến trúc bắt buộc chọn một** mô hình soạn thảo: **block editor** *hoặc* **một vùng WYSIWYG** (không triển khai song song hai UI editor cho cùng thân bài); trong mô hình đã chọn phải có **ảnh trong luồng bài** (inline hoặc khối ảnh tùy ADR) và **copy/paste** từ Word/trình duyệt; SEO theo bài; **FR-39…FR-46**, **J9**, **SC-15…SC-16**, **NFR-10**.
 
 ## Tiêu chí thành công (SMART)
 
@@ -74,6 +76,8 @@ Cần xây bộ **headless commerce + quản trị nội dung** dựa trên **Me
 | SC-12 | Header / footer thương hiệu (wave 2) | Header chỉ **logo** (căn **trái**); **tên site** (CMS) hiển thị ở **footer**, không trùng lặp tiêu đề cạnh logo trên header (audit layout + snapshot vi/en). |
 | SC-13 | Self-service CMS (wave 3) | Người vận hành **không chuyên IT** hoàn thành **checklist 5 thao tác** trong Admin (đổi logo hoặc 1 slide banner; sửa tagline/footer; bật/tắt **thanh thông báo**; sửa **một** liên kết footer/MXH; xem trước hoặc xuất bản an toàn theo **FR-34**) **không cần hỗ trợ dev** — UAT có script + quan sát. |
 | SC-14 | Form thân thiện (wave 3) | **100%** màn CMS wave 3 có **thông báo lỗi/success** bằng **tiếng Việt** dễ hiểu khi lưu thất bại; không hiển thị **stack trace** hay mã lỗi thô cho user Admin (theo **NFR-9**). |
+| SC-15 | Tin tức end-to-end (wave 4) | Biên tập viên tạo **một** bài tin có **≥2 locale** (ví dụ `vi`+`en`), gồm **ít nhất một ảnh trong thân bài** và **văn bản định dạng** (theo **FR-45**); **copy/paste** từ **Word hoặc trang web** mẫu (đoạn có heading/list/đậm + link) → nội dung hiển thị ổn trong Admin và sau **publish** trên storefront (định dạng được **giữ hoặc chuẩn hoá** có kiểm chứng — không mất toàn bộ nội dung, không HTML nguy hiểm — **NFR-10**); **preview** (hoặc draft) rồi **publish**; **không cần deploy code**. |
+| SC-16 | Đọc bài trên mobile (wave 4) | Trang chi tiết tin trên viewport **360px**: độ rộng dòng đọc và cỡ chữ body đạt ngưỡng **UX đã chốt** (không tràn ngang; ảnh responsive; chữ không nhỏ hơn mức tối thiểu trong spec); kiểm tra **2** bài mẫu UAT. |
 
 ## Phạm vi sản phẩm
 
@@ -117,6 +121,18 @@ Cần xây bộ **headless commerce + quản trị nội dung** dựa trên **Me
 - **Lịch sử / hoàn tác** tối thiểu; **trang 404** có copy chỉnh được.
 
 Chi tiết năng lực: **FR-30…FR-38**; tiêu chí **SC-13, SC-14**; **NFR-9**.
+
+### Wave 4 — Tin tức (blog / newsroom)
+
+**Mục tiêu:** khách thấy **Tin tức** trên storefront; Admin soạn **bài viết dạng báo** (ảnh + chữ linh hoạt), **đa ngôn ngữ**, không phụ thuộc dev mỗi lần đăng bài.
+
+- **Điều hướng:** thêm mục menu **Tin tức** (cùng nguồn CMS/nav với **FR-29** hoặc endpoint tương đương — kiến trúc chốt).  
+- **Storefront:** danh sách bài đã xuất bản + trang chi tiết theo **slug** (và locale).  
+- **Admin:** CRUD bài tin; **draft / publish / preview** thống nhất **FR-34** và (khi bật) **FR-18** / **FR-19**.  
+- **Soạn thảo:** **architecture.md / ADR** ghi rõ **một** lựa chọn duy nhất: **block editor** *hoặc* **một ô WYSIWYG** cho thân bài (cả hai đều được phép về mặt sản phẩm — nhưng **chỉ một** được triển khai). Yêu cầu nghiệp vụ: soạn được **bài báo** (heading, đoạn, list, đậm/nghiêng, link, trích dẫn/callout tối thiểu) và **chèn ảnh** (upload hoặc thư viện **FR-35**, inline hoặc khối — theo ADR). **Copy/paste** từ Word/browser: hỗ trợ **dán nội dung có cấu trúc**; nội dung dán qua **sanitize** (**NFR-10**); ảnh dán có thể **upload lên media** hoặc **strip** có thông báo — hành vi cụ thể do ADR + story, miễn không gây lỗi im lặng hoặc XSS.  
+- **SEO:** meta title/description (**vi** / **en** / locale bật) và OG ảnh **theo bài** khi có cấu hình.
+
+**Ngoài phạm vi wave 4 (có thể phase sau):** bình luận, đăng ký newsletter, RSS, phân quyền tác giả đa người, workflow phê duyệt nhiều cấp riêng cho tin tức (nếu chưa dùng chung FR-18).
 
 **Ngoài phạm vi Growth (giữ cho Vision hoặc phase sau):** personalization theo hành vi, marketing automation đa kênh, ERP, thử nghiệm đa biến phức tạp ngoài banner.
 
@@ -195,6 +211,15 @@ Chi tiết năng lực: **FR-30…FR-38**; tiêu chí **SC-13, SC-14**; **NFR-9*
 5. Bật **thanh thông báo** khuyến mãi; chỉnh **hotline + link Zalo/Facebook** ở footer; nếu sai, dùng **hoàn tác / phiên bản trước** (FR-37) hoặc sửa lại theo thông báo lỗi rõ ràng (NFR-9).
 
 **Traceability:** FR-30 → FR-38, SC-13, SC-14, NFR-9; bổ sung cho **FR-18** nếu dùng draft/publish cho trang CMS.
+
+### J9 — Biên tập & khách: tin tức (wave 4)
+
+1. **Admin:** Mở màn **Quản lý tin tức** (hoặc tên tương đương); tạo bài mới; nhập **tiêu đề**, (tuỳ chọn) **mô tả ngắn** / **ảnh đại diện** cho từng **locale** đang bật.  
+2. Trong thân bài (theo **một** mô hình editor đã chọn — **FR-44**): soạn **như bài báo** hoặc **dán** từ Word/web; chèn **ảnh** (upload/thư viện hoặc qua paste nếu ADR hỗ trợ); kiểm tra hiển thị trong Admin.  
+3. Lưu **nháp**; dùng **xem trước** (**FR-34**); khi sẵn sàng, **xuất bản** (theo quyền **FR-19** nếu áp dụng).  
+4. **Khách:** Từ header/menu chọn **Tin tức**; xem **danh sách** bài mới nhất; mở **chi tiết**; chuyển locale → thấy bản dịch hoặc fallback theo quy tắc CMS hiện có.
+
+**Traceability:** FR-39 → FR-46, SC-15, SC-16, NFR-10; liên quan **FR-29** (menu), **FR-34**, **FR-35**, **FR-31** (SEO mặc định).
 
 ## Yêu cầu theo lĩnh vực (Thương mại điện tử)
 
@@ -283,9 +308,20 @@ _Phần này bổ sung sau khi storefront MVP đã chạy; đồng thuận đa v
 - **FR-33:** **Thanh thông báo (announcement bar)** toàn site: bật/tắt, nội dung ngắn **vi/en**, tuỳ chọn **ngày bắt đầu / kết thúc**; tuân **NFR-4** nếu có link.  
 - **FR-34:** **Xem trước và xuất bản an toàn:** thay đổi đối với **trang CMS**, **cấu hình SEO**, **footer liên hệ**, **announcement** có chế độ **nháp / xuất bản** hoặc **preview URL** (auth) trước khi public — mức tối thiểu do kiến trúc; có thể **thống nhất** với **FR-18** khi Growth đã bật.  
 - **FR-35:** **Thư viện media / chọn lại ảnh:** khi gắn ảnh (logo, banner, OG, …) Admin có thể **chọn** từ ảnh đã upload trước đó, không bắt buộc upload trùng file mỗi lần (triển khai có thể đơn giản hóa danh sách file gần đây).  
-- **FR-36:** **Trợ giúp trong Admin:** mỗi màn CMS quan trọng (banner, menu, trang tĩnh, SEO, footer) có **hướng dẫn ngắn tiếng Việt** (tooltip, panel hoặc link doc nội bộ).  
+- **FR-36:** **Trợ giúp trong Admin:** mỗi màn CMS quan trọng (banner, menu, trang tĩnh, **tin tức** khi có wave 4, SEO, footer) có **hướng dẫn ngắn tiếng Việt** (tooltip, panel hoặc link doc nội bộ).  
 - **FR-37:** **Lịch sử / hoàn tác:** ít nhất **một** trong hai — (a) lưu **N phiên bản** gần nhất cho `cms_settings` / menu / trang CMS quan trọng, hoặc (b) nút **khôi phục bản trước** cho thao tác lưu gần nhất — chi tiết entity do kiến trúc.  
 - **FR-38:** **Trang lỗi 404 (storefront):** tiêu đề và đoạn mô tả thân thiện **vi/en** có thể chỉnh từ CMS; CTA về trang chủ (có thể cố định trong code nhưng copy từ CMS).
+
+### Tin tức — storefront & Admin (wave 4)
+
+- **FR-39:** Storefront có **mục điều hướng “Tin tức”** (nhãn theo **locale** đang xem, cùng pattern i18n **FR-22**); trỏ tới **trang danh sách tin** trên path chuẩn hóa trong kiến trúc (ví dụ dưới segment locale hiện tại).  
+- **FR-40:** **Trang danh sách tin:** hiển thị các bài **đã xuất bản**, sắp xếp theo **ngày xuất bản** (giảm dần); mỗi thẻ có **tiêu đề**, (tuỳ chọn) **Ảnh đại diện**, **đoạn trích**; **phân trang** hoặc “xem thêm” — một phương án do kiến trúc; chỉ bài **published** trên Store API công khai.  
+- **FR-41:** **Trang chi tiết bài tin:** một URL **ổn định** theo **slug** (và locale); render **tiêu đề**, (tuỳ chọn) ngày đăng / tác giả, **nội dung** gồm **khối ảnh** và **rich text** đúng thứ tự soạn; typography **ưu tiên đọc** (mobile + desktop) theo UX spec.  
+- **FR-42:** **Admin — quản lý bài tin:** tạo, sửa, (tuỳ chọn) ẩn/archive hoặc xóa mềm; **trạng thái vòng đời** thống nhất **FR-34** / **FR-18** (draft → published); **ISR/revalidate** hoặc cơ chế cache khi publish do kiến trúc (cùng tinh thần banner/CMS).  
+- **FR-43:** **Đa ngôn ngữ theo bài:** cho mỗi locale **được bật** trong hệ thống (**FR-17**): **tiêu đề** bắt buộc khi xuất bản locale đó; **slug** có thể theo locale hoặc một slug chính + bản dịch — **một** quy tắc duy nhất trong kiến trúc (tránh trùng URL); **thân bài** và **ảnh đại diện** (nếu có) **theo locale**; fallback **vi** → locale khác khi thiếu bản dịch (đồng bộ policy CMS hiện có).  
+- **FR-44:** **Mô hình editor (bắt buộc chốt một):** tài liệu kiến trúc **chọn duy nhất** một trong hai: **(A) block editor** (lưu JSON/block tree) hoặc **(B) một vùng WYSIWYG** (một trường rich HTML/markdown tương đương). **Không** yêu cầu sản phẩm cung cấp đồng thời hai UI editor khác nhau cho thân bài. Dù chọn A hay B, phải đạt **năng lực bài báo** trong cùng luồng soạn: **heading**, **đoạn**, **danh sách**, **in đậm/nghiêng**, **liên kết** (validate **NFR-4**), **trích dẫn** hoặc callout (mức tối thiểu ghi trong ADR). **Copy/paste:** từ **Microsoft Word** và từ **trình duyệt** (HTML): định dạng cơ bản được **giữ lại** sau khi qua pipeline **sanitize** (**NFR-10**) hoặc được **chuẩn hoá** có kiểm chứng (không làm mất văn bản, không chèn script); hành vi ảnh khi paste do ADR (upload tự động / bắt chèn lại / cảnh báo).  
+- **FR-45:** **Ảnh + chữ trong một bài (tương thích FR-44):** với **block editor**: xen kẽ **khối ảnh** (upload hoặc **FR-35**) và khối văn bản. Với **một ô WYSIWYG**: **chèn ảnh inline** trong cùng vùng soạn (upload/thư viện), xen kẽ với đoạn/heading như soạn **Word**. Mọi ảnh: responsive trên storefront, **caption**/alt theo locale nếu có; đủ để dựng bài **giống trang báo / bài blog chuyên nghiệp**.  
+- **FR-46:** **SEO theo bài tin:** **meta title**, **meta description** (theo locale); **OG image** (mặc định ảnh đại diện bài hoặc ảnh đầu tiên trong thân — quy tắc document); không làm suy giảm **FR-31** (vẫn có default toàn site).
 
 ## Yêu cầu phi chức năng
 
@@ -298,6 +334,7 @@ _Phần này bổ sung sau khi storefront MVP đã chạy; đồng thuận đa v
 - **NFR-7 (Khả năng tiếp cận — wave 2):** Các control điều hướng chính (menu, đóng drawer, chuyển locale) có **trạng thái focus visible**; tương phản chữ/nền đạt **WCAG 2.1 AA** cho text thông thường trên các nhãn menu và footer (đo bằng checklist hoặc công cụ trong pipeline QA).  
 - **NFR-8 (Nhất quán visual):** Token màu / elevation (header vs overlay menu) document trong **UX spec** hoặc design tokens; không thay đổi ad-hoc làm lệch **design system** Medusa UI đang dùng mà không ghi lại.
 - **NFR-9 (Admin — người phi kỹ thuật, wave 3):** Thông báo khi **lưu thất bại** hoặc **validation** (URL, độ dài text, file) phải bằng **tiếng Việt** dễ hiểu; **không** để lộ stack trace, SQL hay exception raw cho user Admin; log kỹ thuật chỉ server-side.
+- **NFR-10 (Nội dung rich — wave 4 tin tức):** HTML/JSON thân bài (kể cả sau **paste** từ Word/browser) phải qua **sanitize / allowlist** tag & thuộc tính trước khi lưu và khi render storefront; chặn script, `on*` handlers, `javascript:`; loại bỏ style/event nguy hiểm; **không** tin tưởng HTML thô từ clipboard. Upload ảnh trong bài (kể cả sau paste nếu hỗ trợ) tuân **MIME/size** như kiến trúc media hiện có.
 
 ## Tiêu chí thành công bổ sung (wave 2)
 
@@ -309,6 +346,8 @@ _Phần này bổ sung sau khi storefront MVP đã chạy; đồng thuận đa v
 
 _Wave 3:_ **SC-13**, **SC-14** nằm cùng bảng SMART phía trên (không lặp bảng).
 
+_Wave 4:_ **SC-15**, **SC-16** nằm cùng bảng SMART phía trên.
+
 ## Ghi chú kiểm tra PRD (`bmad-validate-prd`)
 
 - **Đã chỉnh trong PRD (edit workflow, 2026-04-06):** **SC-6** đồng bộ **FR-29**; **J3** trỏ **J7**; metadata ngày; **FR-11b** giai đoạn chuyển tiếp `site_title`.  
@@ -316,6 +355,7 @@ _Wave 3:_ **SC-13**, **SC-14** nằm cùng bảng SMART phía trên (không lặ
 - **Phụ thuộc:** FR-29 phụ thuộc mở rộng backend CMS; nên tách epic/story “CMS nav 2 cấp + Store API”.  
 - **Rủi ro:** Mobile drawer phải phản ánh **cùng cây** với desktop (một nguồn CMS).  
 - **Rà soát 2026-04-06 (CMS hiện đại / phi kỹ thuật):** đã bổ sung **Wave 3** — **FR-30…38**, **J8**, **SC-13…14**, **NFR-9** (trang tĩnh, SEO, footer/MXH, announcement, preview/publish, media reuse, help, history/undo, 404, thông báo lỗi tiếng Việt).
+- **Bổ sung 2026-04-07 (Wave 4 — Tin tức):** **FR-39…FR-46**, **J9**, **SC-15…SC-16**, **NFR-10** — menu Tin tức, list/detail, **một** editor (block *hoặc* WYSIWYG), bài báo + copy/paste, sanitize.
 
 ## Phụ lục A — Cấu trúc seed bắt buộc
 
@@ -331,17 +371,18 @@ Các tên hiển thị có thể lưu song ngữ (`vi` bắt buộc đầy đủ
 
 ## Phụ lục B — Ma trận truy vết (rút gọn)
 
-| FR | J1 | J2 | J3 | J4 | J5 | J6 | J7 | J8 |
-|----|----|----|----|-----|----|-----|-----|-----|
-| FR-1…FR-6, FR-2b | | ✓ | ✓ | ✓ | | | ✓ | |
-| FR-7…FR-11b | ✓ | | ✓ | | | | ✓ | |
-| FR-12…FR-14 | | | ✓ | | | | ✓ | |
-| FR-15…FR-16 | | | | ✓ | | | | |
-| FR-17, FR-18, FR-19 | | | | | ✓ | | | ✓ |
-| FR-20, FR-21 | ✓ | | ✓ | | | ✓ | | |
-| FR-22…FR-29 | | | | | | | ✓ | |
-| FR-30…FR-38 | | | | | | | | ✓ |
+| FR | J1 | J2 | J3 | J4 | J5 | J6 | J7 | J8 | J9 |
+|----|----|----|----|-----|----|-----|-----|-----|-----|
+| FR-1…FR-6, FR-2b | | ✓ | ✓ | ✓ | | | ✓ | | |
+| FR-7…FR-11b | ✓ | | ✓ | | | | ✓ | | |
+| FR-12…FR-14 | | | ✓ | | | | ✓ | | |
+| FR-15…FR-16 | | | | ✓ | | | | | |
+| FR-17, FR-18, FR-19 | | | | | ✓ | | | ✓ | ✓ |
+| FR-20, FR-21 | ✓ | | ✓ | | | ✓ | | | |
+| FR-22…FR-29 | | | | | | | ✓ | | ✓ |
+| FR-30…FR-38 | | | | | | | | ✓ | |
+| FR-39…FR-46 | | | | | | | ✓ | | ✓ |
 
 ---
 
-**Bước BMad tiếp theo (khuyến nghị):** `bmad-validate-prd` ([VP]) trên `prd.md`. **`bmad-create-architecture` ([CA])** — entity trang CMS, settings mở rộng, preview, history, Store API. **`bmad-create-ux-design` ([CU])** — Admin wave 2–3 + storefront (404, announcement, trang tĩnh). `bmad-create-epics-and-stories` ([CE]) tách epic **Wave 3 CMS**; `bmad-sprint-planning` ([SP]); `bmad-check-implementation-readiness` ([IR]).
+**Bước BMad tiếp theo (khuyến nghị):** `bmad-validate-prd` ([VP]) trên `prd.md`. **`bmad-create-architecture` ([CA])** — entity **bài tin**, editor schema (block/HTML), slug/locale, Store API list/detail, sanitize. **`bmad-create-ux-design` ([CU])** — màn Admin soạn tin + storefront list/detail. `bmad-create-epics-and-stories` ([CE]) epic **Wave 4 Tin tức**; `bmad-sprint-planning` ([SP]); `bmad-check-implementation-readiness` ([IR]).

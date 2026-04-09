@@ -30,6 +30,19 @@ export default function NavMenuChildLink({
         </a>
       )
     }
+    const h = child.href.trim()
+    if (h.startsWith("/")) {
+      return (
+        <LocalizedClientLink
+          href={h}
+          className={className}
+          role={role}
+          onClick={onNavigate}
+        >
+          {child.label}
+        </LocalizedClientLink>
+      )
+    }
     return (
       <a
         href={child.href}

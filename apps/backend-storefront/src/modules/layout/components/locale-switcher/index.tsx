@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { ALL_APP_LOCALE_CODES, isAppLocale } from "@lib/util/locales"
+import { resolveLocaleFlag } from "@modules/common/icons/locale-flags"
 
 type Props = {
   current: string
@@ -24,21 +25,27 @@ export default function LocaleSwitcher({ current, enabledLocales }: Props) {
   const codes = filtered?.length ? filtered : [...ALL_APP_LOCALE_CODES]
 
   return (
-    <div className="flex items-center gap-1 txt-compact-small">
+    <div className="inline-flex items-center gap-px rounded-full border border-brand-gold/22 bg-white/75 p-0.5 shadow-[0_1px_2px_rgba(184,148,79,0.07)] backdrop-blur-sm">
       {codes.map((code) => {
         const href = rest ? `/${code}/${rest}` : `/${code}`
         const active = current === code
+        const Flag = resolveLocaleFlag(code)
         return (
           <Link
             key={code}
             href={href}
             className={clx(
-              "uppercase px-2 2xsmall:px-3 py-2 rounded-rounded min-h-10 min-w-[2.25rem] justify-center inline-flex items-center text-[11px] 2xsmall:text-xs font-medium",
-              active ? "bg-ui-bg-base text-ui-fg-on-color" : "hover:bg-ui-bg-subtle"
+              "uppercase rounded-full justify-center inline-flex items-center gap-1 px-2 py-0.5 text-[10px] 2xsmall:text-[11px] font-medium tracking-[0.04em] transition-[color,background-color,box-shadow] duration-200",
+              active
+                ? "bg-white text-brand-gold-hover ring-1 ring-brand-gold/30 shadow-[0_1px_2px_rgba(184,148,79,0.12)]"
+                : "text-ui-fg-muted hover:text-ui-fg-subtle hover:bg-brand-gold-muted/45"
             )}
             hrefLang={code}
           >
-            {code}
+            <span className="shrink-0 inline-flex opacity-[0.92]" aria-hidden>
+              <Flag size={12} />
+            </span>
+            <span>{code}</span>
           </Link>
         )
       })}

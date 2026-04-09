@@ -8,12 +8,14 @@ import {
   Transition,
 } from "@headlessui/react"
 import { Fragment, useEffect, useMemo, useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import ReactCountryFlag from "react-country-flag"
 
 import { StateType } from "@lib/hooks/use-toggle-state"
 import { updateLocale } from "@lib/data/locale-actions"
 import { Locale } from "@lib/data/locales"
+import { isAppLocale } from "@lib/util/locales"
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 
 type LanguageOption = {
   code: string
@@ -73,13 +75,20 @@ const LanguageSelect = ({
   locales,
   currentLocale,
 }: LanguageSelectProps) => {
+  const m = useStorefrontMessages()
   const [current, setCurrent] = useState<LanguageOption | undefined>(undefined)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const pathname = usePathname()
 
   const { state, close } = toggleState
 
   const options = useMemo(() => {
+    const defaultOption: LanguageOption = {
+      ...DEFAULT_OPTION,
+      name: m.sideMenu.languageDefault,
+      localizedName: m.sideMenu.languageDefault,
+    }
     const localeOptions = locales.map((locale) => ({
       code: locale.code,
       name: locale.name,
@@ -90,8 +99,8 @@ const LanguageSelect = ({
       ),
       countryCode: getCountryCodeFromLocale(locale.code),
     }))
-    return [DEFAULT_OPTION, ...localeOptions]
-  }, [locales, currentLocale])
+    return [defaultOption, ...localeOptions]
+  }, [locales, currentLocale, m.sideMenu.languageDefault])
 
   useEffect(() => {
     if (currentLocale) {
@@ -105,10 +114,19 @@ const LanguageSelect = ({
   }, [options, currentLocale])
 
   const handleChange = (option: LanguageOption) => {
+    if (!option.code) {
+      return
+    }
     startTransition(async () => {
       await updateLocale(option.code)
       close()
-      router.refresh()
+      const segments = pathname.split("/").filter(Boolean)
+      const first = segments[0] ?? ""
+      const rest = isAppLocale(first)
+        ? segments.slice(1).join("/")
+        : segments.join("/")
+      const href = rest ? `/${option.code}/${rest}` : `/${option.code}`
+      router.push(href)
     })
   }
 
@@ -128,7 +146,7 @@ const LanguageSelect = ({
       >
         <ListboxButton className="py-1 w-full">
           <div className="txt-compact-small flex items-start gap-x-2">
-            <span>Language:</span>
+            <span>{m.sideMenu.languageLabel}:</span>
             {current && (
               <span className="txt-compact-small flex items-center gap-x-2">
                 {current.countryCode && (

@@ -21,6 +21,52 @@ export async function POST(
   }
 
   const body = (req.body ?? {}) as Record<string, unknown>
+  const article_id =
+    typeof body.article_id === "string"
+      ? body.article_id.trim()
+      : typeof body.articleId === "string"
+        ? body.articleId.trim()
+        : ""
+
+  const cms = req.scope.resolve(STORE_CMS_MODULE) as StoreCmsModuleService
+
+  const ttlRaw = Number(body.ttl_seconds ?? body.ttlSeconds)
+  const ttlSec =
+    Number.isFinite(ttlRaw) && ttlRaw > 0
+      ? Math.min(3600, Math.floor(ttlRaw))
+      : DEFAULT_TTL_SEC
+  const exp = Math.floor(Date.now() / 1000) + ttlSec
+
+  if (article_id) {
+    const article = await cms
+      .listStoreCmsNewsArticles({ id: article_id })
+      .then((rows) => rows[0])
+    if (!article) {
+      return res.status(404).json({ message: "Không tìm thấy bài tin" })
+    }
+    const slugOpt =
+      body.slug !== undefined && body.slug !== null
+        ? String(body.slug).trim()
+        : ""
+    if (slugOpt && slugOpt !== article.slug) {
+      return res.status(400).json({
+        message: "slug không khớp với bài tin được chọn",
+      })
+    }
+    const token = signCmsPreviewToken(
+      {
+        kind: "news_article",
+        articleId: article.id,
+        slug: article.slug,
+        exp,
+      },
+      secret
+    )
+    const expires_at = new Date(exp * 1000).toISOString()
+    res.status(201).json({ token, expires_at, entity: "news_article" })
+    return
+  }
+
   const page_id =
     typeof body.page_id === "string"
       ? body.page_id.trim()
@@ -28,10 +74,11 @@ export async function POST(
         ? body.pageId.trim()
         : ""
   if (!page_id) {
-    return res.status(400).json({ message: "page_id là bắt buộc" })
+    return res
+      .status(400)
+      .json({ message: "page_id hoặc article_id là bắt buộc" })
   }
 
-  const cms = req.scope.resolve(STORE_CMS_MODULE) as StoreCmsModuleService
   const page = await cms
     .listStoreCmsPages({ id: page_id })
     .then((rows) => rows[0])
@@ -49,18 +96,11 @@ export async function POST(
     })
   }
 
-  const ttlRaw = Number(body.ttl_seconds ?? body.ttlSeconds)
-  const ttlSec =
-    Number.isFinite(ttlRaw) && ttlRaw > 0
-      ? Math.min(3600, Math.floor(ttlRaw))
-      : DEFAULT_TTL_SEC
-  const exp = Math.floor(Date.now() / 1000) + ttlSec
-
   const token = signCmsPreviewToken(
     { pageId: page.id, slug: page.slug, exp },
     secret
   )
   const expires_at = new Date(exp * 1000).toISOString()
 
-  res.status(201).json({ token, expires_at })
+  res.status(201).json({ token, expires_at, entity: "page" })
 }

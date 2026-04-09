@@ -120,8 +120,9 @@ export default function HeroSlider({
                 target="_blank"
                 rel="noopener noreferrer"
                 className={clx(
-                  "inline-flex items-center justify-center rounded-full bg-white text-ui-fg-base px-6 py-3 w-fit text-small-regular font-medium",
-                  "min-h-11"
+                  "inline-flex items-center justify-center rounded-full bg-brand-gold text-white px-6 py-3 w-fit text-small-regular font-medium",
+                  "min-h-11 shadow-sm hover:bg-brand-gold-hover transition-colors",
+                  "ring-1 ring-brand-accent/25"
                 )}
               >
                 {slide.cta_label || h.ctaFallback}
@@ -130,8 +131,9 @@ export default function HeroSlider({
               <Link
                 href={`/${locale}${slide.target_url.startsWith("/") ? slide.target_url : `/${slide.target_url}`}`}
                 className={clx(
-                  "inline-flex items-center justify-center rounded-full bg-white text-ui-fg-base px-6 py-3 w-fit text-small-regular font-medium",
-                  "min-h-11"
+                  "inline-flex items-center justify-center rounded-full bg-brand-gold text-white px-6 py-3 w-fit text-small-regular font-medium",
+                  "min-h-11 shadow-sm hover:bg-brand-gold-hover transition-colors",
+                  "ring-1 ring-brand-accent/25"
                 )}
               >
                 {slide.cta_label || h.ctaFallback}

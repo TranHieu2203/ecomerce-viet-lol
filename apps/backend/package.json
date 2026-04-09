@@ -22,7 +22,8 @@
     "dev": "node ./node_modules/@medusajs/cli/cli.js develop",
     "test:integration:http": "cross-env TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
     "test:integration:modules": "cross-env TEST_TYPE=integration:modules NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
-    "test:unit": "cross-env TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit"
+    "test:unit": "cross-env TEST_TYPE=unit NODE_OPTIONS=--experimental-vm-modules jest --silent --runInBand --forceExit",
+    "typecheck:admin": "tsc --noEmit -p src/admin/tsconfig.json"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -32,7 +33,19 @@
     "@medusajs/cli": "2.13.1",
     "@medusajs/framework": "2.13.1",
     "@medusajs/medusa": "2.13.1",
+    "@tiptap/extension-image": "^2.11.5",
+    "@tiptap/extension-link": "^2.11.5",
+    "@tiptap/extension-placeholder": "^2.11.5",
+    "@tiptap/extension-table": "^2.11.5",
+    "@tiptap/extension-table-cell": "^2.11.5",
+    "@tiptap/extension-table-header": "^2.11.5",
+    "@tiptap/extension-table-row": "^2.11.5",
+    "@tiptap/extension-text-align": "^2.11.5",
+    "@tiptap/extension-underline": "^2.11.5",
+    "@tiptap/react": "^2.11.5",
+    "@tiptap/starter-kit": "^2.11.5",
     "date-fns": "^4.1.0",
+    "lucide-react": "^0.468.0",
     "sharp": "^0.33.5",
     "xlsx": "^0.18.5"
   },

@@ -1,0 +1,69 @@
+/**
+ * Tây Á — vàng kim champagne, nền trắng, đỏ nhấn nhẹ.
+ * Ghi đè biến Medusa UI (light) sau preset.
+ */
+:root {
+  --brand-gold: #b8944f;
+  --brand-gold-hover: #9a7a3f;
+  --brand-gold-muted: rgba(184, 148, 79, 0.14);
+  --brand-accent-red: #a52a2a;
+  --brand-cream: #faf7f2;
+  /** Nền header — tách hẳn khỏi trắng trang (body thường #fff). */
+  --brand-header-surface: #e9e1d2;
+  --brand-header-surface-mid: #e4dac8;
+  --brand-header-surface-deep: #ddd2bc;
+  --brand-ink: #14110d;
+
+  --fg-interactive: rgba(184, 148, 79, 1);
+  --fg-interactive-hover: rgba(154, 122, 63, 1);
+  --border-interactive: rgba(184, 148, 79, 0.55);
+  --bg-interactive: rgba(184, 148, 79, 1);
+
+  --bg-highlight: rgba(250, 247, 242, 1);
+  --bg-highlight-hover: rgba(243, 236, 222, 1);
+
+  --border-base: rgba(212, 197, 176, 0.45);
+  --border-strong: rgba(184, 148, 79, 0.28);
+
+  --bg-subtle: rgba(250, 247, 242, 1);
+  --bg-subtle-hover: rgba(243, 236, 222, 1);
+  --bg-component: rgba(255, 255, 255, 1);
+  --bg-component-hover: rgba(250, 247, 242, 1);
+
+  --fg-base: rgba(20, 17, 13, 1);
+  --fg-muted: rgba(90, 82, 72, 1);
+  --fg-subtle: rgba(120, 110, 98, 1);
+
+  /**
+   * Nút primary (@medusajs/ui Button variant="primary") dùng bg-ui-button-inverted
+   * → map sang vàng kim; chữ trắng trên nền màu.
+   */
+  --button-inverted: rgba(184, 148, 79, 1);
+  --button-inverted-hover: rgba(154, 122, 63, 1);
+  --button-inverted-pressed: rgba(138, 110, 56, 1);
+  --contrast-fg-primary: rgba(255, 255, 255, 0.96);
+
+  /** Secondary / neutral: nền trắng, hover kem — viền vẫn theo --border-base đã chỉnh */
+  --button-neutral: rgba(255, 255, 255, 1);
+  --button-neutral-hover: rgba(250, 247, 242, 1);
+  --button-neutral-pressed: rgba(243, 236, 222, 1);
+
+  /**
+   * Medusa UI: shadow-box trên nút = viền “ảo”. Mặc định có 1px gần đen → đổi sang vàng đậm.
+   * @see ui-preset effects.light --buttons-inverted / --buttons-neutral
+   */
+  --buttons-inverted: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.28) inset,
+    0px 1px 3px 0px rgba(120, 92, 45, 0.2),
+    0px 0px 0px 1px rgba(154, 122, 63, 0.9);
+  --buttons-inverted-focus: 0px 0.75px 0px 0px rgba(255, 255, 255, 0.28) inset,
+    0px 1px 3px 0px rgba(100, 75, 35, 0.22),
+    0px 0px 0px 1px rgba(138, 110, 56, 1),
+    0px 0px 0px 2px rgba(255, 255, 255, 1),
+    0px 0px 0px 4px rgba(184, 148, 79, 0.42);
+  --buttons-neutral: 0px 1px 2px 0px rgba(120, 92, 45, 0.06),
+    0px 0px 0px 1px rgba(184, 148, 79, 0.32);
+  --buttons-neutral-focus: 0px 1px 2px 0px rgba(120, 92, 45, 0.08),
+    0px 0px 0px 1px rgba(184, 148, 79, 0.48),
+    0px 0px 0px 2px rgba(255, 255, 255, 1),
+    0px 0px 0px 4px rgba(184, 148, 79, 0.32);
+}

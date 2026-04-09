@@ -5,6 +5,7 @@ stepsCompleted:
   - step-03-create-stories
   - step-04-final-validation
   - epics-refresh-wave2-wave3-growth-2026-04-06
+  - epics-supplement-wave4-news-2026-04-07
 inputDocuments:
   - _bmad-output/planning-artifacts/prd.md
   - _bmad-output/planning-artifacts/architecture.md
@@ -14,14 +15,14 @@ project_name: ecomerce-viet-lol
 user_name: HieuTV-Team-MedusaV2
 date: 2026-04-06
 document_output_language: Vietnamese
-lastEpicsRevision: "2026-04-06"
+lastEpicsRevision: "2026-04-07"
 ---
 
 # ecomerce-viet-lol — Phân rã Epic & User Story
 
 ## Tổng quan
 
-Tài liệu phân rã **PRD**, **Đặc tả UX** và **Kiến trúc** thành epic và user story (Given/When/Then). **Làm mới 2026-04-06:** bổ sung **Wave 2** (FR-11b, FR-22…29, SC-10…12), **Wave 3** (FR-30…38, SC-13…14, NFR-9), **Growth** (FR-17…21, NFR-6), **FR-2b**.
+Tài liệu phân rã **PRD**, **Đặc tả UX** và **Kiến trúc** thành epic và user story (Given/When/Then). **Làm mới 2026-04-06:** Wave 2–3 + Growth + **FR-2b**. **Bổ sung 2026-04-07:** **Epic 11 — Wave 4 tin tức** (**FR-39…FR-46**, **NFR-10**, **SC-15…16**; ADR-19…25; UX §16).
 
 ---
 
@@ -71,6 +72,14 @@ Tài liệu phân rã **PRD**, **Đặc tả UX** và **Kiến trúc** thành ep
 | FR-36 | Trợ giúp tiếng Việt trên màn CMS chính. |
 | FR-37 | Lịch sử / hoàn tác tối thiểu (settings, menu, trang quan trọng). |
 | FR-38 | 404 SF: copy vi/en từ CMS; CTA về chủ. |
+| FR-39 | Menu storefront **Tin tức** → `/news` (i18n). |
+| FR-40 | Trang danh sách tin published; phân trang. |
+| FR-41 | Trang chi tiết `/news/[slug]`; layout đọc bài. |
+| FR-42 | Admin CRUD bài tin; draft/publish; revalidate. |
+| FR-43 | Đa ngôn ngữ theo locale bật (title/body/SEO). |
+| FR-44 | Editor một vùng (TipTap); bài báo + paste Word/web. |
+| FR-45 | Ảnh inline + rich text trong cùng luồng. |
+| FR-46 | SEO theo bài (meta + OG). |
 
 ### Yêu cầu phi chức năng (từ PRD)
 
@@ -85,6 +94,7 @@ Tài liệu phân rã **PRD**, **Đặc tả UX** và **Kiến trúc** thành ep
 | NFR-7 | Focus visible; contrast AA menu/footer (wave 2). |
 | NFR-8 | Token visual header vs overlay; không lệch ad-hoc. |
 | NFR-9 | Lỗi Admin tiếng Việt; không stack trace cho user (wave 3). |
+| NFR-10 | Sanitize HTML/JSON tin (paste); allowlist tag; ảnh an toàn (wave 4). |
 
 ### Yêu cầu thiết kế UX (UX-DR, từ UX spec)
 
@@ -99,30 +109,37 @@ Tài liệu phân rã **PRD**, **Đặc tả UX** và **Kiến trúc** thành ep
 | UX-DR7 | Preview nháp: token/auth hoặc watermark; không lộ public. |
 | UX-DR8 | `prefers-reduced-motion` cho hero/slider. |
 | UX-DR9 | Đồng bộ checklist SC-10 (audit nhãn cố định vi/en). |
+| UX-DR10 | Tin SF: card grid list + prose chi tiết; SC-16 (§16.1–16.2). |
+| UX-DR11 | Admin tin: `@medusajs/ui`, sticky actions, toolbar TipTap (§16.3–16.4). |
+| UX-DR12 | Paste ảnh/word: toast phản hồi; lỗi tiếng Việt (UX-AC-11…14). |
+| UX-DR13 | Help `?` màn tin (FR-36). |
+| UX-DR14 | Preview bài tin token/watermark; không cache public draft (ADR-14). |
 
 ### Yêu cầu bổ sung (Kiến trúc)
 
-- Module `store-cms`: settings singleton, banner slides, **nav tree**, **cms pages**, **revisions** (theo ADR-11…18 trong `architecture.md`).  
-- Store API: `cms-settings`, **`nav-menu`**, **`cms-pages`**, public slices cho SEO/footer/announcement/404.  
-- ISR + `revalidateTag` (`cms`, `cms-nav`, `cms-pages`, …).  
-- File module / derivatives; monorepo `apps/backend` + `apps/backend-storefront`.
+- Module `store-cms`: settings singleton, banner slides, **nav tree**, **cms pages**, **revisions**, **`store_cms_news_article`** (theo ADR-11…18, **ADR-19…25** trong `architecture.md`).  
+- Store API: `cms-settings`, **`nav-menu`**, **`cms-pages`**, **`cms-news`**, public slices cho SEO/footer/announcement/404.  
+- ISR + `revalidateTag` (`cms`, `cms-nav`, `cms-pages`, **`cms-news`**, …).  
+- File module / derivatives; monorepo `apps/backend` + `apps/backend-storefront`. **Editor tin:** TipTap, sanitize server (NFR-10).
 
 ### Bản đồ phủ FR → Epic (rút gọn)
 
-| FR | E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8 | E9 | E10 |
-|----|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:---:|
-| FR-1…2 | ● | | | | | ● | | | | |
-| FR-2b | ● | | | | | | ● | | | |
-| FR-3 | | | ● | | ● | ● | | | | |
-| FR-4…6 | | | | ● | ● | ● | ● | | | |
-| FR-7…11 | | ● | ● | | ● | ● | | ● | | |
-| FR-11b,22…29 | | | ● | | ● | ● | | ● | | |
-| FR-12…14,26,28 | | | | | | ● | | ● | | |
-| FR-15…16 | ● | | | | | | ● | | | |
-| FR-30…38 | | | ● | | | ● | | | ● | |
-| FR-17…21 | | | ● | | ● | ● | | | | ● |
+| FR | E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8 | E9 | E10 | E11 |
+|----|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:--:|:---:|:---:|
+| FR-1…2 | ● | | | | | ● | | | | | |
+| FR-2b | ● | | | | | | ● | | | | |
+| FR-3 | | | ● | | ● | ● | | | | | |
+| FR-4…6 | | | | ● | ● | ● | ● | | | | |
+| FR-7…11 | | ● | ● | | ● | ● | | ● | | | |
+| FR-11b,22…29 | | | ● | | ● | ● | | ● | | | |
+| FR-12…14,26,28 | | | | | | ● | | ● | | | |
+| FR-15…16 | ● | | | | | | ● | | | | |
+| FR-30…38 | | | ● | | | ● | | | ● | | |
+| FR-17…21 | | | ● | | ● | ● | | | | ● | |
+| **FR-39…FR-46** | | | ● | | | ● | | ● | ● | | **●** |
+| **NFR-10** | | | ● | | | | | | | | **●** |
 
-(Giải thích: **E8** = điều hướng & layout thương hiệu wave 2; **E9** = CMS vận hành wave 3; **E10** = Growth; một số FR Growth chồng lên API/Admin hiện có nên có dấu ở E3/E5/E6.)
+(Giải thích: **E8** = wave 2 nav (mục Tin tức gắn **nav_tree**); **E9** = pattern preview/revision/media tái dùng; **E11** = **Wave 4 tin tức** trọn cụm backend+Admin+SF.)
 
 ---
 
@@ -140,6 +157,7 @@ Tài liệu phân rã **PRD**, **Đặc tả UX** và **Kiến trúc** thành ep
 | **E8** | **Điều hướng & thương hiệu storefront (Wave 2)** | Menu 2 cấp CMS, header chỉ logo, footer đầy đủ, nhãn i18n, drawer/touch, SC-10…12. |
 | **E9** | **CMS vận hành & nội dung tĩnh (Wave 3)** | Trang CMS, SEO, footer/MXH, announcement, preview/publish, media picker, help, undo, 404, NFR-9. |
 | **E10** | **Growth — locale+, workflow banner, RBAC, lịch, A/B** | FR-17…21, NFR-6. |
+| **E11** | **Tin tức storefront & Admin (Wave 4)** | FR-39…FR-46, NFR-10, SC-15…16; TipTap, `cms-news`, `/news`, sanitize, nav, UX §16. |
 
 ---
 
@@ -636,12 +654,96 @@ Tôi muốn **gán slide vào chiến dịch và storefront nhận variant theo 
 
 ---
 
+## Epic 11: Tin tức — dữ liệu, API, Admin TipTap, storefront `/news`
+
+**Mục tiêu:** **FR-39…FR-46**, **NFR-10**, **SC-15…16** — đăng và đọc bài tin đa ngôn ngữ; editor **một vùng TipTap** (ADR-19); sanitize paste (ADR-23); Store **`cms-news`** (ADR-25); menu **Tin tức** qua **nav_tree** (ADR-22). UX: **`ux-design-specification.md` §16**.
+
+### Story 11.1: Migration & model `store_cms_news_article` + revision `news_article` (ADR-20, ADR-21)
+
+Là **kỹ sư backend**,  
+Tôi muốn **bảng bài tin và mở rộng revision**  
+Để **lưu slug, i18n title/body/seo, trạng thái draft/published** theo kiến trúc.
+
+**Given** module `store-cms`  
+**When** chạy migration  
+**Then** tồn tại entity `store_cms_news_article` với các cột ADR-20 (index `status+published_at`, unique `slug`)  
+**And** `store_cms_revision` chấp nhận `entity_type = news_article`  
+**And** seed không bắt buộc (có thể 0 bài)
+
+### Story 11.2: Admin API `cms-news` — CRUD, sanitize, publish (FR-42, FR-43, FR-44, FR-45, NFR-10)
+
+Là **quản trị nội dung**,  
+Tôi muốn **tạo/sửa bài với nội dung HTML được làm sạch khi lưu**  
+Để **không XSS** và khớp **NFR-10**.
+
+**Given** bài tin trong DB  
+**When** POST/PATCH body chứa HTML từ editor  
+**Then** server chạy allowlist/sanitize (ADR-23); từ chối `script`, `on*`, `javascript:`  
+**And** có endpoint publish/unpublish; lỗi trả message **tiếng Việt** (NFR-9)  
+**And** ảnh trong HTML chỉ `src` hợp lệ (uploaded URL) sau khi qua flow upload
+
+### Story 11.3: Store API `cms-news` — list + detail + preview (FR-40, FR-41, FR-34)
+
+Là **khách / biên tập preview**,  
+Tôi muốn **xem danh sách bài đã publish và chi tiết theo slug; xem nháp với token**  
+Để **FR-40**, **FR-41**, tái dùng **ADR-14**.
+
+**Given** bài published và bài draft  
+**When** GET list public không có token  
+**Then** chỉ trả published, sort `published_at desc`, phân trang/cursor theo ADR-25  
+**When** GET `/:slug` với locale  
+**Then** trả `title/excerpt/body/seo` resolve theo locale + fallback PRD  
+**When** GET kèm preview token hợp lệ  
+**Then** có thể xem draft; response không đi ISR cache công khai như UX-DR14
+
+### Story 11.4: Revalidate storefront khi lưu / publish tin (FR-42)
+
+Là **vận hành**,  
+Tôi muốn **bài mới hoặc sửa hiện trên storefront trong chu kỳ đã chọn**  
+Để **đồng bộ với banner/CMS**.
+
+**Given** publish hoặc PATCH quan trọng  
+**When** transaction thành công  
+**Then** backend gọi hook revalidate với tag **`cms-news`** (và tuỳ chọn theo `slug`)  
+**And** document trong `.env.example` nếu cần thêm tag
+
+### Story 11.5: Admin UI — danh sách + editor TipTap, locale tabs, SEO, help, paste ảnh (FR-36, FR-44, FR-45, FR-46)
+
+Là **biên tập viên phi kỹ thuật**,  
+Tôi muốn **màn hình giống các màn CMS khác, soạn như Word, chèn ảnh, xem trước**  
+Để **SC-15**, **UX-DR11…UX-DR13**.
+
+**Given** route zone Storefront & Nội dung  
+**When** mở **Tin tức**  
+**Then** DataTable/list + nút **Tạo bài mới** (`@medusajs/ui`)  
+**When** sửa bài  
+**Then** tabs theo `enabled_locales`; TipTap toolbar (heading, list, link, quote, **chèn ảnh** + MediaPicker FR-35); **sticky** Lưu nháp / Xem trước / Xuất bản  
+**And** paste Word: toast xác nhận; paste ảnh → upload File API (ADR-24) hoặc hướng dẫn rõ  
+**And** accordion SEO (FR-46); panel **?** tiếng Việt (FR-36)  
+**And** mở preview tab mới với watermark nháp khi có token
+
+### Story 11.6: Storefront — `/news`, `/news/[slug]`, metadata, mục nav Tin tức (FR-39, FR-40, FR-41, FR-46, SC-16)
+
+Là **khách**,  
+Tôi muốn **vào Tin tức từ menu, xem lưới bài đẹp và đọc bài dễ trên điện thoại**  
+Để **FR-39…FR-41**, **SC-16**, **UX-DR10**.
+
+**Given** nav có mục link `/news` (seed hoặc hướng dẫn Admin — ADR-22)  
+**When** mở `/[countryCode]/news`  
+**Then** card grid responsive, skeleton, empty state, phân trang đủ touch target  
+**When** mở `/[countryCode]/news/[slug]`  
+**Then** hero featured + prose max-width ~65–72ch; body HTML **chỉ** từ API đã sanitize  
+**And** `generateMetadata` + OG theo **FR-46**  
+**And** breadcrumb Trang chủ → Tin tức → tiêu đề
+
+---
+
 ## Kiểm tra phủ tổng hợp
 
-- **FR-1…FR-38** và **FR-2b** có story hoặc hàng bảng phủ epic (E1–E10).  
-- **NFR-1…NFR-9** được gán qua story ảnh (2.2, 3.4, 3.5, 6.3, 6.5, 8.x, 9.x, 10.x) và đo thủ công NFR-2, NFR-7.  
-- **UX-DR** chính: mega/drawer (E8), announcement & trang CMS (E9), nhãn i18n (E8.6), preview/help/errors (E9).  
-- **Growth (E10)** tách biệt để không chặn Wave 2–3.
+- **FR-1…FR-46** và **FR-2b** có story hoặc hàng bảng phủ epic (E1–E11).  
+- **NFR-1…NFR-10** được gán (NFR-10 qua **11.2**, **11.3**, **11.6**); đo thủ công NFR-2, NFR-7, **SC-15 paste**.  
+- **UX-DR** chính: mega/drawer (E8), announcement & trang CMS (E9), nhãn i18n (E8.6), preview/help/errors (E9), **tin tức §16 (E11)**.  
+- **Growth (E10)** tách biệt; **Wave 4 (E11)** có thể chạy sau E9 (tái dùng preview/media/revalidate).
 
 ---
 
@@ -654,11 +756,12 @@ Tôi muốn **gán slide vào chiến dịch và storefront nhận variant theo 
 5. **E8 (Wave 2)** — sau khi 8.1–8.2 xong có thể song song 8.3–8.6  
 6. **E9 (Wave 3)** — ưu tiên 9.1–9.3 rồi 9.6 SF, xen 9.4–9.5  
 7. **E10** khi product yêu cầu Growth  
+8. **E11 (Wave 4 tin)** — thứ tự gợi ý: **11.1 → 11.2 → 11.3 → 11.4**, xen **11.5** / **11.6** sau khi API ổn (hoặc 11.5 song song 11.3 nếu có contract mock)
 
 ---
 
 ## Bước BMad tiếp theo
 
-- **`bmad-create-story`** — chi tiết từng story vào file story riêng nếu team dùng template dev.  
-- **`bmad-sprint-planning`** ([SP]) — xếp backlog (E8/E9) vào `sprint-status.yaml`.  
-- **`bmad-check-implementation-readiness`** ([IR]) — trước khi dev hàng loạt wave 2–3.
+- **`bmad-create-story`** — tách **11.x** thành file story chi tiết nếu team dùng template dev.  
+- **`bmad-sprint-planning`** ([SP]) — thêm **epic-11** và story **11.1…11.6** vào `sprint-status.yaml`.  
+- **`bmad-check-implementation-readiness`** ([IR]) — trước khi dev **E11**.

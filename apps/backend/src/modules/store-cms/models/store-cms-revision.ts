@@ -9,6 +9,7 @@ export const CMS_REVISION_ENTITY_TYPES = [
   "nav",
   "page",
   "banner",
+  "news_article",
 ] as const
 
 export type CmsRevisionEntityType = (typeof CMS_REVISION_ENTITY_TYPES)[number]

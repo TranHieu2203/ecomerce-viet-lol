@@ -13,7 +13,12 @@ describe("cms-preview-token", () => {
       secret
     )
     const v = verifyCmsPreviewToken(token, secret)
-    expect(v).toEqual({ pageId: "page_1", slug: "about", exp })
+    expect(v).toEqual({
+      kind: "page",
+      pageId: "page_1",
+      slug: "about",
+      exp,
+    })
   })
 
   it("sai secret → null", () => {
@@ -32,5 +37,25 @@ describe("cms-preview-token", () => {
       secret
     )
     expect(verifyCmsPreviewToken(token, secret)).toBeNull()
+  })
+
+  it("ký và verify bài tin (news_article)", () => {
+    const exp = Math.floor(Date.now() / 1000) + 120
+    const token = signCmsPreviewToken(
+      {
+        kind: "news_article",
+        articleId: "news_1",
+        slug: "bai-moi",
+        exp,
+      },
+      secret
+    )
+    const v = verifyCmsPreviewToken(token, secret)
+    expect(v).toEqual({
+      kind: "news_article",
+      articleId: "news_1",
+      slug: "bai-moi",
+      exp,
+    })
   })
 })

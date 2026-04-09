@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 
 import {
+  getCmsNewsList,
   getCmsSettingsPublic,
   listBannerSlides,
   resolveCmsSiteTitle,
@@ -8,6 +9,7 @@ import {
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import FeaturedProducts from "@modules/home/components/featured-products"
 import HeroSlider from "@modules/home/components/hero-slider"
+import CmsNewsTeaser from "@modules/home/components/cms-news-teaser"
 import { listCollections } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
@@ -35,11 +37,12 @@ export default async function Home(props: {
 
   const region = await getRegion(countryCode)
 
-  const [{ collections }, slides] = await Promise.all([
+  const [{ collections }, slides, newsList] = await Promise.all([
     listCollections({
       fields: "id, handle, title",
     }),
     listBannerSlides(countryCode),
+    getCmsNewsList(countryCode, 4, 0),
   ])
 
   if (!collections || !region) {
@@ -58,6 +61,11 @@ export default async function Home(props: {
           />
         </ul>
       </div>
+      <CmsNewsTeaser
+        locale={countryCode}
+        articles={newsList.articles}
+        isEn={countryCode === "en"}
+      />
     </>
   )
 }

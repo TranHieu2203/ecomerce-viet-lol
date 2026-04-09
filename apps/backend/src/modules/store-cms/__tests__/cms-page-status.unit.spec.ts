@@ -40,12 +40,13 @@ describe("store-cms page & revision constants", () => {
     expect(values).toEqual(["draft", "published"])
   })
 
-  it("CMS_REVISION_ENTITY_TYPES khớp ADR-16", () => {
+  it("CMS_REVISION_ENTITY_TYPES khớp ADR-16 + tin tức (ADR-21)", () => {
     const expected: CmsRevisionEntityType[] = [
       "settings",
       "nav",
       "page",
       "banner",
+      "news_article",
     ]
     expect([...CMS_REVISION_ENTITY_TYPES]).toEqual(expected)
   })

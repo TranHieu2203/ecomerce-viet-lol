@@ -1,7 +1,7 @@
 ---
 project_name: ecomerce-viet-lol
 user_name: HieuTV-Team-MedusaV2
-date: '2026-04-06'
+date: '2026-04-07'
 sections_completed:
   - technology_stack
   - language_rules
@@ -52,7 +52,7 @@ Chi tiết kiến trúc/ADR: `_bmad-output/planning-artifacts/architecture.md`.
 - Module custom CMS: **`./src/modules/store-cms`**, constant **`STORE_CMS_MODULE = "store_cms"`** — resolve service bằng `req.scope.resolve(STORE_CMS_MODULE)`.
 - Đăng ký module trong **`medusa-config.ts`** (`modules: [{ resolve: "./src/modules/store-cms" }]`).
 - API file-based: **`src/api/.../route.ts`**, export `GET`/`POST`/… và có thể export **`AUTHENTICATE = false`** cho route store public.
-- Store routes CMS mẫu: `src/api/store/custom/cms-settings`, `banner-slides`, `locales`; Admin: `src/api/admin/custom/...`.
+- Store routes CMS mẫu: `src/api/store/custom/cms-settings`, `banner-slides`, `locales`; **wave 4 tin tức** (`architecture.md` ADR-25): **`cms-news`**, ISR tag **`cms-news`**, SF **`/[locale]/news`**; HTML thân bài: **sanitize** (NFR-10 / ADR-23). Admin custom: `src/api/admin/custom/...` (kèm **`cms-news`**); editor bài tin: **TipTap** (WYSIWYG) song song **vi/en** trong `admin/routes/cms-news`; lưu **`body_html_i18n`** đã sanitize.
 - Migration MikroORM theo chuẩn Medusa — đặt trong module (ví dụ `modules/store-cms/migrations/`).
 
 **Next.js storefront**
@@ -103,4 +103,4 @@ Chi tiết kiến trúc/ADR: `_bmad-output/planning-artifacts/architecture.md`.
 - Giữ file **ngắn, đủ sức nhắc**; cập nhật khi đổi phiên bản Medusa/Next hoặc convention mới.
 - Xoá/bớt rule khi đã trở nên hiển nhiên với team.
 
-Cập nhật lần cuối: **2026-04-06**
+Cập nhật lần cuối: **2026-04-09** (CMS tin: Admin TipTap vi/en; ảnh đại diện `MediaPickerField`; typecheck admin: `npm run typecheck:admin` trong `apps/backend`)

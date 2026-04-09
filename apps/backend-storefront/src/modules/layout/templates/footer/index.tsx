@@ -1,6 +1,7 @@
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import {
   getCmsSettingsPublic,
+  resolveCmsFooterContactPlain,
   resolveCmsSiteTitle,
   resolveCmsTagline,
   resolveCmsSocialLinks,
@@ -13,6 +14,25 @@ import { Text, clx } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 import { resolveSocialIcon } from "@modules/common/icons/social"
+
+/** Ưu tiên xuống dòng sau @ và sau dấu chấm trong domain (tránh cắt giữa từ). */
+function formatFooterEmailDisplay(email: string) {
+  const at = email.indexOf("@")
+  if (at <= 0) {
+    return email
+  }
+  const domain = email.slice(at + 1)
+  const domainBreakable = domain.includes(".")
+    ? domain.split(".").join(".\u200b")
+    : domain
+  return (
+    <>
+      {email.slice(0, at)}
+      @<wbr />
+      {domainBreakable}
+    </>
+  )
+}
 
 export default async function Footer({
   countryCode,
@@ -35,12 +55,17 @@ export default async function Footer({
     countryCode,
     m.footer.socialFallback
   )
+  const { hotline, email } = resolveCmsFooterContactPlain(cms)
+  const telHref = hotline
+    ? `tel:${hotline.replace(/[\s().-]/g, "")}`
+    : ""
+  const hasContactBlock = Boolean(hotline || email || socialLinks.length)
 
   return (
-    <footer className="border-t border-ui-border-base w-full bg-grey-5">
+    <footer className="border-t border-brand-gold/20 w-full bg-brand-cream">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-10 xsmall:flex-row items-start justify-between py-16 xsmall:py-24">
-          <div className="max-w-xs">
+        <div className="flex flex-col gap-y-10 xsmall:flex-row xsmall:items-start xsmall:justify-between py-16 xsmall:py-24 gap-x-10">
+          <div className="max-w-xs shrink-0">
             <LocalizedClientLink
               href="/"
               className="txt-compact-xlarge-plus text-ui-fg-base hover:text-ui-fg-subtle font-semibold tracking-tight"
@@ -51,10 +76,16 @@ export default async function Footer({
               {tagline}
             </p>
           </div>
-          <div className="text-small-regular gap-x-8 gap-y-10 w-full xsmall:w-auto grid grid-cols-2 small:grid-cols-3 small:gap-x-16 max-w-2xl">
+          <div
+            className={clx(
+              "text-small-regular w-full min-w-0 flex-1",
+              "grid gap-x-10 gap-y-10",
+              "[grid-template-columns:repeat(auto-fit,minmax(11.5rem,1fr))]"
+            )}
+          >
             {productCategories && productCategories?.length > 0 && (
               <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
+                <span className="txt-small-plus text-brand-gold font-medium">
                   {m.footer.categories}
                 </span>
                 <ul
@@ -110,46 +141,63 @@ export default async function Footer({
                 </ul>
               </div>
             )}
-            {socialLinks.length ? (
-              <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
+            {hasContactBlock ? (
+              <div className="flex flex-col gap-y-2 min-w-0">
+                <span className="txt-small-plus text-brand-gold font-medium">
                   {m.footer.socialHeading}
                 </span>
-                <ul className="flex flex-wrap gap-2 text-ui-fg-subtle">
-                  {socialLinks.slice(0, 6).map((s) => {
-                    const Icon = resolveSocialIcon(s.hostname)
-                    return (
-                      <li key={s.href}>
-                        <a
-                          className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
-                          href={s.href}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          aria-label={s.label}
-                          title={s.label}
-                        >
-                          <Icon size={18} />
-                          <span className="sr-only">{s.label}</span>
-                        </a>
-                      </li>
-                    )
-                  })}
-                </ul>
+                {hotline && telHref ? (
+                  <a
+                    className="block text-ui-fg-subtle txt-small hover:text-ui-fg-base"
+                    href={telHref}
+                  >
+                    <span className="text-ui-fg-muted">
+                      {m.footer.hotlineLabel}:{" "}
+                    </span>
+                    {hotline}
+                  </a>
+                ) : null}
+                {email ? (
+                  <a
+                    className="block text-ui-fg-subtle txt-small hover:text-ui-fg-base break-words"
+                    href={`mailto:${email}`}
+                  >
+                    <span className="text-ui-fg-muted">
+                      {m.footer.emailLabel}:{" "}
+                    </span>
+                    {formatFooterEmailDisplay(email)}
+                  </a>
+                ) : null}
+                {socialLinks.length ? (
+                  <ul className="flex flex-wrap gap-2 text-ui-fg-subtle">
+                    {socialLinks.slice(0, 6).map((s) => {
+                      const Icon = resolveSocialIcon(s.hostname, s.href)
+                      return (
+                        <li key={s.href}>
+                          <a
+                            className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                            href={s.href}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            aria-label={s.label}
+                            title={s.label}
+                          >
+                            <Icon size={18} />
+                            <span className="sr-only">{s.label}</span>
+                          </a>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : null}
               </div>
             ) : null}
             {collections && collections.length > 0 && (
               <div className="flex flex-col gap-y-2">
-                <span className="txt-small-plus txt-ui-fg-base">
+                <span className="txt-small-plus text-brand-gold font-medium">
                   {m.footer.collections}
                 </span>
-                <ul
-                  className={clx(
-                    "grid grid-cols-1 gap-2 text-ui-fg-subtle txt-small",
-                    {
-                      "grid-cols-2": (collections?.length || 0) > 3,
-                    }
-                  )}
-                >
+                <ul className="flex flex-col gap-2 text-ui-fg-subtle txt-small">
                   {collections?.slice(0, 6).map((c) => {
                     const { title: colTitle } = displayCollection(
                       countryCode,
@@ -170,8 +218,8 @@ export default async function Footer({
                 </ul>
               </div>
             )}
-            <div className="flex flex-col gap-y-2 col-span-2 small:col-span-1">
-              <span className="txt-small-plus txt-ui-fg-base">
+            <div className="flex flex-col gap-y-2">
+              <span className="txt-small-plus text-brand-gold font-medium">
                 {m.footer.customerHeading}
               </span>
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
@@ -203,7 +251,7 @@ export default async function Footer({
             </div>
           </div>
         </div>
-        <div className="flex flex-col-reverse gap-4 xsmall:flex-row w-full mb-12 xsmall:mb-16 justify-between items-start xsmall:items-center text-ui-fg-muted border-t border-ui-border-base pt-8">
+        <div className="flex flex-col-reverse gap-4 xsmall:flex-row w-full mb-12 xsmall:mb-16 justify-between items-start xsmall:items-center text-ui-fg-muted border-t border-brand-gold/15 pt-8">
           <Text className="txt-compact-small">
             © {new Date().getFullYear()} {brandName}
           </Text>

@@ -1,5 +1,7 @@
 import { Button, Heading, Input, Label, Switch, Text, Textarea, toast } from "@medusajs/ui"
+import { Save } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
+import { CmsCollapsibleSection } from "../../components/cms-collapsible-section"
 import { adminFetch } from "./admin-fetch"
 import { MediaPickerField } from "./media-picker-field"
 
@@ -152,17 +154,26 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
   }
 
   return (
-    <section className="pt-8 flex flex-col gap-6 border-t border-ui-border-base">
-      <div>
-        <Heading level="h2">SEO &amp; nội dung site (ADR-13)</Heading>
-        <Text size="small" className="text-ui-fg-muted mt-1 max-w-2xl">
+    <section className="flex flex-col gap-3 border-t border-ui-border-base pt-6">
+      <div className="px-1">
+        <Heading level="h2" className="text-lg">
+          SEO &amp; nội dung site (ADR-13)
+        </Heading>
+        <Text size="small" className="mt-1 max-w-2xl text-ui-fg-muted">
           Meta mặc định cho storefront, ảnh OG, thông tin chân trang / MXH,
           thanh thông báo và trang 404. Lỗi validation hiển thị bằng tiếng Việt.
         </Text>
       </div>
 
-      <div className="grid max-w-2xl gap-4 border border-ui-border-base rounded-md p-4">
-        <Text weight="plus">SEO mặc định</Text>
+      <CmsCollapsibleSection
+        defaultOpen
+        summary={
+          <Text weight="plus" className="text-sm">
+            SEO mặc định
+          </Text>
+        }
+      >
+        <div className="grid max-w-2xl gap-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label>Meta title (vi)</Label>
@@ -195,10 +206,18 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
           value={ogFileId}
           onValueChange={setOgFileId}
         />
-      </div>
+        </div>
+      </CmsCollapsibleSection>
 
-      <div className="grid max-w-2xl gap-4 border border-ui-border-base rounded-md p-4">
-        <Text weight="plus">Chân trang / liên hệ / MXH</Text>
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Text weight="plus" className="text-sm">
+            Chân trang / liên hệ / MXH
+          </Text>
+        }
+      >
+        <div className="grid max-w-2xl gap-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label>Hotline</Label>
@@ -253,10 +272,18 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      </CmsCollapsibleSection>
 
-      <div className="grid max-w-2xl gap-4 border border-ui-border-base rounded-md p-4">
-        <Text weight="plus">Thanh thông báo (AnnouncementBar)</Text>
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Text weight="plus" className="text-sm">
+            Thanh thông báo (AnnouncementBar)
+          </Text>
+        }
+      >
+        <div className="grid max-w-2xl gap-4">
         <div className="flex items-center gap-2">
           <Switch checked={annEnabled} onCheckedChange={setAnnEnabled} />
           <Label>Bật hiển thị</Label>
@@ -285,10 +312,18 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
             <Input value={annEnd} onChange={(e) => setAnnEnd(e.target.value)} />
           </div>
         </div>
-      </div>
+        </div>
+      </CmsCollapsibleSection>
 
-      <div className="grid max-w-2xl gap-4 border border-ui-border-base rounded-md p-4">
-        <Text weight="plus">Trang 404 (copy hiển thị storefront)</Text>
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Text weight="plus" className="text-sm">
+            Trang 404 (copy hiển thị storefront)
+          </Text>
+        }
+      >
+        <div className="grid max-w-2xl gap-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <Label>Tiêu đề (vi)</Label>
@@ -317,10 +352,19 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
             onChange={(e) => setNfBodyEn(e.target.value)}
           />
         </div>
-      </div>
+        </div>
+      </CmsCollapsibleSection>
 
-      <Button disabled={saving} variant="primary" onClick={() => void save()}>
-        Lưu SEO &amp; nội dung site
+      <Button
+        disabled={saving}
+        variant="primary"
+        type="button"
+        className="h-9 w-9 p-0"
+        title="Lưu SEO & nội dung site"
+        aria-label="Lưu SEO & nội dung site"
+        onClick={() => void save()}
+      >
+        <Save className="size-4" strokeWidth={2} />
       </Button>
     </section>
   )

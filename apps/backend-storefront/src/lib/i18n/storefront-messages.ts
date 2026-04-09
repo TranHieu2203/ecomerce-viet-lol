@@ -12,6 +12,8 @@ export type StorefrontMessages = {
   sideMenu: {
     button: string
     closeMenu: string
+    languageLabel: string
+    languageDefault: string
     home: string
     store: string
     account: string
@@ -23,6 +25,8 @@ export type StorefrontMessages = {
     collections: string
     socialHeading: string
     socialFallback: string
+    hotlineLabel: string
+    emailLabel: string
     customerHeading: string
     linkStore: string
     linkCart: string
@@ -260,6 +264,8 @@ const vi: StorefrontMessages = {
   sideMenu: {
     button: "Menu",
     closeMenu: "Đóng menu",
+    languageLabel: "Ngôn ngữ",
+    languageDefault: "Mặc định",
     home: "Trang chủ",
     store: "Cửa hàng",
     account: "Tài khoản",
@@ -272,6 +278,8 @@ const vi: StorefrontMessages = {
     collections: "Bộ sưu tập",
     socialHeading: "Liên hệ / MXH",
     socialFallback: "Liên hệ",
+    hotlineLabel: "Hotline",
+    emailLabel: "Email",
     customerHeading: "Khách hàng",
     linkStore: "Cửa hàng",
     linkCart: "Giỏ hàng",
@@ -525,6 +533,8 @@ const en: StorefrontMessages = {
   sideMenu: {
     button: "Menu",
     closeMenu: "Close menu",
+    languageLabel: "Language",
+    languageDefault: "Default",
     home: "Home",
     store: "Store",
     account: "Account",
@@ -537,6 +547,8 @@ const en: StorefrontMessages = {
     collections: "Collections",
     socialHeading: "Contact / Social",
     socialFallback: "Social",
+    hotlineLabel: "Hotline",
+    emailLabel: "Email",
     customerHeading: "Customer",
     linkStore: "Store",
     linkCart: "Cart",

@@ -15,16 +15,19 @@ export const NAV_MENU_CACHE_REVALIDATE_SECONDS = 180
 
 async function fetchNavMenuOnce(locale: string): Promise<NavMenuPublic> {
   try {
+    const isDev = process.env.NODE_ENV === "development"
     const data = await sdk.client.fetch<NavMenuPublic>(
       `/store/custom/nav-menu`,
       {
         method: "GET",
         query: { locale },
-        next: {
-          tags: ["cms-nav"],
-          revalidate: NAV_MENU_CACHE_REVALIDATE_SECONDS,
-        },
-        cache: "force-cache",
+        next: isDev
+          ? undefined
+          : {
+              tags: ["cms-nav"],
+              revalidate: NAV_MENU_CACHE_REVALIDATE_SECONDS,
+            },
+        cache: isDev ? "no-store" : "force-cache",
       }
     )
     const items = Array.isArray(data?.items) ? data.items : []

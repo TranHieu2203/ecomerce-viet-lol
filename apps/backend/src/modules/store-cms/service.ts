@@ -3,6 +3,11 @@ import CmsSetting from "./models/store-cms-settings"
 import StoreBannerCampaign from "./models/store-banner-campaign"
 import StoreBannerSlide from "./models/store-banner-slide"
 import StoreCmsPage from "./models/store-cms-page"
+import StoreCmsNewsArticle from "./models/store-cms-news-article"
+import StoreCmsNewsArticleCategory from "./models/store-cms-news-article-category"
+import StoreCmsNewsArticleTag from "./models/store-cms-news-article-tag"
+import StoreCmsNewsCategory from "./models/store-cms-news-category"
+import StoreCmsNewsTag from "./models/store-cms-news-tag"
 import StoreCmsPublicationAudit from "./models/store-cms-publication-audit"
 import StoreCmsRevision from "./models/store-cms-revision"
 
@@ -13,6 +18,11 @@ class StoreCmsModuleService extends MedusaService({
   StoreBannerCampaign,
   CmsSetting,
   StoreCmsPage,
+  StoreCmsNewsArticle,
+  StoreCmsNewsCategory,
+  StoreCmsNewsTag,
+  StoreCmsNewsArticleCategory,
+  StoreCmsNewsArticleTag,
   StoreCmsRevision,
   StoreCmsPublicationAudit,
 }) {

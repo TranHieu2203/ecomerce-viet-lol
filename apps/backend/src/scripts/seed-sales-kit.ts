@@ -18,13 +18,20 @@ import {
 import type { IFileModuleService } from "@medusajs/types"
 import * as fs from "node:fs"
 import * as path from "node:path"
+import sharp from "sharp"
 import { CMS_SETTINGS_ID, STORE_CMS_MODULE } from "../modules/store-cms"
 import { BANNER_PUBLICATION } from "../modules/store-cms/models/store-banner-slide"
 import { CMS_PAGE_STATUS } from "../modules/store-cms/models/store-cms-page"
+import { CMS_NEWS_STATUS } from "../modules/store-cms/models/store-cms-news-article"
 import type StoreCmsModuleService from "../modules/store-cms/service"
 import { generateBannerDerivatives } from "../utils/banner-derivatives"
 import { appendPageRevision } from "../utils/cms-page-revision"
 import { sanitizeCmsPageBody } from "../utils/cms-page"
+import { appendNewsRevisionWithTaxonomy } from "../utils/cms-news-revision"
+import {
+  replaceNewsArticleCategories,
+  replaceNewsArticleTags,
+} from "../utils/cms-news-taxonomy"
 import { revalidateStorefrontCms } from "../utils/revalidate-storefront"
 import { validateAndNormalizeNavTree } from "../utils/nav-tree"
 import {
@@ -117,6 +124,78 @@ async function uploadLocalImage(
   return { id: row.id, url: row.url }
 }
 
+/**
+ * Logo nguồn thường nền đen — đưa pixel gần đen về alpha=0 để header trắng hiện đúng vàng kim.
+ * Ngưỡng ~42: cân bằng giữa cạnh anti-alias và loại nền #000.
+ */
+async function pngKnockoutNearBlack(
+  absPath: string,
+  threshold = 42
+): Promise<Buffer> {
+  const { data, info } = await sharp(absPath)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+  const w = info.width
+  const h = info.height
+  const channels = info.channels
+  if (channels !== 4) {
+    return sharp(absPath).png().toBuffer()
+  }
+  const out = Buffer.from(data)
+  for (let i = 0; i < out.length; i += 4) {
+    const r = out[i]!
+    const g = out[i + 1]!
+    const b = out[i + 2]!
+    if (r <= threshold && g <= threshold && b <= threshold) {
+      out[i + 3] = 0
+    }
+  }
+  return sharp(out, { raw: { width: w, height: h, channels: 4 } })
+    .png()
+    .toBuffer()
+}
+
+async function uploadLogoForCms(
+  fileModule: IFileModuleService,
+  absPath: string,
+  repoRoot: string
+): Promise<{ id: string; url: string }> {
+  const ext = path.extname(absPath).toLowerCase()
+  let buf: Buffer
+  let filename: string
+  let mimeType: string
+  if (ext === ".png") {
+    buf = await pngKnockoutNearBlack(absPath)
+    filename = "tay-a-logo-rgb.png"
+    mimeType = "image/png"
+    try {
+      fs.writeFileSync(path.join(repoRoot, "docs", "logo-header.png"), buf)
+      const pubDir = path.join(
+        repoRoot,
+        "apps",
+        "backend-storefront",
+        "public"
+      )
+      fs.mkdirSync(pubDir, { recursive: true })
+      fs.writeFileSync(path.join(pubDir, "tay-a-logo.png"), buf)
+    } catch {
+      /* ghi file phụ trợ không chặn seed */
+    }
+  } else {
+    buf = fs.readFileSync(absPath)
+    filename = path.basename(absPath)
+    mimeType = mimeForPath(absPath)
+  }
+  const created = await fileModule.createFiles({
+    filename,
+    mimeType,
+    content: buf.toString("base64"),
+  })
+  const row = created as { id: string; url: string }
+  return { id: row.id, url: row.url }
+}
+
 function listDirectImageFiles(dir: string): string[] {
   if (!fs.existsSync(dir)) {
     return []
@@ -157,37 +236,113 @@ async function wipeAllProducts(
   logger.info(`Đã xóa ${ids.length} sản phẩm.`)
 }
 
-async function wipeAllProductCategories(
-  container: ExecArgs["container"],
-  logger: { info: (m: string) => void }
-) {
+type ProductCategoryListRow = {
+  id: string
+  parent_category_id?: string | null
+  deleted_at?: Date | string | null
+}
+
+async function listProductCategoriesGraph(
+  container: ExecArgs["container"]
+): Promise<{ id: string; parent_category_id: string | null }[]> {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
   const { data } = await query.graph({
     entity: "product_category",
     fields: ["id", "parent_category_id"],
+    pagination: { skip: 0, take: 100_000, order: { rank: "ASC" } },
   })
-  const rows = (data ?? []) as {
-    id: string
-    parent_category_id: string | null
-  }[]
-  if (!rows.length) {
-    logger.info("Không có product category để xóa.")
-    return
-  }
-  const childrenFirst = rows
-    .filter((r) => r.parent_category_id)
-    .map((r) => r.id)
-  const roots = rows
-    .filter((r) => !r.parent_category_id)
-    .map((r) => r.id)
-  const ordered = [...childrenFirst, ...roots]
-  const BATCH = 50
-  for (let i = 0; i < ordered.length; i += BATCH) {
-    await deleteProductCategoriesWorkflow(container).run({
-      input: ordered.slice(i, i + BATCH),
+  return (data ?? []).map(
+    (r: { id: string; parent_category_id?: string | null }) => ({
+      id: r.id,
+      parent_category_id: r.parent_category_id ?? null,
     })
+  )
+}
+
+async function listAllProductCategories(
+  productModule: {
+    listAndCountProductCategories: (
+      filters?: object,
+      config?: {
+        take?: number
+        skip?: number
+        order?: Record<string, "ASC" | "DESC">
+        withDeleted?: boolean
+      }
+    ) => Promise<[ProductCategoryListRow[], number]>
+  },
+  withDeleted: boolean
+): Promise<ProductCategoryListRow[]> {
+  const [rows] = await productModule.listAndCountProductCategories(
+    {},
+    {
+      take: 50_000,
+      skip: 0,
+      withDeleted,
+      order: { rank: "ASC" },
+    }
+  )
+  return rows
+}
+
+async function wipeAllProductCategories(
+  container: ExecArgs["container"],
+  logger: { info: (m: string) => void }
+) {
+  /** Product module: đủ category + xử lý bản ghi soft-delete (Medusa vẫn tính là “con” khi xóa cha). */
+  const productModule = container.resolve(Modules.PRODUCT) as {
+    listAndCountProductCategories: (
+      filters?: object,
+      config?: {
+        take?: number
+        skip?: number
+        order?: Record<string, "ASC" | "DESC">
+        withDeleted?: boolean
+      }
+    ) => Promise<[ProductCategoryListRow[], number]>
+    restoreProductCategories: (ids: string[]) => Promise<void>
   }
-  logger.info(`Đã xóa ${ordered.length} product category.`)
+
+  const withDeletedRows = await listAllProductCategories(productModule, true)
+  const restoreIds = withDeletedRows
+    .filter((c) => c.deleted_at != null)
+    .map((c) => c.id)
+  if (restoreIds.length) {
+    const RESTORE_BATCH = 100
+    for (let i = 0; i < restoreIds.length; i += RESTORE_BATCH) {
+      await productModule.restoreProductCategories(
+        restoreIds.slice(i, i + RESTORE_BATCH)
+      )
+    }
+    logger.info(
+      `Đã khôi phục ${restoreIds.length} product category (trước đó soft-delete) để xóa cây đúng thứ tự.`
+    )
+  }
+
+  let deleted = 0
+  for (;;) {
+    const snapshot = await listProductCategoriesGraph(container)
+    if (!snapshot.length) {
+      break
+    }
+    const leaves = snapshot.filter(
+      (r) => !snapshot.some((c) => c.parent_category_id === r.id)
+    )
+    if (!leaves.length) {
+      throw new Error(
+        "Không thể xóa product category: không có nút lá (kiểm tra vòng parent_category_id)."
+      )
+    }
+    await deleteProductCategoriesWorkflow(container).run({
+      input: [leaves[0].id],
+    })
+    deleted++
+  }
+  if (deleted) {
+    logger.info(`Đã xóa ${deleted} product category.`)
+  } else {
+    logger.info("Không có product category để xóa.")
+  }
 }
 
 async function wipeAllCollections(
@@ -562,6 +717,232 @@ async function seedPublishedCmsPages(
   logger.info(`Đã seed ${defs.length} trang CMS published + revision (nếu chưa tồn tại).`)
 }
 
+async function ensureCmsNewsTaxonomyForSeed(
+  cms: StoreCmsModuleService,
+  logger: { info: (m: string) => void }
+): Promise<{
+  cat: Record<string, string>
+  tag: Record<string, string>
+}> {
+  const catDefs: {
+    slug: string
+    title: { vi: string; en: string }
+
+    parent: string | null
+  }[] = [
+    {
+      slug: "tin-noi-bo",
+      title: { vi: "Tin nội bộ", en: "Company news" },
+      parent: null,
+    },
+    {
+      slug: "san-pham-suc-khoe",
+      title: { vi: "Sản phẩm & sức khỏe", en: "Products & wellness" },
+      parent: "tin-noi-bo",
+    },
+    {
+      slug: "doanh-nghiep",
+      title: { vi: "Doanh nghiệp & quà tặng", en: "Business & gifts" },
+      parent: "tin-noi-bo",
+    },
+  ]
+  const tagDefs: { slug: string; title: { vi: string; en: string } }[] = [
+    { slug: "saffron", title: { vi: "Saffron", en: "Saffron" } },
+    { slug: "my-pham", title: { vi: "Mỹ phẩm", en: "Cosmetics" } },
+    { slug: "qua-tang", title: { vi: "Quà tặng", en: "Gifts" } },
+  ]
+
+  const cat: Record<string, string> = {}
+  for (const d of catDefs) {
+    const ex = await cms.listStoreCmsNewsCategories({ slug: d.slug })
+    if (ex[0]) {
+      cat[d.slug] = ex[0].id
+      continue
+    }
+    const parentId = d.parent ? cat[d.parent] ?? null : null
+    const [c] = await cms.createStoreCmsNewsCategories([
+      {
+        slug: d.slug,
+        title_i18n: d.title,
+        parent_id: parentId,
+      },
+    ])
+    cat[d.slug] = c.id
+  }
+
+  const tag: Record<string, string> = {}
+  for (const d of tagDefs) {
+    const ex = await cms.listStoreCmsNewsTags({ slug: d.slug })
+    if (ex[0]) {
+      tag[d.slug] = ex[0].id
+      continue
+    }
+    const [t] = await cms.createStoreCmsNewsTags([
+      { slug: d.slug, title_i18n: d.title },
+    ])
+    tag[d.slug] = t.id
+  }
+
+  logger.info("Đã đảm bảo chủ đề & nhãn tin (seed taxonomy).")
+  return { cat, tag }
+}
+
+async function seedPublishedCmsNews(
+  cms: StoreCmsModuleService,
+  logger: { info: (m: string) => void }
+) {
+  type NewsDef = {
+    slug: string
+    title: { vi: string; en: string }
+    excerpt: { vi: string; en: string }
+    bodyVi: string
+    bodyEn: string
+    seo: {
+      meta_title: { vi: string; en: string }
+      meta_description: { vi: string; en: string }
+    }
+  }
+
+  const defs: NewsDef[] = [
+    {
+      slug: "saffron-nguon-goc-va-cach-dung",
+      title: {
+        vi: "Saffron: nguồn gốc và cách dùng an toàn hàng ngày",
+        en: "Saffron: origins and safe everyday use",
+      },
+      excerpt: {
+        vi: "Hiểu nhanh về saffron thật, bảo quản và gợi ý liều dùng trong ẩm thực.",
+        en: "A short guide to real saffron, storage, and culinary serving ideas.",
+      },
+      bodyVi: `<p>Saffron là gia vị quý được thu hoạch từ nhụy hoa nghệ tây. Chọn sợi dài, màu đỏ sẫm và mùi dịu — tránh bột không rõ nguồn.</p><h2>Bảo quản</h2><p>Để nơi khô ráo, tránh ánh sáng; hũ kín giúp giữ hương lâu hơn.</p><h2>Dùng trong bếp</h2><p>Ngâm ấm hoặc nước nóng vừa trước khi cho vào cơm, súp hay sữa — một nhúm nhỏ đã đủ tạo màu và hương.</p>`,
+      bodyEn: `<p>Saffron is a prized spice from crocus stigmas. Pick long deep-red threads with a gentle aroma — avoid anonymous powders.</p><h2>Storage</h2><p>Keep dry, away from light; an airtight jar preserves fragrance.</p><h2>In the kitchen</h2><p>Steep in warm liquid before adding to rice, soup, or milk — a small pinch colors and perfumes the dish.</p>`,
+      seo: {
+        meta_title: {
+          vi: "Saffron: nguồn gốc và cách dùng | Tây Á Group",
+          en: "Saffron guide | Tay A Group",
+        },
+        meta_description: {
+          vi: "Bài viết ngắn về saffron, bảo quản và dùng trong nấu ăn.",
+          en: "Quick read on saffron quality, storage, and cooking tips.",
+        },
+      },
+    },
+    {
+      slug: "quy-tac-chon-my-pham-an-toan",
+      title: {
+        vi: "Quy tắc chọn mỹ phẩm an toàn cho da nhạy cảm",
+        en: "How to pick safer cosmetics for sensitive skin",
+      },
+      excerpt: {
+        vi: "Vài tiêu chí đơn giản: thành phần, hạn dùng và nguồn nhập hàng rõ ràng.",
+        en: "Simple checks: ingredients, dates, and trustworthy sourcing.",
+      },
+      bodyVi: `<p>Da nhạy cảm cần sản phẩm có bảng thành phần minh bạch. Ưu tiên thương hiệu có kiểm định và hướng dẫn bảo quản rõ ràng.</p><ul><li>Đọc nhãn INCI; tránh hỗn hợp hương liệu nếu dễ kích ứng.</li><li>Thử patch test trước khi dùng rộng.</li></ul>`,
+      bodyEn: `<p>Sensitive skin benefits from transparent INCI lists and brands with clear quality controls.</p><ul><li>Scan for fragrance blends if you react easily.</li><li>Patch test before full use.</li></ul>`,
+      seo: {
+        meta_title: {
+          vi: "Chọn mỹ phẩm an toàn | Tây Á Group",
+          en: "Safer cosmetics | Tay A Group",
+        },
+        meta_description: {
+          vi: "Gợi ý chọn mỹ phẩm cho da nhạy cảm.",
+          en: "Tips for choosing cosmetics when your skin is reactive.",
+        },
+      },
+    },
+    {
+      slug: "set-qua-doanh-nghiep-xu-huong-2026",
+      title: {
+        vi: "Set quà doanh nghiệp: xu hướng gọn và cá nhân hoá 2026",
+        en: "Corporate gift sets: lean, personalized trends in 2026",
+      },
+      excerpt: {
+        vi: "Gói quà vừa phải, thông điệp rõ, in logo tinh tế — phù hợp hậu tết và sự kiện cả năm.",
+        en: "Right-sized kits, clear messaging, subtle branding — works year-round.",
+      },
+      bodyVi: `<p>Doanh nghiệp đang ưu tiên quà <strong>thực dụng</strong> (ăn uống, chăm sóc) kèm thiệp hoặc QR cảm ơn.</p><p>Cá nhân hoá nhẹ — tên nhóm hoặc segment khách — giúp tăng cảm giác trân trọng mà không tốn quy trình dài.</p>`,
+      bodyEn: `<p>Teams favor <strong>useful</strong> gifts—food, wellness—with a note or QR thank-you.</p><p>Light personalization (team name or segment) lifts perceived care without heavy logistics.</p>`,
+      seo: {
+        meta_title: {
+          vi: "Quà doanh nghiệp 2026 | Tây Á Group",
+          en: "Corporate gifts 2026 | Tay A Group",
+        },
+        meta_description: {
+          vi: "Xu hướng set quà doanh nghiệp gọn, cá nhân hoá.",
+          en: "Trends in compact, personalized corporate gifting.",
+        },
+      },
+    },
+  ]
+
+  const tax = await ensureCmsNewsTaxonomyForSeed(cms, logger)
+
+  const articleTax: Record<
+    string,
+    { cats: string[]; tags: string[] }
+  > = {
+    "saffron-nguon-goc-va-cach-dung": {
+      cats: [tax.cat["san-pham-suc-khoe"]],
+      tags: [tax.tag["saffron"]],
+    },
+    "quy-tac-chon-my-pham-an-toan": {
+      cats: [tax.cat["san-pham-suc-khoe"]],
+      tags: [tax.tag["my-pham"]],
+    },
+    "set-qua-doanh-nghiep-xu-huong-2026": {
+      cats: [tax.cat["doanh-nghiep"]],
+      tags: [tax.tag["qua-tang"]],
+    },
+  }
+
+  const now = new Date()
+  let created = 0
+  for (const d of defs) {
+    const existing = await cms.listStoreCmsNewsArticles({ slug: d.slug })
+    if (existing.length) {
+      continue
+    }
+    const bodyVi = sanitizeCmsPageBody(d.bodyVi) ?? ""
+    const bodyEn = sanitizeCmsPageBody(d.bodyEn) ?? ""
+    const [article] = await cms.createStoreCmsNewsArticles([
+      {
+        slug: d.slug,
+        title_i18n: d.title,
+        excerpt_i18n: d.excerpt,
+        body_html_i18n: { vi: bodyVi, en: bodyEn },
+        featured_image_file_id: null,
+        seo: d.seo,
+        status: CMS_NEWS_STATUS.PUBLISHED,
+        published_at: now,
+      },
+    ])
+    const tx = articleTax[d.slug]
+    if (tx) {
+      await replaceNewsArticleCategories(cms, article.id, tx.cats)
+      await replaceNewsArticleTags(cms, article.id, tx.tags)
+    }
+    await appendNewsRevisionWithTaxonomy(
+      cms,
+      {
+        id: article.id,
+        slug: article.slug,
+        title_i18n: article.title_i18n,
+        excerpt_i18n: article.excerpt_i18n,
+        body_html_i18n: article.body_html_i18n,
+        featured_image_file_id: article.featured_image_file_id ?? null,
+        seo: article.seo,
+        status: article.status,
+        published_at: article.published_at,
+      },
+      null
+    )
+    created++
+  }
+  logger.info(
+    `Đã seed ${created} bài tin CMS published (bỏ qua slug đã tồn tại; tổng định nghĩa ${defs.length}).`
+  )
+}
+
 async function wipeStoreCms(
   cms: StoreCmsModuleService,
   logger: { info: (m: string) => void }
@@ -580,6 +961,29 @@ async function wipeStoreCms(
   if (pages.length) {
     await cms.deleteStoreCmsPages(pages.map((p) => p.id))
     logger.info(`Đã xóa ${pages.length} trang CMS.`)
+  }
+  const newsArticles = await cms.listStoreCmsNewsArticles({}, {})
+  if (newsArticles.length) {
+    await cms.deleteStoreCmsNewsArticles(newsArticles.map((a) => a.id))
+    logger.info(`Đã xóa ${newsArticles.length} bài tin CMS.`)
+  }
+  for (let pass = 0; pass < 40; pass++) {
+    const cats = await cms.listStoreCmsNewsCategories({})
+    if (!cats.length) {
+      break
+    }
+    const leaves = cats.filter(
+      (c) => !cats.some((ch) => ch.parent_id === c.id)
+    )
+    if (!leaves.length) {
+      break
+    }
+    await cms.deleteStoreCmsNewsCategories(leaves.map((c) => c.id))
+  }
+  const tagsLeft = await cms.listStoreCmsNewsTags({})
+  if (tagsLeft.length) {
+    await cms.deleteStoreCmsNewsTags(tagsLeft.map((t) => t.id))
+    logger.info(`Đã xóa ${tagsLeft.length} nhãn tin CMS.`)
   }
   const revs = await cms.listStoreCmsRevisions({}, {})
   if (revs.length) {
@@ -606,7 +1010,7 @@ function assertSalesKitSeedAllowed(logger: { info: (m: string) => void }) {
 
 /**
  * Xóa toàn bộ catalog + CMS store, rồi seed lại theo `docs/WEBTAYA.xlsx` + ảnh trong
- * `docs/.../Sales Kit`, logo `docs/logo.jpg`, banner, trang CMS (Tây Á Group).
+ * `docs/.../Sales Kit`, logo `docs/logo.png` (hoặc `docs/logo.jpg`), banner, trang CMS (Tây Á).
  * Product categories: gốc **Tây Á Group** + các nhánh trùng handle/tên collection (phục vụ báo cáo / API category).
  *
  * Bắt buộc: `SEED_SALES_KIT_ALLOW=1` hoặc `npm run seed:sales-kit:confirm` từ `apps/backend`.
@@ -727,6 +1131,17 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
     version: 1,
     items: [
       {
+        id: "nav-news",
+        label: { vi: "Tin tức", en: "News" },
+        children: [
+          {
+            type: "link",
+            url: "/news",
+            label: { vi: "Tin tức", en: "News" },
+          },
+        ],
+      },
+      {
         id: "nav-saffron",
         label: { vi: "Saffron", en: "Saffron" },
         children: [{ type: "collection", handle: "saffron" }],
@@ -755,10 +1170,16 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
   })
 
   let logoId: string | null = null
-  const logoPath = path.join(repoRoot, "docs", "logo.jpg")
-  if (fs.existsSync(logoPath)) {
+  const logoPng = path.join(repoRoot, "docs", "logo.png")
+  const logoJpg = path.join(repoRoot, "docs", "logo.jpg")
+  const logoPath = fs.existsSync(logoPng)
+    ? logoPng
+    : fs.existsSync(logoJpg)
+      ? logoJpg
+      : null
+  if (logoPath) {
     try {
-      const f = await uploadLocalImage(fileModule, logoPath)
+      const f = await uploadLogoForCms(fileModule, logoPath, repoRoot)
       logoId = f.id
     } catch {
       logoId = null
@@ -772,24 +1193,24 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
       default_locale: curSettings.default_locale,
       enabled_locales: curSettings.enabled_locales,
       logo_file_id: logoId ?? curSettings.logo_file_id,
-      site_title: "Tây Á Group",
+      site_title: "Tây Á",
       nav_tree: navTree as unknown as Record<string, unknown>,
       site_title_i18n: {
-        vi: "Tây Á Group",
-        en: "Tay A Group",
+        vi: "Tây Á",
+        en: "Tay A",
       },
       tagline_i18n: {
-        vi: "Saffron, mỹ phẩm, quà doanh nghiệp và đặc sản — theo danh mục WEBTAYA.",
-        en: "Saffron, cosmetics, corporate gifts and specialty products.",
+        vi: "Quà tặng & thương mại — sang trọng, tinh tế",
+        en: "Premium gifts & commerce — refined selection aligned with our catalog.",
       },
       seo_defaults: {
         meta_title: {
-          vi: "Tây Á Group | Saffron · Mỹ phẩm · Quà tặng",
-          en: "Tay A Group | Saffron · Cosmetics · Gifting",
+          vi: "Tây Á | Quà tặng cao cấp · Saffron · Mỹ phẩm",
+          en: "Tay A | Premium gifts · Saffron · Cosmetics",
         },
         meta_description: {
-          vi: "Cửa hàng trực tuyến Tây Á Group — đồng bộ danh mục & ảnh Sales Kit.",
-          en: "Tay A Group online store — catalog aligned with the Sales Kit.",
+          vi: "Tây Á — quà tặng doanh nghiệp và sản phẩm cao cấp. Giao hàng toàn quốc.",
+          en: "Tay A — corporate and premium gifting. Nationwide delivery.",
         },
       },
       og_image_file_id: logoId ?? curSettings.og_image_file_id ?? null,
@@ -808,8 +1229,8 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
       announcement: {
         enabled: true,
         text: {
-          vi: "Tây Á Group — giao hàng toàn quốc.",
-          en: "Tay A Group — nationwide delivery.",
+          vi: "Tây Á — quà tặng & thương mại · Giao hàng toàn quốc.",
+          en: "Tay A — gifts & commerce · Nationwide delivery.",
         },
         link_url: null,
         starts_at: null,
@@ -829,6 +1250,7 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
   ])
 
   await seedPublishedCmsPages(cms, logger)
+  await seedPublishedCmsNews(cms, logger)
 
   const bannerDefs: {
     rel: string[]
@@ -905,5 +1327,6 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
   await revalidateStorefrontCms("cms")
   await revalidateStorefrontCms("cms-nav")
   await revalidateStorefrontCms("cms-pages")
+  await revalidateStorefrontCms("cms-news")
   logger.info("seed-sales-kit hoàn tất.")
 }

@@ -19,7 +19,16 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     return res.status(500).json({ message: "CMS enabled_locales invalid" })
   }
 
-  const qLocale = (req.query?.locale as string | undefined)?.trim()
+  const qLocale =
+    ((req.query?.locale as string | undefined) ?? (() => {
+      try {
+        const u = new URL(req.url ?? "", "http://localhost")
+        const v = u.searchParams.get("locale")
+        return v ?? undefined
+      } catch {
+        return undefined
+      }
+    })())?.trim()
   const defaultLocale =
     typeof settings.default_locale === "string"
       ? settings.default_locale

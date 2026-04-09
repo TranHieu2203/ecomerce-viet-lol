@@ -9,8 +9,10 @@ import {
   Textarea,
   toast,
 } from "@medusajs/ui"
+import { ArrowLeft, Copy, FileX2, Rocket, Save, Trash2 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
+import { CmsCollapsibleSection } from "../../../components/cms-collapsible-section"
 import { adminFetch } from "../../storefront-cms/admin-fetch"
 import { CmsRevisionDrawer } from "../../storefront-cms/revision-drawer"
 
@@ -246,23 +248,47 @@ const CmsPageEditor = () => {
             <CmsRevisionDrawer
               entityType="page"
               entityId={id}
+              triggerLabel="Lịch sử trang"
               onAfterRestore={() => load()}
             />
           ) : null}
-          <Button size="small" variant="secondary" asChild>
-            <Link to="..">← Danh sách</Link>
+          <Button
+            size="small"
+            variant="secondary"
+            className="h-9 w-9 shrink-0 p-0"
+            asChild
+            title="Danh sách trang"
+          >
+            <Link to=".." aria-label="Danh sách trang">
+              <ArrowLeft className="size-4" strokeWidth={2} />
+            </Link>
           </Button>
         </div>
       </div>
 
-      <Text size="small" className="text-ui-fg-muted">
-        Nội dung HTML cơ bản (p, strong, a, ul…) được chấp nhận; script và
-        iframe bị loại khi lưu. Tiêu đề bắt buộc có cả tiếng Việt và English
-        (có thể để trống tạm một bên).
-      </Text>
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Text weight="plus" className="text-sm text-ui-fg-muted">
+            Ghi chú soạn thảo
+          </Text>
+        }
+      >
+        <Text size="small" className="max-w-2xl text-ui-fg-muted">
+          Nội dung HTML cơ bản (p, strong, a, ul…) được chấp nhận; script và
+          iframe bị loại khi lưu. Tiêu đề bắt buộc có cả tiếng Việt và English
+          (có thể để trống tạm một bên).
+        </Text>
+      </CmsCollapsibleSection>
 
-      <section className="flex flex-col gap-4 border border-ui-border-base rounded-md p-4">
-        <Heading level="h2">Thông tin chung</Heading>
+      <CmsCollapsibleSection
+        defaultOpen
+        summary={
+          <Heading level="h2" className="text-base">
+            Thông tin chung
+          </Heading>
+        }
+      >
         <div>
           <Label>Slug (URL)</Label>
           <Input
@@ -312,11 +338,17 @@ const CmsPageEditor = () => {
             placeholder="<p>Nội dung…</p>"
           />
         </div>
-      </section>
+      </CmsCollapsibleSection>
 
-      <section className="flex flex-col gap-4 border border-ui-border-base rounded-md p-4">
-        <Heading level="h2">SEO trang (tùy chọn)</Heading>
-        <Text size="small" className="text-ui-fg-muted">
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Heading level="h2" className="text-base">
+            SEO trang (tùy chọn)
+          </Heading>
+        }
+      >
+        <Text size="small" className="mb-3 text-ui-fg-muted">
           Ghi đè meta so với cấu hình mặc định toàn site (Storefront CMS → SEO
           site).
         </Text>
@@ -360,29 +392,61 @@ const CmsPageEditor = () => {
             />
           </div>
         </div>
-      </section>
+      </CmsCollapsibleSection>
 
       <div className="flex flex-wrap gap-2">
         <Button
           variant="primary"
           disabled={saving}
+          type="button"
+          className="h-9 w-9 p-0"
+          title="Lưu nháp"
+          aria-label="Lưu nháp"
           onClick={() => void saveDraft()}
         >
-          Lưu nháp
+          <Save className="size-4" strokeWidth={2} />
         </Button>
         {!isNew ? (
           <>
-            <Button variant="secondary" onClick={() => void publish()}>
-              Xuất bản
+            <Button
+              variant="secondary"
+              type="button"
+              className="h-9 w-9 p-0"
+              title="Xuất bản"
+              aria-label="Xuất bản"
+              onClick={() => void publish()}
+            >
+              <Rocket className="size-4" strokeWidth={2} />
             </Button>
-            <Button variant="secondary" onClick={() => void unpublish()}>
-              Gỡ xuất bản
+            <Button
+              variant="secondary"
+              type="button"
+              className="h-9 w-9 p-0"
+              title="Gỡ xuất bản"
+              aria-label="Gỡ xuất bản"
+              onClick={() => void unpublish()}
+            >
+              <FileX2 className="size-4" strokeWidth={2} />
             </Button>
-            <Button variant="secondary" onClick={() => void copyPreviewToken()}>
-              Copy token xem trước
+            <Button
+              variant="secondary"
+              type="button"
+              className="h-9 w-9 p-0"
+              title="Copy token xem trước"
+              aria-label="Copy token xem trước"
+              onClick={() => void copyPreviewToken()}
+            >
+              <Copy className="size-4" strokeWidth={2} />
             </Button>
-            <Button variant="danger" onClick={() => void remove()}>
-              Xóa trang
+            <Button
+              variant="danger"
+              type="button"
+              className="h-9 w-9 p-0"
+              title="Xóa trang"
+              aria-label="Xóa trang"
+              onClick={() => void remove()}
+            >
+              <Trash2 className="size-4" strokeWidth={2} />
             </Button>
           </>
         ) : null}

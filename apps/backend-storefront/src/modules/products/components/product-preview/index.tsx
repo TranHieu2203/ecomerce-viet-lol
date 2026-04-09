@@ -1,6 +1,7 @@
 import { Text } from "@medusajs/ui"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
+import { displayProduct } from "@lib/util/i18n-catalog"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
@@ -10,10 +11,12 @@ export default async function ProductPreview({
   product,
   isFeatured,
   region,
+  locale,
 }: {
   product: HttpTypes.StoreProduct
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
+  locale: string
 }) {
   // const pricedProduct = await listProducts({
   //   regionId: region.id,
@@ -27,6 +30,12 @@ export default async function ProductPreview({
   const { cheapestPrice } = getProductPrice({
     product,
   })
+  const { title } = displayProduct(
+    locale,
+    product.title,
+    product.description,
+    product.metadata as Record<string, unknown> | null | undefined
+  )
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}`} className="group">
@@ -39,7 +48,7 @@ export default async function ProductPreview({
         />
         <div className="flex txt-compact-medium mt-4 justify-between">
           <Text className="text-ui-fg-subtle" data-testid="product-title">
-            {product.title}
+            {title}
           </Text>
           <div className="flex items-center gap-x-2">
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}

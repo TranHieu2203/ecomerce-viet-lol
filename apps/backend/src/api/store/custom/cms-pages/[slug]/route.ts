@@ -40,7 +40,16 @@ export async function GET(
     typeof settings.default_locale === "string"
       ? settings.default_locale
       : "vi"
-  const qLocale = (req.query?.locale as string | undefined)?.trim()
+  const qLocale =
+    ((req.query?.locale as string | undefined) ?? (() => {
+      try {
+        const u = new URL(req.url ?? "", "http://localhost")
+        const v = u.searchParams.get("locale")
+        return v ?? undefined
+      } catch {
+        return undefined
+      }
+    })())?.trim()
   const locale = (qLocale && qLocale.length ? qLocale : defaultLocale).toLowerCase()
 
   if (!enabled.includes(locale)) {
@@ -65,7 +74,10 @@ export async function GET(
   if (previewToken && secret) {
     const v = verifyCmsPreviewToken(previewToken, secret)
     previewOk =
-      !!v && v.pageId === page.id && v.slug === page.slug
+      !!v &&
+      v.kind === "page" &&
+      v.pageId === page.id &&
+      v.slug === page.slug
   }
 
   if (!previewOk && page.status !== CMS_PAGE_STATUS.PUBLISHED) {

@@ -16,11 +16,18 @@ const B64 = {
   },
 }
 
+/** Payload khi ký — `kind` mặc định page nếu chỉ có pageId (tương thích token cũ). */
 export type CmsPreviewPayload = {
-  pageId: string
-  slug: string
   exp: number
+  slug: string
+  kind?: "page" | "news_article"
+  pageId?: string
+  articleId?: string
 }
+
+export type VerifiedCmsPreview =
+  | { kind: "page"; pageId: string; slug: string; exp: number }
+  | { kind: "news_article"; articleId: string; slug: string; exp: number }
 
 export function signCmsPreviewToken(
   payload: CmsPreviewPayload,
@@ -36,7 +43,7 @@ export function signCmsPreviewToken(
 export function verifyCmsPreviewToken(
   token: string,
   secret: string
-): CmsPreviewPayload | null {
+): VerifiedCmsPreview | null {
   const parts = token.split(".")
   if (parts.length !== 2) {
     return null
@@ -64,15 +71,23 @@ export function verifyCmsPreviewToken(
     return null
   }
   const o = parsed as Record<string, unknown>
-  if (
-    typeof o.pageId !== "string" ||
-    typeof o.slug !== "string" ||
-    typeof o.exp !== "number"
-  ) {
+  if (typeof o.slug !== "string" || typeof o.exp !== "number") {
     return null
   }
   if (Date.now() / 1000 > o.exp) {
     return null
   }
-  return { pageId: o.pageId, slug: o.slug, exp: o.exp }
+  const slug = o.slug
+  const exp = o.exp
+  const kindRaw = o.kind
+  if (kindRaw === "news_article") {
+    if (typeof o.articleId !== "string") {
+      return null
+    }
+    return { kind: "news_article", articleId: o.articleId, slug, exp }
+  }
+  if (typeof o.pageId !== "string") {
+    return null
+  }
+  return { kind: "page", pageId: o.pageId, slug, exp }
 }

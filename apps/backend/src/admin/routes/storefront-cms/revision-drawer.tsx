@@ -1,4 +1,5 @@
 import { Button, Drawer, Heading, Text, toast } from "@medusajs/ui"
+import { History, RotateCcw } from "lucide-react"
 import { useCallback, useState } from "react"
 import { adminFetch } from "./admin-fetch"
 
@@ -84,15 +85,20 @@ export function CmsRevisionDrawer({
     return "Cấu trúc menu header"
   }
 
+  const triggerTitle = triggerLabel ?? "Lịch sử phiên bản"
+
   return (
     <>
       <Button
         size="small"
         variant="secondary"
         type="button"
+        className="h-8 w-8 shrink-0 p-0"
         onClick={() => onOpenChange(true)}
+        title={triggerTitle}
+        aria-label={triggerTitle}
       >
-        {triggerLabel ?? "Lịch sử phiên bản"}
+        <History className="size-4" strokeWidth={2} />
       </Button>
       <Drawer open={open} onOpenChange={onOpenChange}>
         <Drawer.Content>
@@ -126,9 +132,12 @@ export function CmsRevisionDrawer({
                     size="small"
                     variant="secondary"
                     type="button"
+                    className="h-8 w-8 shrink-0 p-0"
+                    title="Khôi phục bản này"
+                    aria-label="Khôi phục bản này"
                     onClick={() => void restore(r.id)}
                   >
-                    Khôi phục
+                    <RotateCcw className="size-4" strokeWidth={2} />
                   </Button>
                 </li>
               ))}
