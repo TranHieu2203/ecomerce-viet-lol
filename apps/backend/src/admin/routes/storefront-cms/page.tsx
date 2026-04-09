@@ -359,9 +359,6 @@ const StorefrontCmsPage = () => {
                 setSetForm((s) => ({ ...s, site_title: e.target.value }))
               }
             />
-            <Text size="small" className="text-ui-fg-muted mt-1">
-              Storefront lấy từ đây thay cho tiêu đề cố định &quot;Medusa Store&quot;.
-            </Text>
           </div>
           <div>
             <Label>Default locale</Label>
@@ -393,11 +390,7 @@ const StorefrontCmsPage = () => {
             />
             <Label>Bật Japanese (locale thứ ba — FR-17)</Label>
           </div>
-          <Text size="small" className="text-ui-fg-muted">
-            RBAC publish: đặt biến môi trường backend{" "}
-            <code>CMS_PUBLISHER_ADMIN_IDS</code> (id user admin, cách nhau bởi
-            dấu phẩy). Không đặt = mọi admin được publish.
-          </Text>
+     
           <Button
             type="button"
             className="h-9 w-9 p-0"

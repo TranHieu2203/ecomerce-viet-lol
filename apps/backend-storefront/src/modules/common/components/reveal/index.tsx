@@ -34,9 +34,7 @@ function usePrefersReducedMotion() {
       return () => m.removeEventListener("change", onChange)
     }
     // Safari fallback
-    // eslint-disable-next-line deprecation/deprecation
     m.addListener(onChange)
-    // eslint-disable-next-line deprecation/deprecation
     return () => m.removeListener(onChange)
   }, [])
   return reduced

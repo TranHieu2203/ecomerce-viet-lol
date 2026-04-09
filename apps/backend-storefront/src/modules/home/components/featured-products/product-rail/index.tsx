@@ -47,7 +47,7 @@ export default async function ProductRail({
           {m.home.viewAll}
         </InteractiveLink>
       </div>
-      <ul className="grid grid-cols-2 small:grid-cols-3 gap-x-4 xsmall:gap-x-6 gap-y-10 xsmall:gap-y-16 small:gap-y-24">
+      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-4 xsmall:gap-x-6 gap-y-10 xsmall:gap-y-16 small:gap-y-24">
         {pricedProducts &&
           pricedProducts.map((product) => (
             <li key={product.id}>
@@ -56,6 +56,7 @@ export default async function ProductRail({
                 region={region}
                 isFeatured
                 locale={countryCode}
+                showDescription
               />
             </li>
           ))}

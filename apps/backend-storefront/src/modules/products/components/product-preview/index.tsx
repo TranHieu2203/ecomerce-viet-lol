@@ -12,11 +12,13 @@ export default async function ProductPreview({
   isFeatured,
   region,
   locale,
+  showDescription,
 }: {
   product: HttpTypes.StoreProduct
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
   locale: string
+  showDescription?: boolean
 }) {
   // const pricedProduct = await listProducts({
   //   regionId: region.id,
@@ -30,12 +32,14 @@ export default async function ProductPreview({
   const { cheapestPrice } = getProductPrice({
     product,
   })
-  const { title } = displayProduct(
+  const { title, description } = displayProduct(
     locale,
     product.title,
     product.description,
     product.metadata as Record<string, unknown> | null | undefined
   )
+
+  const showDescriptionBlock = Boolean(showDescription && description?.trim())
 
   return (
     <LocalizedClientLink
@@ -49,13 +53,20 @@ export default async function ProductPreview({
           size="full"
           isFeatured={isFeatured}
         />
-        <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">
-            {title}
-          </Text>
-          <div className="flex items-center gap-x-2">
-            {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+        <div className="txt-compact-medium mt-4">
+          <div className="flex justify-between gap-x-4">
+            <Text className="text-ui-fg-subtle" data-testid="product-title">
+              {title}
+            </Text>
+            <div className="flex items-center gap-x-2 shrink-0">
+              {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
+            </div>
           </div>
+          {showDescriptionBlock && (
+            <Text className="text-ui-fg-muted mt-2 line-clamp-2">
+              {description}
+            </Text>
+          )}
         </div>
       </div>
     </LocalizedClientLink>
