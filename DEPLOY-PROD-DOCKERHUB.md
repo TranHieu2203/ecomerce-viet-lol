@@ -25,6 +25,41 @@ sudo bash deploy/bootstrap-ubuntu-git-docker.sh
 
 ---
 
+## SSH key (khuyến nghị) — để deploy 1-click từ Windows
+
+### Gen SSH key trên Windows
+
+Mở PowerShell, chạy:
+
+```powershell
+ssh-keygen -t ed25519 -C "deploy@ecomerce-viet-lol" -f "$env:USERPROFILE\.ssh\ecomerce_viet_lol_ed25519"
+```
+
+### Add public key lên VPS
+
+In public key:
+
+```powershell
+type "$env:USERPROFILE\.ssh\ecomerce_viet_lol_ed25519.pub"
+```
+
+Trên VPS:
+
+```bash
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+echo "<PASTE_PUBLIC_KEY_HERE>" >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+Test login:
+
+```powershell
+ssh -i "$env:USERPROFILE\.ssh\ecomerce_viet_lol_ed25519" root@<VPS_IP>
+```
+
+---
+
 ## Cấu hình production env
 
 File dùng cho production là `deploy/.env.production`.
@@ -118,6 +153,34 @@ bash deploy/prod-update.sh
 - `docker compose pull` + `up -d`
 - `db:migrate`
 - **không seed**, **không xoá volume**
+
+---
+
+## Checklist A→Z (làm 1 lần cho xong)
+
+### A) Local (Windows) — build + push images
+
+```bat
+.\PROD-1CLICK-LOCAL-BUILD-PUSH-DOCKERHUB.bat
+```
+
+### B) VPS — lần đầu (xoá sạch data rồi seed lại)
+
+```bash
+cd ~/ecomerce-viet-lol
+git pull --ff-only
+cp deploy/.env.production.example deploy/.env.production
+# sửa deploy/.env.production: POSTGRES_PASSWORD thật, JWT/COOKIE/REVALIDATE, CORS, domain...
+bash deploy/prod-init.sh
+```
+
+### C) VPS — lần sau (giữ data, chỉ update + migrate)
+
+```bash
+cd ~/ecomerce-viet-lol
+git pull --ff-only
+bash deploy/prod-update.sh
+```
 
 ---
 
