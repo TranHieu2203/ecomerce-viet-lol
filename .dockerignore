@@ -11,3 +11,11 @@ _bmad-output
 apps/backend/static/**
 !apps/backend/static/.gitkeep
 deploy/.env.production
+
+# Loại bỏ tất cả .env files khỏi Docker build context.
+# File .env.template trong apps/backend/ KHÔNG được đưa vào image —
+# tránh loadEnv() đọc và override runtime env vars (gây localhost:9000 trong URL ảnh).
+apps/backend/.env
+apps/backend/.env.local
+apps/backend/.env.*.local
+apps/backend/.env.template

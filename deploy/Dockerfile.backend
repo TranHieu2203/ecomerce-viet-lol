@@ -10,6 +10,13 @@ WORKDIR /app/apps/backend
 RUN npm ci --no-audit --no-fund
 
 COPY apps/backend ./
+
+# MEDUSA_BACKEND_PUBLIC_URL phải được set tại build time để file-local provider
+# sinh đúng URL ảnh (thay vì fallback localhost:9000 được bake vào compiled bundle).
+# Truyền qua: docker compose build --build-arg MEDUSA_BACKEND_PUBLIC_URL=https://admin.example.com
+ARG MEDUSA_BACKEND_PUBLIC_URL=http://localhost:9000
+ENV MEDUSA_BACKEND_PUBLIC_URL=$MEDUSA_BACKEND_PUBLIC_URL
+
 RUN npm run build \
   && test -f .medusa/server/public/admin/index.html \
   # Install runtime deps for built server bundle (.medusa/server is recreated on build)

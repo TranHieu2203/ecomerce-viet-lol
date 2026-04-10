@@ -53,6 +53,10 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
+      args:
+        # Bắt buộc set để file-local provider sinh URL ảnh đúng (https://admin.domain.com/static/...).
+        # Nếu thiếu build arg này, Medusa bake localhost:9000 vào compiled bundle.
+        MEDUSA_BACKEND_PUBLIC_URL: ${MEDUSA_BACKEND_PUBLIC_URL:-http://localhost:9000}
     restart: unless-stopped
     environment:
       # Ưu tiên DATABASE_URL nếu bạn set sẵn (để URL-encode password khi có ký tự đặc biệt như '@').
