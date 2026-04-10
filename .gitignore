@@ -21,3 +21,14 @@ apps/backend/.medusa/
 # Medusa file module: upload local (không commit)
 apps/backend/static/**
 !apps/backend/static/.gitkeep
+
+# Dev tooling artifacts (không cần trên prod)
+_bmad/
+_bmad-output/
+
+# Ảnh sản phẩm Sales Kit (quản lý ngoài git)
+docs/
+
+# Windows-only scripts
+*.bat
+*.ps1
