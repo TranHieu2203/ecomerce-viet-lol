@@ -1,9 +1,7 @@
 node_modules/
 
-# SSH shortcut may local (chua thong tin server, khong commit)
+# SSH shell thang VPS (neu ban dat IP that trong file — co the ignore)
 ssh-root-server.bat
-ssh-npm-ui-tunnel.bat
-deploy-vps.bat
 
 .env
 .env.local

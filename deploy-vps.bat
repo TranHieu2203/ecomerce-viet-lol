@@ -1,12 +1,11 @@
 @echo off
 setlocal EnableExtensions
-REM Sao chep file nay thanh deploy-vps.bat, dien SSH_HOST / REMOTE_DIR, roi:
-REM   deploy-vps.bat init    — lan dau: clone repo (neu chua co) + docker + db:migrate
-REM   deploy-vps.bat update — pull + docker + db:migrate
-REM
-REM Truoc init: tren VPS sau khi co code, tao deploy/.env.production (cp example roi sua).
+REM Deploy qua SSH. IP: 103.124.94.227 (doi neu doi VPS). REMOTE_DIR / GIT_URL neu can.
+REM   deploy-vps.bat init    — lan dau: clone (neu chua co) + docker + db:migrate
+REM   deploy-vps.bat update — git pull + docker + db:migrate
+REM Tren VPS can deploy/.env.production (co trong repo, doi CHANGE_ME_* truoc go live).
 
-set "SSH_HOST=THAY-BANG-IP-VPS"
+set "SSH_HOST=103.124.94.227"
 set "SSH_USER=root"
 set "SSH_PORT=22"
 set "REMOTE_DIR=/root/ecomerce-viet-lol"

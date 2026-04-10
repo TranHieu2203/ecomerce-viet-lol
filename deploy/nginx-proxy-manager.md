@@ -62,5 +62,7 @@ Tạo user admin / publishable key trong Admin tại `https://admin.quatangtaya.
 ## Deploy từ Windows (tùy chọn)
 
 - Trên VPS có script `deploy/deploy-on-server.sh` (`init` = lần đầu: `up` + `db:migrate`; `update` = `pull` + `up` + `db:migrate`).
-- Ở máy Windows: sao chép `deploy-vps.example.bat` → `deploy-vps.bat` (file này trong `.gitignore`), điền `SSH_HOST` / `REMOTE_DIR`, rồi `deploy-vps.bat init` hoặc `deploy-vps.bat update`.
+- Ở máy Windows: mở gốc repo `deploy-vps.bat`, sửa `SSH_HOST` / `REMOTE_DIR` nếu cần, rồi `deploy-vps.bat init` hoặc `deploy-vps.bat update`.
 - **Lần đầu:** `deploy/.env.production` đã có trong repo (placeholder); trên VPS vẫn nên đổi mọi `CHANGE_ME_*` trước khi go live.
+- **Tunnel DB/Redis về máy dev:** `ssh-data-tunnel.bat` (sửa `SSH_HOST`). Compose prod map Postgres/Redis chỉ `127.0.0.1` trên VPS; máy bạn dùng `localhost:15432` / `localhost:16379`.
+- **Tunnel UI NPM:** `ssh-npm-ui-tunnel.bat` (sửa `SSH_HOST`) → `http://localhost:8881`.

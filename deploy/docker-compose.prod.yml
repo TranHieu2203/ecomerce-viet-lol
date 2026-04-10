@@ -21,6 +21,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-medusa}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    # Chi localhost tren VPS — dung voi ssh-data-tunnel.bat (PostgreSQL ve may local)
+    ports:
+      - "127.0.0.1:5432:5432"
     healthcheck:
       # Giữ POSTGRES_USER/POSTGRES_DB mặc định medusa/medusa hoặc sửa lệnh cho khớp
       test: ["CMD-SHELL", "pg_isready -U medusa -d medusa"]
@@ -37,6 +40,9 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
+    # Chi localhost tren VPS — dung voi ssh-data-tunnel.bat (Redis ve may local)
+    ports:
+      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
