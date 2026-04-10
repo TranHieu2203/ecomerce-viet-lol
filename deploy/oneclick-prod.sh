@@ -143,12 +143,16 @@ guard_database_url() {
 
 if [[ "$MODE" == "init" ]]; then
   echo "[mode:init] WARNING: this will WIPE ALL docker images/volumes on this server."
-  read -r -p "Type 'WIPE' to continue: " confirm
-  # Normalize user input: trim spaces + drop CR (common when copy/paste in terminals)
-  confirm="$(printf '%s' "$confirm" | tr -d '\r' | xargs)"
-  if [[ "${confirm^^}" != "WIPE" ]]; then
-    echo "[mode:init] Aborted."
-    exit 1
+  if [[ "${SKIP_WIPE_CONFIRM:-}" != "1" ]]; then
+    read -r -p "Type 'WIPE' to continue: " confirm
+    # Normalize user input: trim spaces + drop CR (common when copy/paste in terminals)
+    confirm="$(printf '%s' "$confirm" | tr -d '\r' | xargs)"
+    if [[ "${confirm^^}" != "WIPE" ]]; then
+      echo "[mode:init] Aborted."
+      exit 1
+    fi
+  else
+    echo "[mode:init] SKIP_WIPE_CONFIRM=1 → skipping confirmation prompt."
   fi
 fi
 
