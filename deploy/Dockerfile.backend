@@ -11,9 +11,13 @@ RUN npm ci --no-audit --no-fund
 
 COPY apps/backend ./
 RUN npm run build \
-  # Admin UI trong Medusa v2 được emit vào `.medusa/server/...` (không phải `.medusa/admin/...`).
-  # Nếu thiếu build admin thì production sẽ crash, nên kiểm tra theo pattern.
+  # Medusa admin loader có thể kỳ vọng build ở `.medusa/admin`.
+  # Trong thực tế `medusa build` emit admin vào `.medusa/server/public/admin`.
+  # Để tránh mismatch path giữa các phiên bản, copy sang cả 2 nơi.
   && test -f .medusa/server/public/admin/index.html \
+  && mkdir -p .medusa/admin \
+  && cp -R .medusa/server/public/admin/. .medusa/admin/ \
+  && test -f .medusa/admin/index.html \
   && npm prune --omit=dev --no-audit --no-fund
 
 FROM node:20-bookworm-slim AS runner
