@@ -27,6 +27,7 @@ dc() { "${COMPOSE[@]}" "$@"; }
 db_preflight() {
   echo "[preflight] DATABASE_URL (from compose env):"
   dc run --rm --no-deps medusa-backend-1 sh -lc 'echo "  $DATABASE_URL"'
+  dc run --rm --no-deps medusa-backend-1 sh -lc 'echo "  PGSSLMODE=$PGSSLMODE"'
 
   echo "[preflight] postgres DNS:"
   dc run --rm --no-deps medusa-backend-1 sh -lc 'getent hosts postgres || true'
@@ -36,6 +37,16 @@ db_preflight() {
 
   echo "[preflight] test connect via node(pg):"
   dc run --rm --no-deps medusa-backend-1 node -e "const { Client } = require('pg'); const cs = process.env.DATABASE_URL; const c = new Client({ connectionString: cs, ssl: false, connectionTimeoutMillis: 5000 }); c.connect().then(()=>c.end().then(()=>{console.log('  OK');process.exit(0)})).catch(e=>{console.error('  FAIL:', e.message);process.exit(1)})"
+}
+
+guard_database_url() {
+  local dbu
+  dbu="$(dc run --rm --no-deps medusa-backend-1 sh -lc 'printf %s \"$DATABASE_URL\"')"
+  if [[ "$dbu" == *"ssl=false"* ]]; then
+    echo "[lỗi] DATABASE_URL đang chứa 'ssl=false' — giá trị này có thể bị hiểu sai và bật SSL."
+    echo "      Hãy bỏ query đó và dùng '?sslmode=disable' hoặc để compose tự set DATABASE_URL."
+    exit 1
+  fi
 }
 
 if [[ ! -f "$ENV_FILE" ]]; then
@@ -59,6 +70,7 @@ echo "[init] docker compose up -d..."
 dc up -d
 
 db_preflight
+guard_database_url
 
 echo "[init] db:migrate (one-off)..."
 dc run --rm --no-deps medusa-backend-1 npx medusa db:migrate

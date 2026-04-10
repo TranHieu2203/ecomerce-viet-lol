@@ -64,7 +64,8 @@ services:
       #
       # Lưu ý: Postgres container nội bộ không bật SSL.
       # KHÔNG thêm `?ssl=false` vào URL vì một số parser coi "ssl=false" là truthy và sẽ bật SSL.
-      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}}
+      # Dùng `sslmode=disable` (chuẩn libpq) để tắt SSL một cách rõ ràng.
+      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?sslmode=disable}
 
       # Ép tắt SSL cho libpq/clients khi có env/driver tự bật SSL.
       PGSSLMODE: disable
