@@ -12,6 +12,7 @@ apps/*/.env
 # Production env
 # NOTE: Repo có sẵn `deploy/.env.production` dạng template (CHANGE_ME_*).
 # Không commit file env thật có secrets ngoài đời.
+deploy/.env.production.local
 .DS_Store
 *.log
 .next/

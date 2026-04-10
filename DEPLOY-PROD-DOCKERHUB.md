@@ -62,7 +62,10 @@ ssh -i "$env:USERPROFILE\.ssh\ecomerce_viet_lol_ed25519" root@<VPS_IP>
 
 ## Cấu hình production env
 
-File dùng cho production là `deploy/.env.production`.
+File env:
+
+- **Template trong git**: `deploy/.env.production` (không chứa secret thật)
+- **File secret trên VPS (khuyến nghị)**: `deploy/.env.production.local` (được ignore, scripts sẽ tự ưu tiên file này nếu tồn tại)
 
 Các biến quan trọng:
 

@@ -15,7 +15,12 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-COMPOSE=(docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production)
+ENV_FILE="deploy/.env.production"
+if [[ -f deploy/.env.production.local ]]; then
+  ENV_FILE="deploy/.env.production.local"
+fi
+
+COMPOSE=(docker compose -f deploy/docker-compose.prod.yml --env-file "$ENV_FILE")
 
 dc() { "${COMPOSE[@]}" "$@"; }
 
@@ -33,9 +38,9 @@ db_preflight() {
   dc run --rm --no-deps medusa-backend-1 node -e "const { Client } = require('pg'); const cs = process.env.DATABASE_URL; const c = new Client({ connectionString: cs, ssl: false, connectionTimeoutMillis: 5000 }); c.connect().then(()=>c.end().then(()=>{console.log('  OK');process.exit(0)})).catch(e=>{console.error('  FAIL:', e.message);process.exit(1)})"
 }
 
-if [[ ! -f deploy/.env.production ]]; then
-  echo "[lỗi] Thiếu deploy/.env.production"
-  echo "      cp deploy/.env.production.example deploy/.env.production rồi sửa CHANGE_ME_*"
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "[lỗi] Thiếu $ENV_FILE"
+  echo "      cp deploy/.env.production.example $ENV_FILE rồi sửa CHANGE_ME_*"
   exit 1
 fi
 
