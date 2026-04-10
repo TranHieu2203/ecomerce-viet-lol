@@ -137,7 +137,13 @@ if [[ "$MODE" == "init" ]]; then
 fi
 
 echo "[deploy] Building + starting containers..."
-dc up -d --build
+if [[ "$MODE" == "init" ]]; then
+  # Init needs a clean rebuild to avoid stale layers (e.g. missing admin build artifacts).
+  dc build --no-cache
+  dc up -d
+else
+  dc up -d --build
+fi
 
 healthcheck_db
 guard_database_url
