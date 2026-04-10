@@ -70,11 +70,31 @@ ensure_env_local() {
   echo "[init] Created $ENV_LOCAL (generated secrets)."
   echo "[init] IMPORTANT: edit $ENV_LOCAL and set:"
   echo "       - NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY"
-  echo "       - MEDUSA_BACKEND_URL"
+  echo "       - MEDUSA_BACKEND_URL (Docker: http://medusa-backend-1:9000)"
+  echo "       - NEXT_PUBLIC_MEDUSA_BACKEND_URL (public https://admin...)"
   echo "       - STORE_CORS / ADMIN_CORS / AUTH_CORS"
 }
 
+# Khi pull code mới, compose có thể yêu cầu biến mà file .local cũ chưa có — bổ sung từ template (không ghi đè key đã có).
+merge_missing_env_from_template() {
+  if [[ ! -f "$ENV_LOCAL" ]]; then
+    return 0
+  fi
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ -z "$line" ]] && continue
+    [[ "$line" == \#* ]] && continue
+    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      local k="${BASH_REMATCH[1]}"
+      if ! grep -qE "^${k}=" "$ENV_LOCAL"; then
+        echo "$line" >> "$ENV_LOCAL"
+        echo "[env] Đã thêm biến thiếu từ template: ${k}"
+      fi
+    fi
+  done < "$ENV_TEMPLATE"
+}
+
 ensure_env_local
+merge_missing_env_from_template
 
 COMPOSE=(docker compose -f deploy/docker-compose.prod.yml --env-file "$ENV_LOCAL")
 dc() { "${COMPOSE[@]}" "$@"; }

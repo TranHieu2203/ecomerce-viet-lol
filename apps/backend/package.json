@@ -15,6 +15,7 @@
   "scripts": {
     "build": "node ./node_modules/@medusajs/cli/cli.js build",
     "seed": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed.ts",
+    "seed:ensure-admin-user": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-ensure-admin-user.ts",
     "seed:ensure-shipping": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/ensure-shipping-readiness.ts",
     "seed:appendix": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-appendix-only.ts",
     "seed:sales-kit": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-sales-kit.ts",

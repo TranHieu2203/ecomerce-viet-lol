@@ -24,6 +24,7 @@ import {
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 import { ApiKey } from "../../.medusa/types/query-entry-points";
+import { ensureDefaultAdminUser } from "./seed-ensure-admin-user";
 import { seedVietnamProvinceGeoZones } from "./seed-vietnam-province-geozones";
 
 const updateStoreCurrencies = createWorkflow(
@@ -542,4 +543,7 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
 
   logger.info("Finished seeding inventory levels data.");
+
+  logger.info("Ensuring default Medusa Admin user (idempotent)...");
+  await ensureDefaultAdminUser(container);
 }

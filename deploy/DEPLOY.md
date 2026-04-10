@@ -95,6 +95,23 @@ Tạo tài khoản admin trong NPM UI, sau đó tạo 2 Proxy Hosts:
 - Storefront: `https://quatangtaya.com`
 - Admin: `https://admin.quatangtaya.com/app`
 
+### Tài khoản Admin (sau seed / `oneclick-prod.sh init`)
+
+Lệnh seed tạo user admin **nếu chưa có** user trùng email (idempotent).
+
+| Biến | Mặc định |
+|------|----------|
+| `ADMIN_EMAIL` | `admin@ecomerce-viet-lol.local` |
+| `ADMIN_PASSWORD` | `ChangeMe123!` |
+
+Trên server có thể set trong `deploy/.env.production.local` **trước** lần `init`/seed đầu tiên. Nếu DB đã có user cùng email, seed **không** ghi đè mật khẩu.
+
+Chạy lại chỉ bước admin (trong container backend):
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production.local exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:ensure-admin-user"
+```
+
 ---
 
 ## Production UPDATE (không wipe)
@@ -129,6 +146,18 @@ Sau khi chạy:
 ---
 
 ## Troubleshooting
+
+### Lỗi compose: `required variable NEXT_PUBLIC_MEDUSA_BACKEND_URL is missing`
+
+File `deploy/.env.production.local` trên server tạo trước khi có biến mới. Cách xử lý:
+
+- Chạy `bash deploy/oneclick-prod.sh update` (script sẽ **append** các key thiếu từ `deploy/.env.production`), hoặc
+- Tự thêm vào `.env.production.local` hai dòng như trong `deploy/.env.production`:
+
+```bash
+MEDUSA_BACKEND_URL=http://medusa-backend-1:9000
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://admin.quatangtaya.com
+```
 
 ### Storefront log: `Bad Gateway` (502) hoặc `publishable key`
 

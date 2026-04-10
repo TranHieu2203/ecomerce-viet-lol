@@ -29,14 +29,22 @@ Medusa 2 backend + Next.js starter storefront, Postgres & Redis qua Docker.
    npm run dev:storefront
    ```
 
-## Tài khoản Admin (local)
+## Tài khoản Admin (sau `npm run seed`)
 
-Đã tạo trong quá trình bootstrap:
+Seed (`apps/backend/src/scripts/seed.ts`) gọi `ensureDefaultAdminUser`: nếu **chưa** có user trùng email thì tạo admin + đăng ký `emailpass`.
 
-- Email: `admin@ecomerce-viet-lol.local`
-- Mật khẩu: `ChangeMe123!`
+**Mặc định** (có thể đổi bằng biến môi trường trước khi chạy seed):
 
-Đổi mật khẩu sau lần đăng nhập đầu.
+- `ADMIN_EMAIL` — mặc định: `admin@ecomerce-viet-lol.local`
+- `ADMIN_PASSWORD` — mặc định: `ChangeMe123!`
+
+Chạy riêng (idempotent): trong `apps/backend`:
+
+```bash
+npm run seed:ensure-admin-user
+```
+
+Đổi mật khẩu sau lần đăng nhập đầu trên production.
 
 ## Biến môi trường
 
