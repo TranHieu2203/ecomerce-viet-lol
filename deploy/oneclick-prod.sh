@@ -183,7 +183,14 @@ if [[ "$MODE" == "init" ]]; then
   dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:ensure-shipping"
 
   echo "[deploy] Resolving publishable key (pk_) for Storefront..."
-  pk="$(dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run -s print:publishable-key" | tr -d '\r' | tail -n 1 || true)"
+  # Medusa CLI có thể in JSON log ra stdout; chỉ lấy dòng bắt đầu bằng pk_
+  pk="$(
+    dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run -s print:publishable-key" 2>/dev/null \
+      | tr -d '\r' \
+      | grep -E '^pk_' \
+      | head -n 1 \
+      || true
+  )"
   if [[ -n "$pk" && "$pk" == pk_* ]]; then
     cur_pk="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=' "$ENV_LOCAL" | head -1 | cut -d= -f2- || true)"
     if [[ -z "$cur_pk" || "$cur_pk" == *CHANGE_ME* || "$cur_pk" == "pk_replace_after_seed" ]]; then
