@@ -62,8 +62,12 @@ services:
       # Ưu tiên DATABASE_URL nếu bạn set sẵn (để URL-encode password khi có ký tự đặc biệt như '@').
       # Fallback vẫn giữ như cũ cho password đơn giản.
       #
-      # Lưu ý: Postgres container nội bộ không bật SSL, nên URL nên có `?ssl=false`.
-      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?ssl=false}
+      # Lưu ý: Postgres container nội bộ không bật SSL.
+      # KHÔNG thêm `?ssl=false` vào URL vì một số parser coi "ssl=false" là truthy và sẽ bật SSL.
+      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}}
+
+      # Ép tắt SSL cho libpq/clients khi có env/driver tự bật SSL.
+      PGSSLMODE: disable
       REDIS_URL: redis://redis:6379
       NODE_ENV: production
       STORE_CORS: ${STORE_CORS}

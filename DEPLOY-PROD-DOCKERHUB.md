@@ -260,7 +260,7 @@ docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.producti
 ```
 - **Migrate fail với `The server does not support SSL connections`**:
   - Nguyên nhân: client đang cố connect Postgres bằng SSL, nhưng Postgres container nội bộ không bật SSL.
-  - Cách xử lý: đảm bảo `DATABASE_URL` **tắt SSL** (compose đã set `?ssl=false`), sau đó chạy lại migrate.
+  - Cách xử lý: đảm bảo **không** set `?ssl=false` trong `DATABASE_URL` (một số parser coi `"false"` là truthy), và ép `PGSSLMODE=disable` trong compose, sau đó chạy lại migrate.
 - **Backend restart với lỗi `Cannot find module '/app/apps/backend/medusa-config'`**:
   - Image thiếu file config runtime. Repo đã có `apps/backend/medusa-config.js` để chạy production; hãy build/push lại image `:prod` rồi `update` trên VPS.
 - **Storefront restart với lỗi `Cannot find module 'ansi-colors'`**:
