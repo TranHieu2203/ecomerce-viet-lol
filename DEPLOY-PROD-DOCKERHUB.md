@@ -177,6 +177,20 @@ Vì `init` có thể tạo/ghi `pk_` mới vào `deploy/.env.production` trên V
 
 - **Push bị `denied/unauthorized`**: chạy lại `docker login` (đúng account) và kiểm tra repo trên DockerHub đã được tạo/quyền push.
 - **Đổi `POSTGRES_PASSWORD` xong không vào DB**: do volume DB cũ vẫn dùng password cũ → giữ nguyên password, hoặc reset volume DB (mất dữ liệu).
+- **Backend restart, log có `relation "xxx" does not exist` (thiếu bảng `tax_provider`, `payment_provider`, `currency`...)**:
+  - Nguyên nhân: DB chưa được migrate (hoặc migrate không chạy do backend crash-loop).
+  - Cách xử lý:
+
+```bash
+# chạy migrate kiểu one-off container (không phụ thuộc backend đang Up)
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production run --rm --no-deps medusa-backend-1 npx medusa db:migrate
+
+# sau đó restart backend
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d medusa-backend-1
+```
+- **Migrate fail với `The server does not support SSL connections`**:
+  - Nguyên nhân: client đang cố connect Postgres bằng SSL, nhưng Postgres container nội bộ không bật SSL.
+  - Cách xử lý: đảm bảo `DATABASE_URL` **tắt SSL** (compose đã set `?ssl=false`), sau đó chạy lại migrate.
 - **Backend restart với lỗi `Cannot find module '/app/apps/backend/medusa-config'`**:
   - Image thiếu file config runtime. Repo đã có `apps/backend/medusa-config.js` để chạy production; hãy build/push lại image `:prod` rồi `update` trên VPS.
 - **Storefront restart với lỗi `Cannot find module 'ansi-colors'`**:

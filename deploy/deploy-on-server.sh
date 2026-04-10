@@ -77,7 +77,8 @@ wait_then_migrate() {
   local msg="${1:-}"
   [[ -n "$msg" ]] && echo "$msg"
   sleep 25
-  dc exec -T medusa-backend-1 npx medusa db:migrate
+  # dùng "run --rm" để migrate chạy được ngay cả khi backend đang crash-loop
+  dc run --rm --no-deps medusa-backend-1 npx medusa db:migrate
 }
 
 run_seed_stack() {
@@ -134,7 +135,7 @@ case "${1:-}" in
     dc pull
     dc up -d
     echo "[update] db:migrate..."
-    dc exec -T medusa-backend-1 npx medusa db:migrate || {
+    dc run --rm --no-deps medusa-backend-1 npx medusa db:migrate || {
       echo "[cảnh báo] db:migrate lỗi — xem log medusa-backend-1"
       exit 1
     }
