@@ -179,8 +179,10 @@ dc run --rm --no-deps medusa-backend-1 npx medusa db:migrate
 
 if [[ "$MODE" == "init" ]]; then
   echo "[deploy] Seeding (prod data = repo seed)..."
-  dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed"
-  dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:ensure-shipping"
+  # Truyền MEDUSA_BACKEND_PUBLIC_URL tường minh để file-local provider sinh URL đúng (không dùng localhost:9000)
+  PUBLIC_URL="$(grep -E '^MEDUSA_BACKEND_PUBLIC_URL=' "$ENV_LOCAL" | head -1 | cut -d= -f2- || true)"
+  dc exec -T ${PUBLIC_URL:+-e "MEDUSA_BACKEND_PUBLIC_URL=${PUBLIC_URL}"} medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed"
+  dc exec -T ${PUBLIC_URL:+-e "MEDUSA_BACKEND_PUBLIC_URL=${PUBLIC_URL}"} medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:ensure-shipping"
 
   echo "[deploy] Resolving publishable key (pk_) for Storefront..."
   # Medusa CLI có thể in JSON log ra stdout; chỉ lấy dòng bắt đầu bằng pk_
