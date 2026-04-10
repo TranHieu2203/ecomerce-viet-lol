@@ -1,17 +1,15 @@
-# Production: Postgres + Redis + Medusa x2 + Nginx LB + Storefront + Nginx Proxy Manager
+# Production: Postgres + Redis + Medusa + Storefront + Nginx Proxy Manager
 #
 # Giao diện quản trị reverse proxy (SSL, domain): Nginx Proxy Manager — http://SERVER_IP:81
 # (image jc21/nginx-proxy-manager; KHÔNG phải nginx:alpine ở medusa-lb — medusa-lb chỉ LB nội bộ, không có UI).
 #
 # Trên server (sau khi clone repo):
-#   chỉnh deploy/.env.production (đổi mọi CHANGE_ME_* + set BACKEND_IMAGE/STOREFRONT_IMAGE trỏ DockerHub)
-#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production pull
-#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d
+#   bash deploy/oneclick-prod.sh
 #
-# Hướng dẫn NPM: deploy/nginx-proxy-manager.md
+# Hướng dẫn NPM: xem deploy/DEPLOY.md
 #
 # Du lieu lau dai: named volumes (postgres_data, redis_data, medusa_uploads, npm_*).
-# `docker compose up` / `deploy-on-server.sh update` KHONG xoa volume — chi pull image + restart container.
+# `oneclick-prod.sh update` KHÔNG xoá volume — chỉ rebuild + restart + migrate.
 
 name: ecomerce-viet-lol-prod
 
@@ -25,9 +23,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-medusa}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # Chi localhost tren VPS — dung voi ssh-data-tunnel.bat (PostgreSQL ve may local)
-    ports:
-      - "127.0.0.1:5432:5432"
+    # Không expose ra host trong production (chỉ nội bộ Docker network).
     healthcheck:
       # Giữ POSTGRES_USER/POSTGRES_DB mặc định medusa/medusa hoặc sửa lệnh cho khớp
       test: ["CMD-SHELL", "pg_isready -U medusa -d medusa"]
@@ -44,9 +40,7 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
-    # Chi localhost tren VPS — dung voi ssh-data-tunnel.bat (Redis ve may local)
-    ports:
-      - "127.0.0.1:6379:6379"
+    # Không expose ra host trong production (chỉ nội bộ Docker network).
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -56,7 +50,9 @@ services:
       - app
 
   medusa-backend-1: &medusa
-    image: ${BACKEND_IMAGE:?set BACKEND_IMAGE in .env.production}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
     restart: unless-stopped
     environment:
       # Ưu tiên DATABASE_URL nếu bạn set sẵn (để URL-encode password khi có ký tự đặc biệt như '@').
@@ -92,7 +88,14 @@ services:
   # Nếu cần scale, có thể thêm medusa-backend-2 và LB sau.
 
   storefront:
-    image: ${STOREFRONT_IMAGE:?set STOREFRONT_IMAGE in .env.production}
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.storefront
+      args:
+        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?}
+        MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:?}
+        REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
+        NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
     restart: unless-stopped
     environment:
       NODE_ENV: production
