@@ -35,9 +35,10 @@ COOKIE_SECRET=local_cookie_secret_change_me
 STOREFRONT_REVALIDATE_URL=http://storefront:8000
 REVALIDATE_SECRET=local_revalidate_secret_change_me
 
-# Storefront
+# Storefront (SSR trong container → service Docker; browser → localhost đã map 127.0.0.1:9000)
 NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_CHANGE_ME_AFTER_SEED
-MEDUSA_BACKEND_URL=http://localhost:9000
+MEDUSA_BACKEND_URL=http://medusa-backend-1:9000
+NEXT_PUBLIC_MEDUSA_BACKEND_URL=http://127.0.0.1:9000
 NEXT_PUBLIC_DEFAULT_REGION=vn
 "@ | Out-File -Encoding utf8 $envFile
 

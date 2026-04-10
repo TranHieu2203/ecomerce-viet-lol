@@ -8,9 +8,11 @@ checkEnvVariables()
 const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
 const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
 
-/** Cho next/image: ảnh Medusa qua MEDUSA_BACKEND_URL (production Docker / domain thật). */
+/** Cho next/image: domain công khai của API (ưu tiên NEXT_PUBLIC_*). */
 function remotePatternsFromMedusaBackend() {
-  const raw = process.env.MEDUSA_BACKEND_URL
+  const raw =
+    process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL ||
+    process.env.MEDUSA_BACKEND_URL
   if (!raw) return []
   try {
     const u = new URL(raw)

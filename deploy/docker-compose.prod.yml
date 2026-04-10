@@ -82,6 +82,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    ports:
+      # Chỉ localhost: tránh lộ API ra ngoài khi đã có NPM; vẫn tiện dev local + trình duyệt gọi NEXT_PUBLIC_*.
+      - "127.0.0.1:9000:9000"
     networks:
       - app
 
@@ -94,17 +97,21 @@ services:
       args:
         NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?}
         MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:?}
+        NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:?}
         REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
         NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:?}
+      NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:?}
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
       NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
     depends_on:
       - medusa-backend-1
+    ports:
+      - "127.0.0.1:8000:8000"
     networks:
       - app
 

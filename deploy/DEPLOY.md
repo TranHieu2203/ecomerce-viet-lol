@@ -48,11 +48,12 @@ Chạy init sẽ tự tạo `deploy/.env.production.local` từ template `deploy
 
 Bạn cần đảm bảo các biến sau đúng domain:
 
-- `MEDUSA_BACKEND_URL=https://admin.quatangtaya.com`
+- `MEDUSA_BACKEND_URL=http://medusa-backend-1:9000` (SSR trong Docker → backend nội bộ, tránh 502)
+- `NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://admin.quatangtaya.com` (trình duyệt + `next/image`)
 - `STORE_CORS=https://quatangtaya.com,https://www.quatangtaya.com`
 - `ADMIN_CORS=https://admin.quatangtaya.com`
 - `AUTH_CORS=https://quatangtaya.com,https://www.quatangtaya.com,https://admin.quatangtaya.com`
-- `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...` (có thể cập nhật sau seed lần đầu)
+- `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=pk_...` — **sau seed** phải ghi đúng key thật rồi **rebuild storefront** (`docker compose build --no-cache storefront` hoặc `bash deploy/oneclick-prod.sh update`), vì `NEXT_PUBLIC_*` được bake lúc build.
 
 ### 5) INIT (wipe toàn bộ docker + dựng lại)
 
@@ -128,6 +129,11 @@ Sau khi chạy:
 ---
 
 ## Troubleshooting
+
+### Storefront log: `Bad Gateway` (502) hoặc `publishable key`
+
+- **502:** thường do storefront trong Docker gọi `https://admin...` ra ngoài rồi NPM/backend không phản hồi đúng. Dùng `MEDUSA_BACKEND_URL=http://medusa-backend-1:9000` + `NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://admin.quatangtaya.com` như template `deploy/.env.production`.
+- **`A valid publishable key is required`:** cập nhật `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` trong `deploy/.env.production.local`, sau đó **rebuild** image storefront (biến `NEXT_PUBLIC_*` nằm trong bundle build).
 
 ### Backend restart loop — `Could not find index.html in the admin build directory`
 
