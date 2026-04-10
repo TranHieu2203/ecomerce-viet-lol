@@ -11,8 +11,9 @@ RUN npm ci --no-audit --no-fund
 
 COPY apps/backend ./
 RUN npm run build \
-  # đảm bảo admin build có thật để production start không crash
-  && test -f .medusa/admin/index.html \
+  # Admin UI trong Medusa v2 được emit vào `.medusa/server/...` (không phải `.medusa/admin/...`).
+  # Nếu thiếu build admin thì production sẽ crash, nên kiểm tra theo pattern.
+  && test -f .medusa/server/public/admin/index.html \
   && npm prune --omit=dev --no-audit --no-fund
 
 FROM node:20-bookworm-slim AS runner
