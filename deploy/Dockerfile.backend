@@ -20,5 +20,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
 
 COPY --from=builder /app/apps/backend /app/apps/backend
 
+# Production runtime phải chạy từ output build `.medusa/server`.
+# Nếu ship cả TypeScript subscribers trong `src/subscribers`, Medusa sẽ cố dynamic-import `.ts`
+# và Node sẽ crash (Unexpected token).
+RUN rm -rf /app/apps/backend/src/subscribers || true
+
 EXPOSE 9000
 CMD ["npm", "run", "start"]
