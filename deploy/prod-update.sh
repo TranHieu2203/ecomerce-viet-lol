@@ -14,9 +14,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-ENV_FILE="deploy/.env.production"
-if [[ -f deploy/.env.production.local ]]; then
-  ENV_FILE="deploy/.env.production.local"
+ENV_FILE="deploy/.env.production.local"
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "[lỗi] Thiếu $ENV_FILE"
+  echo "      Lần đầu chạy init: bash deploy/prod-init.sh (script sẽ tự tạo env.local)"
+  exit 1
 fi
 
 COMPOSE=(docker compose -f deploy/docker-compose.prod.yml --env-file "$ENV_FILE")
@@ -47,12 +49,6 @@ guard_database_url() {
     exit 1
   fi
 }
-
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "[lỗi] Thiếu $ENV_FILE"
-  echo "      cp deploy/.env.production.example $ENV_FILE rồi sửa CHANGE_ME_*"
-  exit 1
-fi
 
 if [[ -d .git ]]; then
   git pull --ff-only

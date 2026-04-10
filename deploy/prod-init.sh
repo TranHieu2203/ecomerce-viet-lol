@@ -15,10 +15,77 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-ENV_FILE="deploy/.env.production"
-if [[ -f deploy/.env.production.local ]]; then
-  ENV_FILE="deploy/.env.production.local"
-fi
+ENV_LOCAL="deploy/.env.production.local"
+ENV_LOCAL_EXAMPLE="deploy/.env.production.local.example"
+ENV_TEMPLATE="deploy/.env.production"
+
+ensure_env_local() {
+  if [[ -f "$ENV_LOCAL" ]]; then
+    return 0
+  fi
+
+  if [[ ! -f "$ENV_LOCAL_EXAMPLE" ]]; then
+    echo "[lỗi] Thiếu $ENV_LOCAL_EXAMPLE"
+    exit 1
+  fi
+
+  cp "$ENV_LOCAL_EXAMPLE" "$ENV_LOCAL"
+
+  # copy non-secret defaults from template if available (domain/cors/images)
+  if [[ -f "$ENV_TEMPLATE" ]]; then
+    while IFS= read -r line; do
+      [[ -z "$line" ]] && continue
+      [[ "$line" == \#* ]] && continue
+      if [[ "$line" =~ ^([A-Z0-9_]+)=(.*)$ ]]; then
+        k="${BASH_REMATCH[1]}"
+        v="${BASH_REMATCH[2]}"
+        case "$k" in
+          DOCKERHUB_NAMESPACE|BACKEND_IMAGE|STOREFRONT_IMAGE|STORE_CORS|ADMIN_CORS|AUTH_CORS|MEDUSA_BACKEND_URL|NEXT_PUBLIC_DEFAULT_REGION|NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY|STOREFRONT_REVALIDATE_URL)
+            if grep -qE "^${k}=" "$ENV_LOCAL"; then
+              sed -i "s|^${k}=.*|${k}=${v}|" "$ENV_LOCAL"
+            else
+              echo "${k}=${v}" >> "$ENV_LOCAL"
+            fi
+            ;;
+        esac
+      fi
+    done < "$ENV_TEMPLATE"
+  fi
+
+  # generate secrets/password if placeholders
+  gen_or_keep() {
+    local key="$1"
+    local cur
+    cur="$(grep -E "^${key}=" "$ENV_LOCAL" | head -1 | cut -d= -f2- || true)"
+    if [[ -z "$cur" || "$cur" == *CHANGE_ME* ]]; then
+      local next
+      next="$(openssl rand -hex 32)"
+      sed -i "s|^${key}=.*|${key}=${next}|" "$ENV_LOCAL" 2>/dev/null || true
+      if ! grep -qE "^${key}=" "$ENV_LOCAL"; then
+        echo "${key}=${next}" >> "$ENV_LOCAL"
+      fi
+    fi
+  }
+
+  # Strong but simple: hex (no special chars)
+  local pgpass
+  pgpass="$(grep -E "^POSTGRES_PASSWORD=" "$ENV_LOCAL" | head -1 | cut -d= -f2- || true)"
+  if [[ -z "$pgpass" || "$pgpass" == *CHANGE_ME* ]]; then
+    pgpass="$(openssl rand -hex 16)"
+    sed -i "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${pgpass}|" "$ENV_LOCAL" 2>/dev/null || true
+    if ! grep -qE "^POSTGRES_PASSWORD=" "$ENV_LOCAL"; then
+      echo "POSTGRES_PASSWORD=${pgpass}" >> "$ENV_LOCAL"
+    fi
+  fi
+
+  gen_or_keep JWT_SECRET
+  gen_or_keep COOKIE_SECRET
+  gen_or_keep REVALIDATE_SECRET
+
+  echo "[init] Đã tạo $ENV_LOCAL (secrets đã được generate)."
+}
+
+ENV_FILE="$ENV_LOCAL"
 
 COMPOSE=(docker compose -f deploy/docker-compose.prod.yml --env-file "$ENV_FILE")
 
@@ -49,11 +116,7 @@ guard_database_url() {
   fi
 }
 
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "[lỗi] Thiếu $ENV_FILE"
-  echo "      cp deploy/.env.production.example $ENV_FILE rồi sửa CHANGE_ME_*"
-  exit 1
-fi
+ensure_env_local
 
 if [[ -d .git ]]; then
   git pull --ff-only
