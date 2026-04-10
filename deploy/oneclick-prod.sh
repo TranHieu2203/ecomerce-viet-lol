@@ -177,6 +177,28 @@ if [[ "$MODE" == "init" ]]; then
   echo "[deploy] Seeding (prod data = repo seed)..."
   dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed"
   dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:ensure-shipping"
+
+  echo "[deploy] Resolving publishable key (pk_) for Storefront..."
+  pk="$(dc exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run -s print:publishable-key" | tr -d '\r' | tail -n 1 || true)"
+  if [[ -n "$pk" && "$pk" == pk_* ]]; then
+    cur_pk="$(grep -E '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=' "$ENV_LOCAL" | head -1 | cut -d= -f2- || true)"
+    if [[ -z "$cur_pk" || "$cur_pk" == *CHANGE_ME* || "$cur_pk" == "pk_replace_after_seed" ]]; then
+      if grep -qE '^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=' "$ENV_LOCAL"; then
+        sed -i "s|^NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=.*|NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${pk}|" "$ENV_LOCAL"
+      else
+        echo "NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${pk}" >> "$ENV_LOCAL"
+      fi
+      echo "[env] Set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=${pk}"
+    else
+      echo "[env] Keeping existing NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY (already set)."
+    fi
+
+    echo "[deploy] Rebuilding storefront to bake NEXT_PUBLIC_* vars..."
+    dc build --no-cache storefront
+    dc up -d storefront
+  else
+    echo "[warn] Could not resolve publishable key from DB. You may need to set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY manually then rebuild storefront."
+  fi
 fi
 
 echo "[deploy] DONE."

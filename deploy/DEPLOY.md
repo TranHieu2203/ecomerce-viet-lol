@@ -112,6 +112,16 @@ Chạy lại chỉ bước admin (trong container backend):
 docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production.local exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:ensure-admin-user"
 ```
 
+### Sales Kit seed (`seed-sales-kit`)
+
+Backend container mount `../docs:/app/docs:ro` — trên VPS cần **clone đủ** thư mục `docs/` ở gốc repo (có subfolder tên chứa `"Sales Kit"`). Image không COPY `docs/` để tránh image quá nặng.
+
+Tuỳ chọn: set `SALES_KIT_DOCS_PATH` trong container nếu bạn mount nguồn Sales Kit ở path khác.
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production.local exec -T medusa-backend-1 sh -lc "cd /app/apps/backend && npm run seed:sales-kit:confirm"
+```
+
 ---
 
 ## Production UPDATE (không wipe)

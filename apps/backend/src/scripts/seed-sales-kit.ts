@@ -91,9 +91,13 @@ function repoRootFromScriptsDir(): string {
 }
 
 function resolveSalesKitRoot(): string {
-  const docs = path.join(repoRootFromScriptsDir(), "docs")
+  const docs =
+    process.env.SALES_KIT_DOCS_PATH?.trim() ||
+    path.join(repoRootFromScriptsDir(), "docs")
   if (!fs.existsSync(docs)) {
-    throw new Error(`Thiếu thư mục docs/ tại ${docs}`)
+    throw new Error(
+      `Thiếu thư mục docs/ tại ${docs}. Trong Docker: mount thư mục docs/ của repo vào /app/docs (xem deploy/docker-compose.prod.yml) hoặc set SALES_KIT_DOCS_PATH.`
+    )
   }
   const dir = fs
     .readdirSync(docs)
