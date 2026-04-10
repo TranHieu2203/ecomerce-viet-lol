@@ -28,6 +28,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-cert
 
 COPY --from=builder /app/apps/backend /app/apps/backend
 
+# Medusa 2 production: `medusa start` từ thư mục app root tìm admin tại `./public/admin`
+# (xem https://docs.medusajs.com/learn/build — output thật nằm ở `.medusa/server/public/admin`).
+# Symlink để loader khớp đường dẫn khi vẫn chạy `npm run start` từ `apps/backend`.
+RUN cd /app/apps/backend \
+  && rm -rf public \
+  && ln -sfn .medusa/server/public public \
+  && test -f public/admin/index.html
+
 # Production runtime phải chạy từ output build `.medusa/server`.
 # Nếu ship cả TypeScript trong `src/(subscribers|workflows|links)`, Medusa có thể scan + dynamic-import `.ts`
 # và Node sẽ crash (Unexpected token).

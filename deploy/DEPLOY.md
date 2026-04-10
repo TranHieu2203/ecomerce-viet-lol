@@ -125,3 +125,22 @@ Sau khi chạy:
 - Lệnh `init` **xoá toàn bộ docker volumes** ⇒ DB production bị reset hoàn toàn.
 - “Prod có toàn bộ data như dev” được hiểu là: **DB trắng + seed của repo** ⇒ dữ liệu giống môi trường dev mới dựng.
 
+---
+
+## Troubleshooting
+
+### Backend restart loop — `Could not find index.html in the admin build directory`
+
+Medusa 2 build admin vào `.medusa/server/public/admin`, nhưng `medusa start` chạy từ thư mục app thường tìm `public/admin`. Image Docker đã tạo symlink `public` → `.medusa/server/public`. Nếu vẫn lỗi sau khi pull mới, rebuild không cache:
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production.local build --no-cache medusa-backend-1
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production.local up -d medusa-backend-1
+```
+
+Khi container `medusa-backend-1` đang **Restarting**, không dùng `exec`; kiểm tra filesystem bằng container one-off:
+
+```bash
+docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production.local run --rm --no-deps medusa-backend-1 sh -lc 'ls -la public/admin/index.html .medusa/server/public/admin/index.html'
+```
+
