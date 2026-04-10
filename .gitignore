@@ -9,10 +9,9 @@ apps/*/.env
 !apps/*/.env.template
 !apps/*/.env.test
 
-# Production env (chứa secrets) — KHÔNG commit
-deploy/.env.production
-deploy/.env.production.*
-!deploy/.env.production.example
+# Production env
+# NOTE: Repo có sẵn `deploy/.env.production` dạng template (CHANGE_ME_*).
+# Không commit file env thật có secrets ngoài đời.
 .DS_Store
 *.log
 .next/
