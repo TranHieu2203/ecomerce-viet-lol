@@ -7,9 +7,13 @@ async function ProductOnboardingCta({
 }: {
   countryCode: string
 }) {
-  const cookies = await nextCookies()
-
-  const isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
+  let isOnboarding = false
+  try {
+    const cookies = await nextCookies()
+    isOnboarding = cookies.get("_medusa_onboarding")?.value === "true"
+  } catch {
+    return null
+  }
 
   if (!isOnboarding) {
     return null
