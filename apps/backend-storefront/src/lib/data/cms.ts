@@ -31,6 +31,11 @@ export type CmsPagePublic = {
   status?: string
 }
 
+export type CmsPageListItemPublic = {
+  slug: string
+  title: string
+}
+
 export type CmsAnnouncementPublic = {
   enabled: boolean
   text: { vi: string; en: string }
@@ -397,6 +402,26 @@ async function fetchCmsSettingsPublic(): Promise<CmsSettingsPublic> {
 export const getCmsSettingsPublic = cache(fetchCmsSettingsPublic)
 
 export const CMS_PAGE_CACHE_REVALIDATE_SECONDS = 180
+
+async function fetchCmsPagesPublic(locale: string): Promise<CmsPageListItemPublic[]> {
+  try {
+    const data = await sdk.client.fetch<{ pages: CmsPageListItemPublic[] }>(
+      `/store/custom/cms-pages`,
+      {
+        method: "GET",
+        query: { locale },
+        next: { tags: ["cms-pages"], revalidate: CMS_PAGE_CACHE_REVALIDATE_SECONDS },
+        cache: "force-cache",
+      }
+    )
+    return Array.isArray(data?.pages) ? data.pages : []
+  } catch {
+    return []
+  }
+}
+
+/** ISR tag `cms-pages`. */
+export const listCmsPagesPublic = cache(fetchCmsPagesPublic)
 
 async function fetchCmsPagePublic(
   slug: string,

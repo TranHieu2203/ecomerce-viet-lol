@@ -3,8 +3,9 @@ import { ChevronUpDown } from "@medusajs/icons"
 import { clx } from "@medusajs/ui"
 import { Fragment, useMemo } from "react"
 
-import Radio from "@modules/common/components/radio"
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import compareAddresses from "@lib/util/compare-addresses"
+import Radio from "@modules/common/components/radio"
 import { HttpTypes } from "@medusajs/types"
 
 type AddressSelectProps = {
@@ -21,6 +22,8 @@ const AddressSelect = ({
   addressInput,
   onSelect,
 }: AddressSelectProps) => {
+  const s = useStorefrontMessages().checkoutSteps
+
   const handleSelect = (id: string) => {
     const savedAddress = addresses.find((a) => a.id === id)
     if (savedAddress) {
@@ -44,7 +47,7 @@ const AddressSelect = ({
               <span className="block truncate">
                 {selectedAddress
                   ? selectedAddress.address_1
-                  : "Choose an address"}
+                  : s.chooseSavedAddress}
               </span>
               <ChevronUpDown
                 className={clx("transition-rotate duration-200", {

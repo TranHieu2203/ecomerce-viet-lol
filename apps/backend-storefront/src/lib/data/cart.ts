@@ -15,6 +15,15 @@ import {
 } from "./cookies"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
+import {
+  guestCustomerEmailFromNormalizedPhone,
+  normalizeVietnamesePhone,
+} from "@lib/util/phone"
+import {
+  calculatePriceForShippingOption,
+  listCartShippingMethods,
+} from "./fulfillment"
+import { listCartPaymentMethods } from "./payment"
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -246,6 +255,89 @@ export async function setShippingMethod({
     .catch(medusaError)
 }
 
+type ShippingOptionWithZone = HttpTypes.StoreCartShippingOption & {
+  service_zone?: { fulfillment_set?: { type?: string } }
+}
+
+/** Gán phương thức vận chuyển mặc định (ưu tiên giao tận nơi, không phải pickup). */
+export async function autoSelectDefaultShippingForCart(cartId: string) {
+  const options = await listCartShippingMethods(cartId, { bypassCache: true })
+  if (!options?.length) {
+    throw new Error(
+      "Chưa cấu hình phương thức vận chuyển. Vui lòng liên hệ cửa hàng."
+    )
+  }
+  const withZone = options as ShippingOptionWithZone[]
+  const delivery = withZone.filter(
+    (o) => o.service_zone?.fulfillment_set?.type !== "pickup"
+  )
+  const pool = delivery.length ? delivery : withZone
+
+  /** Medusa đánh dấu insufficient khi không có inventory_level tại kho fulfillment — thường do DB thiếu seed. */
+  const withStock = pool.filter((o) => !o.insufficient_inventory)
+  const candidates = withStock.length > 0 ? withStock : pool
+
+  let lastErrorMessage: string | undefined
+
+  for (const opt of candidates) {
+    if (withStock.length > 0 && opt.insufficient_inventory) continue
+    if (opt.price_type === "calculated") {
+      const priced = await calculatePriceForShippingOption(opt.id, cartId)
+      if (!priced) {
+        continue
+      }
+    }
+    try {
+      await setShippingMethod({ cartId, shippingMethodId: opt.id })
+      return
+    } catch (e: unknown) {
+      lastErrorMessage = e instanceof Error ? e.message : String(e)
+      continue
+    }
+  }
+  const hint = lastErrorMessage
+    ? ` (${lastErrorMessage})`
+    : ""
+  throw new Error(
+    `Không thể áp dụng phương thức vận chuyển. Thử lại hoặc liên hệ cửa hàng.${hint}`
+  )
+}
+
+function isManualProviderId(providerId?: string | null): boolean {
+  return !!providerId?.startsWith("pp_system_default")
+}
+
+/**
+ * Medusa cần payment session (ví dụ pp_system_default) trước khi complete cart.
+ * Gọi trước placeOrder; không hiển thị UI thanh toán.
+ */
+export async function ensureManualPaymentSessionForCart(cartId: string) {
+  const cart = await retrieveCart(
+    cartId,
+    "*region, *payment_collection, *payment_collection.payment_sessions"
+  )
+  if (!cart?.region_id) {
+    throw new Error("Giỏ hàng chưa có khu vực (region).")
+  }
+
+  const pending = cart.payment_collection?.payment_sessions?.find(
+    (s) => s.status === "pending"
+  )
+  if (pending) {
+    return
+  }
+
+  const providers = await listCartPaymentMethods(cart.region_id)
+  const manual = providers?.find((p) => isManualProviderId(p.id))
+  if (!manual) {
+    throw new Error(
+      "Cửa hàng chưa bật phương thức thanh toán thủ công (manual) cho region này."
+    )
+  }
+
+  await initiatePaymentSession(cart, { provider_id: manual.id })
+}
+
 export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession
@@ -348,50 +440,94 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     if (!formData) {
       throw new Error("No form data found when setting addresses")
     }
-    const cartId = getCartId()
+    const cartId = await getCartId()
     if (!cartId) {
       throw new Error("No existing cart found when setting addresses")
     }
 
-    const data = {
-      shipping_address: {
-        first_name: formData.get("shipping_address.first_name"),
-        last_name: formData.get("shipping_address.last_name"),
-        address_1: formData.get("shipping_address.address_1"),
-        address_2: "",
-        company: formData.get("shipping_address.company"),
-        postal_code: formData.get("shipping_address.postal_code"),
-        city: formData.get("shipping_address.city"),
-        country_code: formData.get("shipping_address.country_code"),
-        province: formData.get("shipping_address.province"),
-        phone: formData.get("shipping_address.phone"),
-      },
-      email: formData.get("email"),
-    } as any
+    const auth = await getAuthHeaders()
+    const isGuest = !("authorization" in auth && auth.authorization)
 
-    const sameAsBilling = formData.get("same_as_billing")
-    if (sameAsBilling === "on") data.billing_address = data.shipping_address
+    const phone = String(formData.get("shipping_address.phone") || "").trim()
+    const fullName = String(formData.get("shipping_full_name") || "").trim()
+    let firstName = String(
+      formData.get("shipping_address.first_name") || ""
+    ).trim()
+    let lastName = String(
+      formData.get("shipping_address.last_name") || ""
+    ).trim()
 
-    if (sameAsBilling !== "on")
-      data.billing_address = {
-        first_name: formData.get("billing_address.first_name"),
-        last_name: formData.get("billing_address.last_name"),
-        address_1: formData.get("billing_address.address_1"),
-        address_2: "",
-        company: formData.get("billing_address.company"),
-        postal_code: formData.get("billing_address.postal_code"),
-        city: formData.get("billing_address.city"),
-        country_code: formData.get("billing_address.country_code"),
-        province: formData.get("billing_address.province"),
-        phone: formData.get("billing_address.phone"),
+    if (fullName) {
+      const parts = fullName.split(/\s+/).filter(Boolean)
+      firstName = parts[0] || firstName
+      lastName = parts.length > 1 ? parts.slice(1).join(" ") : lastName || "."
+    }
+
+    if (!lastName) {
+      lastName = "."
+    }
+
+    let email = String(formData.get("email") || "").trim()
+    if (isGuest) {
+      const norm = normalizeVietnamesePhone(phone)
+      if (!norm) {
+        throw new Error("Vui lòng nhập số điện thoại hợp lệ.")
       }
+      const stub = guestCustomerEmailFromNormalizedPhone(norm)
+      const marketingRaw = String(
+        formData.get("marketing_email") || ""
+      ).trim()
+      const marketing = marketingRaw.toLowerCase()
+      if (marketing) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(marketing)) {
+          throw new Error(
+            "Email nhận tin khuyến mãi không hợp lệ — để trống nếu không dùng."
+          )
+        }
+        email = marketing
+      } else {
+        email = stub
+      }
+    } else if (!email) {
+      throw new Error("Vui lòng nhập email.")
+    }
+
+    const countryCode = String(
+      formData.get("shipping_address.country_code") || "vn"
+    ).toLowerCase()
+    const postalCode =
+      String(formData.get("shipping_address.postal_code") || "000000").trim() ||
+      "000000"
+    const city =
+      String(formData.get("shipping_address.city") || ".").trim() || "."
+
+    const shipping_address = {
+      first_name: firstName,
+      last_name: lastName,
+      address_1: String(formData.get("shipping_address.address_1") || "").trim(),
+      address_2: "",
+      company: "",
+      postal_code: postalCode,
+      city,
+      country_code: countryCode,
+      province: String(formData.get("shipping_address.province") || "").trim(),
+      phone,
+    }
+
+    const data = {
+      shipping_address,
+      billing_address: shipping_address,
+      email,
+    } as HttpTypes.StoreUpdateCart
+
     await updateCart(data)
+    await autoSelectDefaultShippingForCart(cartId)
   } catch (e: any) {
     return e.message
   }
 
   redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+    `/${String(formData.get("shipping_address.country_code") || "vn").toLowerCase()}/checkout?step=confirm`
   )
 }
 
@@ -406,6 +542,8 @@ export async function placeOrder(cartId?: string) {
   if (!id) {
     throw new Error("No existing cart found when placing an order")
   }
+
+  await ensureManualPaymentSessionForCart(id)
 
   const headers = {
     ...(await getAuthHeaders()),

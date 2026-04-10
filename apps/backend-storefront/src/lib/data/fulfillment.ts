@@ -4,14 +4,20 @@ import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 
-export const listCartShippingMethods = async (cartId: string) => {
+/**
+ * @param bypassCache — dùng sau khi vừa cập nhật giỏ (địa chỉ, v.v.): tránh Next.js
+ *   trả danh sách shipping-options đã cache từ lúc giỏ chưa có địa chỉ, khiến addShippingMethod lỗi hàng loạt.
+ */
+export const listCartShippingMethods = async (
+  cartId: string,
+  opts?: { bypassCache?: boolean }
+) => {
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  const next = {
-    ...(await getCacheOptions("fulfillment")),
-  }
+  const bypass = opts?.bypassCache === true
+  const next = bypass ? undefined : await getCacheOptions("fulfillment")
 
   return sdk.client
     .fetch<HttpTypes.StoreShippingOptionListResponse>(
@@ -22,8 +28,9 @@ export const listCartShippingMethods = async (cartId: string) => {
           cart_id: cartId,
         },
         headers,
-        next,
-        cache: "force-cache",
+        ...(bypass
+          ? { cache: "no-store" as const }
+          : { next, cache: "force-cache" as const }),
       }
     )
     .then(({ shipping_options }) => shipping_options)

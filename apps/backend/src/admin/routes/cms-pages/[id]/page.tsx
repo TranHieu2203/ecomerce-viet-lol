@@ -15,6 +15,7 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { CmsCollapsibleSection } from "../../../components/cms-collapsible-section"
 import { adminFetch } from "../../storefront-cms/admin-fetch"
 import { CmsRevisionDrawer } from "../../storefront-cms/revision-drawer"
+import { CmsNewsBodyEditor } from "../../cms-news/cms-news-body-editor"
 
 type CmsPage = {
   id: string
@@ -27,6 +28,8 @@ type CmsPage = {
     meta_description?: { vi?: string; en?: string }
   } | null
 }
+
+const STOREFRONT_BASE_URL_KEY = "cms:storefront_base_url"
 
 const emptyForm = () => ({
   slug: "",
@@ -48,6 +51,10 @@ const CmsPageEditor = () => {
   const [saving, setSaving] = useState(false)
   const [page, setPage] = useState<CmsPage | null>(null)
   const [form, setForm] = useState(emptyForm)
+  const [previewToken, setPreviewToken] = useState<string>("")
+  const [storefrontBaseUrl, setStorefrontBaseUrl] = useState<string>(
+    "http://localhost:8000"
+  )
 
   const load = useCallback(async () => {
     if (!id || isNew) {
@@ -82,6 +89,38 @@ const CmsPageEditor = () => {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(STOREFRONT_BASE_URL_KEY)
+      if (raw && raw.trim()) {
+        setStorefrontBaseUrl(raw.trim())
+      }
+    } catch {}
+  }, [])
+
+  const buildStorefrontUrl = (opts?: { withPreview?: boolean }) => {
+    const base = storefrontBaseUrl.trim().replace(/\/$/, "")
+    const locale = "vi"
+    const slug = form.slug.trim()
+    if (!base || !slug) {
+      return ""
+    }
+    const path = `${base}/${locale}/p/${encodeURIComponent(slug)}`
+    if (opts?.withPreview && previewToken.trim()) {
+      const u = new URL(path)
+      u.searchParams.set("cms_preview", previewToken.trim())
+      return u.toString()
+    }
+    return path
+  }
+
+  const persistStorefrontBaseUrl = (raw: string) => {
+    setStorefrontBaseUrl(raw)
+    try {
+      window.localStorage.setItem(STOREFRONT_BASE_URL_KEY, raw)
+    } catch {}
+  }
 
   const buildSeoPayload = () => {
     const meta_title = {
@@ -214,6 +253,7 @@ const CmsPageEditor = () => {
       })) as { token?: string; expires_at?: string }
       const token = res.token ?? ""
       await navigator.clipboard.writeText(token)
+      setPreviewToken(token)
       toast.success(
         `Đã copy token (hết hạn ~ ${res.expires_at ?? "?"}). Dán vào storefront: ?cms_preview=... hoặc header x-cms-preview`
       )
@@ -328,15 +368,75 @@ const CmsPageEditor = () => {
         </div>
         <div>
           <Label>Nội dung (HTML / rich tối thiểu)</Label>
-          <Textarea
-            rows={14}
-            className="font-mono text-sm"
-            value={form.body}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, body: e.target.value }))
-            }
-            placeholder="<p>Nội dung…</p>"
+          <CmsNewsBodyEditor
+            key={`${id ?? "new"}-page-body`}
+            initialHtml={form.body}
+            onHtmlChange={(html) => setForm((f) => ({ ...f, body: html }))}
+            placeholder="Soạn nội dung trang (TipTap) — dán từ Word cũng OK…"
+            disabled={saving}
           />
+        </div>
+      </CmsCollapsibleSection>
+
+      <CmsCollapsibleSection
+        defaultOpen={false}
+        summary={
+          <Heading level="h2" className="text-base">
+            Xem trên Storefront
+          </Heading>
+        }
+      >
+        <Text size="small" className="mb-3 text-ui-fg-muted max-w-2xl">
+          Storefront đang render trang CMS theo URL <code>/{`{locale}`}/p/{`{slug}`}</code>.
+          Mặc định mở <code>vi</code>. Bạn có thể đổi domain (lưu vào trình duyệt).
+        </Text>
+        <div className="grid grid-cols-1 gap-3 max-w-2xl">
+          <div>
+            <Label>Storefront base URL</Label>
+            <Input
+              value={storefrontBaseUrl}
+              onChange={(e) => persistStorefrontBaseUrl(e.target.value)}
+              placeholder="http://localhost:8000"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="small"
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                const url = buildStorefrontUrl()
+                if (!url) {
+                  toast.error("Cần có slug và base URL để mở.")
+                  return
+                }
+                window.open(url, "_blank", "noopener,noreferrer")
+              }}
+            >
+              Mở trang (published)
+            </Button>
+            <Button
+              size="small"
+              variant="secondary"
+              type="button"
+              disabled={!previewToken.trim()}
+              onClick={() => {
+                const url = buildStorefrontUrl({ withPreview: true })
+                if (!url) {
+                  toast.error("Cần có slug và base URL để mở.")
+                  return
+                }
+                window.open(url, "_blank", "noopener,noreferrer")
+              }}
+              title={
+                previewToken.trim()
+                  ? "Mở kèm cms_preview"
+                  : "Hãy bấm Copy token xem trước trước"
+              }
+            >
+              Mở preview (draft)
+            </Button>
+          </div>
         </div>
       </CmsCollapsibleSection>
 

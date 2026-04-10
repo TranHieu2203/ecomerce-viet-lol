@@ -42,6 +42,8 @@ export type StorefrontMessages = {
     signInCta: string
     summary: string
     goToCheckout: string
+    /** Tiêu đề cột tóm tắt bên phải trang checkout */
+    inYourCartAside: string
     tableItem: string
     tableQuantity: string
     tablePrice: string
@@ -72,6 +74,12 @@ export type StorefrontMessages = {
     selectPaymentMethod: string
     paymentTestAttention: string
     paymentTestBody: string
+    /** Gợi ý sau khi bỏ bước thanh toán online */
+    codNotice: string
+    addPromotionCodes: string
+    applyPromotion: string
+    promotionsAppliedHeading: string
+    removePromotionSr: string
   }
   order: {
     details: string
@@ -107,6 +115,12 @@ export type StorefrontMessages = {
     continueSetupAdmin: string
     onboardingSuccess: string
     onboardingSub: string
+    /** Nút trang chi tiết sản phẩm */
+    addToCart: string
+    selectVariant: string
+    outOfStock: string
+    /** Nút mobile khi có nhiều biến thể */
+    selectOptions: string
   }
   store: {
     metaTitle: string
@@ -156,6 +170,22 @@ export type StorefrontMessages = {
     review: string
     reviewLegal: string
     placeOrder: string
+    fullNameLabel: string
+    addressLineLabel: string
+    phoneLabel: string
+    /** Chuỗi chào khi có địa chỉ đã lưu; thay {name} bằng tên */
+    savedAddressPrompt: string
+    continueToConfirmOrder: string
+    deliveryMethodTitle: string
+    deliveryMethodSubtitle: string
+    postalCodeLabel: string
+    cityLabel: string
+    provinceLabel: string
+    chooseSavedAddress: string
+    /** Nút sau khi nhập địa chỉ (luồng không hiện bước giao hàng) */
+    continueToPlaceOrder: string
+    /** sr-only: vùng xác nhận đặt hàng (không hiện tiêu đề “Xem lại”) */
+    confirmPlaceOrderSection: string
   }
   orderCompleted: {
     thankYou: string
@@ -295,7 +325,8 @@ const vi: StorefrontMessages = {
     signInSub: "Đăng nhập để trải nghiệm tốt hơn.",
     signInCta: "Đăng nhập",
     summary: "Tóm tắt",
-    goToCheckout: "Thanh toán",
+    goToCheckout: "Đặt hàng",
+    inYourCartAside: "Trong giỏ hàng",
     tableItem: "Sản phẩm",
     tableQuantity: "Số lượng",
     tablePrice: "Đơn giá",
@@ -322,10 +353,16 @@ const vi: StorefrontMessages = {
     backToCart: "Quay lại giỏ hàng",
     backShort: "Quay lại",
     storeFallback: "Cửa hàng",
-    pageTitle: "Thanh toán",
+    pageTitle: "Đặt hàng",
     selectPaymentMethod: "Chọn phương thức thanh toán",
     paymentTestAttention: "Lưu ý:",
     paymentTestBody: "Chỉ phục vụ thử nghiệm.",
+    codNotice:
+      "Thanh toán khi nhận hàng hoặc theo hướng dẫn cửa hàng — không thu tiền trên web.",
+    addPromotionCodes: "Thêm mã khuyến mãi",
+    applyPromotion: "Áp dụng",
+    promotionsAppliedHeading: "Mã đã áp dụng:",
+    removePromotionSr: "Gỡ mã khuyến mãi",
   },
   order: {
     details: "Chi tiết đơn hàng",
@@ -365,6 +402,10 @@ const vi: StorefrontMessages = {
     onboardingSuccess: "Sản phẩm demo đã được tạo thành công! 🎉",
     onboardingSub:
       "Bạn có thể tiếp tục thiết lập cửa hàng trong admin.",
+    addToCart: "Thêm vào giỏ",
+    selectVariant: "Chọn phân loại",
+    outOfStock: "Hết hàng",
+    selectOptions: "Chọn tùy chọn",
   },
   store: {
     metaTitle: "Cửa hàng",
@@ -393,7 +434,7 @@ const vi: StorefrontMessages = {
   },
   checkoutSteps: {
     shippingAddress: "Địa chỉ giao hàng",
-    billingAddress: "Địa chỉ thanh toán",
+    billingAddress: "Đơn hàng",
     contact: "Liên hệ",
     billingSameAsShipping: "Địa chỉ thanh toán trùng địa chỉ giao hàng.",
     continueToDelivery: "Tiếp tục — Giao hàng",
@@ -417,6 +458,19 @@ const vi: StorefrontMessages = {
     reviewLegal:
       "Bằng cách nhấn Đặt hàng, bạn xác nhận đã đọc và đồng ý Điều khoản sử dụng, Điều khoản bán hàng, Chính sách đổi trả và đã xem Chính sách bảo mật của cửa hàng.",
     placeOrder: "Đặt hàng",
+    fullNameLabel: "Họ và tên",
+    addressLineLabel: "Địa chỉ",
+    phoneLabel: "Số điện thoại",
+    savedAddressPrompt: "Xin chào {name}, bạn có muốn dùng một địa chỉ đã lưu không?",
+    continueToConfirmOrder: "Tiếp tục — Xác nhận đơn",
+    deliveryMethodTitle: "Phương thức giao hàng",
+    deliveryMethodSubtitle: "Chọn cách bạn muốn nhận đơn",
+    postalCodeLabel: "Mã bưu điện",
+    cityLabel: "Tỉnh / Thành phố",
+    provinceLabel: "Quận / Huyện",
+    chooseSavedAddress: "Chọn địa chỉ đã lưu",
+    continueToPlaceOrder: "Tiếp tục đặt hàng",
+    confirmPlaceOrderSection: "Xác nhận và đặt hàng",
   },
   orderCompleted: {
     thankYou: "Cảm ơn bạn!",
@@ -564,7 +618,8 @@ const en: StorefrontMessages = {
     signInSub: "Sign in for a better experience.",
     signInCta: "Sign in",
     summary: "Summary",
-    goToCheckout: "Go to checkout",
+    goToCheckout: "Place order",
+    inYourCartAside: "In your cart",
     tableItem: "Item",
     tableQuantity: "Quantity",
     tablePrice: "Price",
@@ -595,6 +650,12 @@ const en: StorefrontMessages = {
     selectPaymentMethod: "Select a payment method",
     paymentTestAttention: "Attention:",
     paymentTestBody: "For testing purposes only.",
+    codNotice:
+      "Pay on delivery or as instructed by the store — no online payment on this site.",
+    addPromotionCodes: "Add promotion code(s)",
+    applyPromotion: "Apply",
+    promotionsAppliedHeading: "Promotion(s) applied:",
+    removePromotionSr: "Remove promotion code",
   },
   order: {
     details: "Order details",
@@ -634,6 +695,10 @@ const en: StorefrontMessages = {
     onboardingSuccess: "Your demo product was successfully created! 🎉",
     onboardingSub:
       "You can now continue setting up your store in the admin.",
+    addToCart: "Add to cart",
+    selectVariant: "Select variant",
+    outOfStock: "Out of stock",
+    selectOptions: "Select options",
   },
   store: {
     metaTitle: "Store",
@@ -661,7 +726,7 @@ const en: StorefrontMessages = {
   },
   checkoutSteps: {
     shippingAddress: "Shipping address",
-    billingAddress: "Billing address",
+    billingAddress: "Order",
     contact: "Contact",
     billingSameAsShipping: "Billing and delivery address are the same.",
     continueToDelivery: "Continue to delivery",
@@ -685,6 +750,19 @@ const en: StorefrontMessages = {
     reviewLegal:
       "By clicking Place order, you confirm that you have read and accept our Terms of Use, Terms of Sale and Returns Policy, and acknowledge the store's Privacy Policy.",
     placeOrder: "Place order",
+    fullNameLabel: "Full name",
+    addressLineLabel: "Address",
+    phoneLabel: "Phone number",
+    savedAddressPrompt: "Hi {name}, do you want to use one of your saved addresses?",
+    continueToConfirmOrder: "Continue — Confirm order",
+    deliveryMethodTitle: "Delivery method",
+    deliveryMethodSubtitle: "Choose how you want to receive your order",
+    postalCodeLabel: "Postal code",
+    cityLabel: "City",
+    provinceLabel: "State / Province",
+    chooseSavedAddress: "Choose a saved address",
+    continueToPlaceOrder: "Continue to place order",
+    confirmPlaceOrderSection: "Confirm and place order",
   },
   orderCompleted: {
     thankYou: "Thank you!",

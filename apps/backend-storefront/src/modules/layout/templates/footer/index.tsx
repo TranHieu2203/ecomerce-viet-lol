@@ -5,7 +5,9 @@ import {
   resolveCmsSiteTitle,
   resolveCmsTagline,
   resolveCmsSocialLinks,
+  listCmsPagesPublic,
 } from "@lib/data/cms"
+import { getNavMenuPublic } from "@lib/data/nav-menu"
 import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
 import { displayCollection } from "@lib/util/i18n-catalog"
@@ -40,8 +42,10 @@ export default async function Footer({
   countryCode: string
 }) {
   const m = getStorefrontMessages(countryCode)
-  const [cms, { collections }, productCategories] = await Promise.all([
+  const [cms, navMenu, cmsPages, { collections }, productCategories] = await Promise.all([
     getCmsSettingsPublic(),
+    getNavMenuPublic(countryCode),
+    listCmsPagesPublic(countryCode),
     listCollections({
       fields: "*products",
     }),
@@ -60,6 +64,26 @@ export default async function Footer({
     ? `tel:${hotline.replace(/[\s().-]/g, "")}`
     : ""
   const hasContactBlock = Boolean(hotline || email || socialLinks.length)
+
+  const cmsPageLinksFromNav = Array.isArray(navMenu?.items)
+    ? navMenu.items
+        .flatMap((g) => g.children ?? [])
+        .filter((c) => c?.type === "link")
+        .map((c) => c as { type: "link"; label: string; href: string })
+        .filter((c) => typeof c.href === "string" && c.href.startsWith("/p/"))
+        .filter((c, idx, arr) => arr.findIndex((x) => x.href === c.href) === idx)
+        .slice(0, 8)
+    : []
+
+  const cmsPagesResolved =
+    Array.isArray(cmsPages) && cmsPages.length
+      ? cmsPages
+          .filter((p) => p?.slug && p?.title)
+          .map((p) => ({ href: `/p/${p.slug}`, label: p.title }))
+          .slice(0, 8)
+      : []
+
+  const cmsPageLinks = cmsPagesResolved.length ? cmsPagesResolved : cmsPageLinksFromNav
 
   return (
     <footer className="border-t border-brand-gold/20 w-full bg-brand-cream">
@@ -218,6 +242,25 @@ export default async function Footer({
                 </ul>
               </div>
             )}
+            {cmsPageLinks.length ? (
+              <div className="flex flex-col gap-y-2">
+                <span className="txt-small-plus text-brand-gold font-medium">
+                  {countryCode === "en" ? "Pages" : "Trang thông tin"}
+                </span>
+                <ul className="flex flex-col gap-2 text-ui-fg-subtle txt-small">
+                  {cmsPageLinks.map((c) => (
+                    <li key={c.href}>
+                      <LocalizedClientLink
+                        className="hover:text-ui-fg-base"
+                        href={c.href}
+                      >
+                        {c.label}
+                      </LocalizedClientLink>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             <div className="flex flex-col gap-y-2">
               <span className="txt-small-plus text-brand-gold font-medium">
                 {m.footer.customerHeading}

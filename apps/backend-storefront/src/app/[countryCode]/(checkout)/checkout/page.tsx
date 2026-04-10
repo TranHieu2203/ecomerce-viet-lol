@@ -5,7 +5,7 @@ import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 export async function generateMetadata({
   params,
@@ -19,14 +19,38 @@ export async function generateMetadata({
 
 export default async function Checkout({
   params,
+  searchParams,
 }: {
   params: Promise<{ countryCode: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
-  await params
+  const { countryCode } = await params
+  const sp = await searchParams
+  const stepParam = sp.step
+  const step =
+    typeof stepParam === "string"
+      ? stepParam
+      : Array.isArray(stepParam)
+        ? stepParam[0]
+        : undefined
+  if (!step) {
+    redirect(`/${countryCode}/checkout?step=address`)
+  }
+
   const cart = await retrieveCart()
 
   if (!cart) {
     return notFound()
+  }
+
+  if (step === "delivery" || step === "review") {
+    const nextStep =
+      cart.shipping_address?.address_1 &&
+      cart.email &&
+      (cart.shipping_methods?.length ?? 0) > 0
+        ? "confirm"
+        : "address"
+    redirect(`/${countryCode}/checkout?step=${nextStep}`)
   }
 
   const customer = await retrieveCustomer()
