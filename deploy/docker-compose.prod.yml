@@ -59,9 +59,11 @@ services:
     image: ${BACKEND_IMAGE:?set BACKEND_IMAGE in .env.production}
     restart: unless-stopped
     environment:
-      # Medusa/pg đôi khi tự bật SSL theo môi trường; Postgres container nội bộ không bật SSL.
-      # Ép tắt SSL để tránh lỗi: "The server does not support SSL connections".
-      DATABASE_URL: postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?ssl=false
+      # Ưu tiên DATABASE_URL nếu bạn set sẵn (để URL-encode password khi có ký tự đặc biệt như '@').
+      # Fallback vẫn giữ như cũ cho password đơn giản.
+      #
+      # Lưu ý: Postgres container nội bộ không bật SSL, nên URL nên có `?ssl=false`.
+      DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}?ssl=false}
       REDIS_URL: redis://redis:6379
       NODE_ENV: production
       STORE_CORS: ${STORE_CORS}
