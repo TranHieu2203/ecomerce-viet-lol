@@ -167,7 +167,14 @@ File `deploy/.env.production.local` trên server tạo trước khi có biến m
 ```bash
 MEDUSA_BACKEND_URL=http://medusa-backend-1:9000
 NEXT_PUBLIC_MEDUSA_BACKEND_URL=https://admin.quatangtaya.com
+MEDUSA_BACKEND_PUBLIC_URL=https://admin.quatangtaya.com
 ```
+
+### Ảnh trong Admin / DB trỏ `http://localhost:9000/static/...`
+
+Medusa **file-local** mặc định `backend_url=http://localhost:9000/static` — URL đó được **ghi vào DB** lúc upload/seed. Trên prod phải set **`MEDUSA_BACKEND_PUBLIC_URL`** = domain HTTPS mà NPM trỏ vào backend (thường **cùng** `NEXT_PUBLIC_MEDUSA_BACKEND_URL`, không có `/static`). Đã cấu hình trong `apps/backend/medusa-config.ts` + truyền env qua compose.
+
+Sau khi sửa env: **rebuild + restart backend**, rồi **seed/upload lại** (URL cũ trong DB không tự đổi), ví dụ chạy lại `npm run seed:sales-kit:confirm` nếu catalog từ Sales Kit.
 
 ### Storefront log: `Bad Gateway` (502) hoặc `publishable key`
 
