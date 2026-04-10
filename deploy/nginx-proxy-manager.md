@@ -52,13 +52,13 @@ cd ecomerce-viet-lol
 docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build
 ```
 
-**Khuyến nghị lần đầu:** `bash deploy/deploy-on-server.sh init` (migrate + seed như dev + cập nhật `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` trong `deploy/.env.production` + build lại storefront). Hoặc tay: `docker compose ... exec medusa-backend-1 npx medusa db:migrate`, rồi `npm run seed` trong container backend.
+**Khuyến nghị lần đầu (trên VPS, Linux):** `chmod +x DEPLOY-PROD-FIRST-1-CLICK.sh && ./DEPLOY-PROD-FIRST-1-CLICK.sh` — hoặc `bash deploy/deploy-on-server.sh init` (migrate + seed + cập nhật `pk_` + build storefront). **Không** chạy file `.bat` bằng `bash` trên Ubuntu. Cập nhật code sau này: `./DEPLOY-PROD-UPDATE-CODE-1-CLICK.sh`.
 
 Tạo user admin lần đầu qua onboarding tại `https://admin.quatangtaya.com/app` (sau khi NPM đã có SSL).
 
 ## Deploy từ Windows (tùy chọn)
 
-- Trên VPS có script `deploy/deploy-on-server.sh` (`init` = lần đầu: `up` + `db:migrate`; `update` = `pull` + `up` + `db:migrate`).
+- Trên VPS: `deploy/deploy-on-server.sh` (`init` = seed + env đầy đủ; `update` = `pull` + `up --build` + migrate, giữ volume).
 - Ở máy Windows: mở gốc repo `deploy-vps.bat`, sửa `SSH_HOST` / `REMOTE_DIR` nếu cần, rồi `deploy-vps.bat init` hoặc `deploy-vps.bat update`.
 - **Lần đầu:** `deploy/.env.production` đã có trong repo (placeholder); trên VPS vẫn nên đổi mọi `CHANGE_ME_*` trước khi go live.
 - **Tunnel DB/Redis về máy dev:** `ssh-data-tunnel.bat` (sửa `SSH_HOST`). Compose prod map Postgres/Redis chỉ `127.0.0.1` trên VPS; máy bạn dùng `localhost:15432` / `localhost:16379`.

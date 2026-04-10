@@ -1,6 +1,6 @@
 @echo off
-REM Sau khi da chay lan dau: chi pull code + build image + migrate.
-REM KHONG seed lai, KHONG xoa volume — DB + upload + du lieu NPM giu nguyen.
+REM WINDOWS: double-click.  LINUX/VPS:  bash DEPLOY-PROD-UPDATE-CODE-1-CLICK.sh
+REM Pull + build + migrate; khong seed, khong xoa volume.
 
 cd /d "%~dp0"
 call "%~dp0deploy-vps.bat" update
