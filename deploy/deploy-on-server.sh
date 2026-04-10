@@ -11,7 +11,7 @@
 #   - Admin user: lần đầu mở https://admin.../app (Medusa onboarding) hoặc tạo trong Admin.
 #
 # update: git pull + compose up --build + migrate (KHÔNG seed, KHÔNG down -v).
-#    Volume postgres_data / redis_data / medusa_uploads / npm_* giữ nguyên — sửa code rồi update chỉ rebuild image.
+#    Volume postgres_data / redis_data / medusa_uploads / npm_* giữ nguyên — update chỉ pull image mới + restart container.
 
 set -euo pipefail
 
@@ -103,9 +103,7 @@ sync_publishable_key_to_env() {
   fi
   env_prod_set NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY "$pk"
   echo "[init] Đã ghi NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY vào deploy/.env.production"
-  echo "[init] Build lại storefront (embed NEXT_PUBLIC_* lúc build)..."
-  dc build storefront
-  dc up -d storefront
+  echo "[init] Lưu ý: storefront image được build/push từ local. Hãy build lại storefront image với pk_ mới rồi chạy lại: bash deploy/deploy-on-server.sh update"
 }
 
 case "${1:-}" in
@@ -115,10 +113,13 @@ case "${1:-}" in
       echo "[lỗi] Thư mục không phải git repo: $ROOT"
       exit 1
     fi
-    git pull --ff-only
+    if [[ -d .git ]]; then
+      git pull --ff-only
+    fi
     ensure_generated_secrets
-    echo "[init] docker compose up --build..."
-    dc up -d --build
+    echo "[init] docker compose pull + up..."
+    dc pull
+    dc up -d
     wait_then_migrate "[init] db:migrate..."
     run_seed_stack
     sync_publishable_key_to_env
@@ -126,18 +127,18 @@ case "${1:-}" in
     ;;
   update)
     require_env_file
-    if [[ ! -d .git ]]; then
-      echo "[lỗi] Không có .git — không pull được."
-      exit 1
+    if [[ -d .git ]]; then
+      git pull --ff-only
     fi
-    git pull --ff-only
-    dc up -d --build
+    echo "[update] docker compose pull + up..."
+    dc pull
+    dc up -d
     echo "[update] db:migrate..."
     dc exec -T medusa-backend-1 npx medusa db:migrate || {
       echo "[cảnh báo] db:migrate lỗi — xem log medusa-backend-1"
       exit 1
     }
-    echo "[update] Xong. DB & upload volume không bị xóa — chỉ image/container được build lại."
+    echo "[update] Xong. DB & upload volume không bị xóa — chỉ image/container được pull + restart."
     ;;
   *)
     echo "Cách dùng: $0 init | update"

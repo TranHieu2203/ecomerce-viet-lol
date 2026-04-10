@@ -18,9 +18,9 @@ ENV MEDUSA_BACKEND_URL=$MEDUSA_BACKEND_URL
 ENV REVALIDATE_SECRET=$REVALIDATE_SECRET
 ENV NEXT_PUBLIC_DEFAULT_REGION=$NEXT_PUBLIC_DEFAULT_REGION
 
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 COPY apps/backend-storefront ./
-RUN npm run build && npm prune --omit=dev
+RUN npm run build && npm prune --omit=dev --no-audit --no-fund
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app/apps/backend-storefront

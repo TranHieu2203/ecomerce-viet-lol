@@ -7,10 +7,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY apps/backend/package.json apps/backend/package-lock.json ./apps/backend/
 WORKDIR /app/apps/backend
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 
 COPY apps/backend ./
-RUN npm run build && npm prune --omit=dev
+RUN npm run build && npm prune --omit=dev --no-audit --no-fund
 
 FROM node:20-bookworm-slim AS runner
 WORKDIR /app/apps/backend

@@ -4,13 +4,14 @@
 # (image jc21/nginx-proxy-manager; KHÔNG phải nginx:alpine ở medusa-lb — medusa-lb chỉ LB nội bộ, không có UI).
 #
 # Trên server (sau khi clone repo):
-#   chỉnh deploy/.env.production (đổi mọi CHANGE_ME_* — file có sẵn trong repo theo domain quatangtaya.com)
-#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build
+#   chỉnh deploy/.env.production (đổi mọi CHANGE_ME_* + set BACKEND_IMAGE/STOREFRONT_IMAGE trỏ DockerHub)
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production pull
+#   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d
 #
 # Hướng dẫn NPM: deploy/nginx-proxy-manager.md
 #
 # Du lieu lau dai: named volumes (postgres_data, redis_data, medusa_uploads, npm_*).
-# `docker compose up --build` / `deploy-on-server.sh update` KHONG xoa volume — chi rebuild image.
+# `docker compose up` / `deploy-on-server.sh update` KHONG xoa volume — chi pull image + restart container.
 
 name: ecomerce-viet-lol-prod
 
@@ -55,9 +56,7 @@ services:
       - app
 
   medusa-backend-1: &medusa
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.backend
+    image: ${BACKEND_IMAGE:?set BACKEND_IMAGE in .env.production}
     restart: unless-stopped
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-medusa}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-medusa}
@@ -99,14 +98,7 @@ services:
       - app
 
   storefront:
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile.storefront
-      args:
-        NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?}
-        MEDUSA_BACKEND_URL: ${MEDUSA_BACKEND_URL:?}
-        REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
-        NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
+    image: ${STOREFRONT_IMAGE:?set STOREFRONT_IMAGE in .env.production}
     restart: unless-stopped
     environment:
       NODE_ENV: production
