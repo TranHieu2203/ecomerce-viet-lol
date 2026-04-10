@@ -1,9 +1,10 @@
 @echo off
 setlocal EnableExtensions
 REM Deploy qua SSH. IP: 103.124.94.227 (doi neu doi VPS). REMOTE_DIR / GIT_URL neu can.
-REM   deploy-vps.bat init    — lan dau: clone (neu chua co) + docker + db:migrate
-REM   deploy-vps.bat update — git pull + docker + db:migrate
-REM Tren VPS can deploy/.env.production (co trong repo, doi CHANGE_ME_* truoc go live).
+REM   deploy-vps.bat init — lan dau: clone + docker + migrate + seed (nhu dev) + ensure-shipping
+REM           + tu sinh JWT/COOKIE/REVALIDATE neu con CHANGE_ME_* + ghi pk_ vao .env + build lai storefront
+REM   deploy-vps.bat update — git pull + docker + migrate (khong seed, khong sua env)
+REM File deploy/.env.production tren VPS: domain + POSTGRES_PASSWORD nen dat tay; secret placeholder co the de init tu tao.
 
 set "SSH_HOST=103.124.94.227"
 set "SSH_USER=root"
@@ -14,8 +15,8 @@ set "GIT_URL=https://github.com/TranHieu2203/ecomerce-viet-lol.git"
 set "MODE=%~1"
 if "%MODE%"=="" (
   echo Cach dung:
-  echo   deploy-vps.bat init    — lan dau: clone ^(neu can^) + docker + migrate DB
-  echo   deploy-vps.bat update — git pull + docker + migrate
+  echo   Double-click: DEPLOY-PROD-FIRST-1-CLICK.bat ^(lan dau^) hoac DEPLOY-PROD-UPDATE-CODE-1-CLICK.bat ^(sua code^)
+  echo   Hoac: deploy-vps.bat init ^| update
   exit /b 1
 )
 

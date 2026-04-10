@@ -41,7 +41,9 @@ Tab **SSL:** Let’s Encrypt + Force SSL.
 ## Trên VPS: Git, clone, chạy production (tóm tắt)
 
 ```bash
-# Cài Docker Engine + plugin compose (tài liệu chính thức Docker). Git: apt install git -y
+# Lần đầu trên VPS Ubuntu: Git + Docker (một lệnh)
+#   curl -fsSL https://raw.githubusercontent.com/TranHieu2203/ecomerce-viet-lol/prod/deploy/bootstrap-ubuntu-git-docker.sh | sudo bash
+# Hoặc sau khi clone: sudo bash deploy/bootstrap-ubuntu-git-docker.sh
 
 git clone https://github.com/TranHieu2203/ecomerce-viet-lol.git
 cd ecomerce-viet-lol
@@ -50,14 +52,9 @@ cd ecomerce-viet-lol
 docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build
 ```
 
-Lần đầu sau khi backend lên (xem log `docker compose ... logs -f medusa-backend-1`), chạy migration nếu cần (Medusa 2):
+**Khuyến nghị lần đầu:** `bash deploy/deploy-on-server.sh init` (migrate + seed như dev + cập nhật `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` trong `deploy/.env.production` + build lại storefront). Hoặc tay: `docker compose ... exec medusa-backend-1 npx medusa db:migrate`, rồi `npm run seed` trong container backend.
 
-```bash
-docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production exec medusa-backend-1 \
-  npx medusa db:migrate
-```
-
-Tạo user admin / publishable key trong Admin tại `https://admin.quatangtaya.com/app` (sau khi NPM đã có SSL).
+Tạo user admin lần đầu qua onboarding tại `https://admin.quatangtaya.com/app` (sau khi NPM đã có SSL).
 
 ## Deploy từ Windows (tùy chọn)
 
