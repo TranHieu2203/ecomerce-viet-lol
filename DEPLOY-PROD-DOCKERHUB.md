@@ -66,6 +66,7 @@ File env:
 
 - **Template trong git**: `deploy/.env.production` (không chứa secret thật)
 - **File secret trên VPS (khuyến nghị)**: `deploy/.env.production.local` (được ignore, scripts sẽ tự ưu tiên file này nếu tồn tại)
+- **Template để tạo file secret**: `deploy/.env.production.local.example` → copy ra `.local` trên VPS
 
 Các biến quan trọng:
 
