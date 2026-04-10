@@ -1,4 +1,11 @@
 node_modules/
+
+# SSH shortcut may local (chua thong tin server, khong commit)
+ssh-root-server.bat
+
+# Production secrets (deploy)
+deploy/.env.production
+
 .env
 .env.local
 apps/*/.env

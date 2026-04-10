@@ -1,0 +1,24 @@
+# Build từ thư mục gốc repo: docker compose (context ..)
+FROM node:20-bookworm-slim AS builder
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openssl ca-certificates python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY apps/backend/package.json apps/backend/package-lock.json ./apps/backend/
+WORKDIR /app/apps/backend
+RUN npm ci
+
+COPY apps/backend ./
+RUN npm run build && npm prune --omit=dev
+
+FROM node:20-bookworm-slim AS runner
+WORKDIR /app/apps/backend
+ENV NODE_ENV=production
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/apps/backend /app/apps/backend
+
+EXPOSE 9000
+CMD ["npm", "run", "start"]

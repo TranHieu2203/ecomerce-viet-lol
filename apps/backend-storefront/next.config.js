@@ -8,6 +8,26 @@ checkEnvVariables()
 const S3_HOSTNAME = process.env.MEDUSA_CLOUD_S3_HOSTNAME
 const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
 
+/** Cho next/image: ảnh Medusa qua MEDUSA_BACKEND_URL (production Docker / domain thật). */
+function remotePatternsFromMedusaBackend() {
+  const raw = process.env.MEDUSA_BACKEND_URL
+  if (!raw) return []
+  try {
+    const u = new URL(raw)
+    const protocol = u.protocol.replace(":", "")
+    if (protocol !== "http" && protocol !== "https") return []
+    const entry = {
+      protocol,
+      hostname: u.hostname,
+      pathname: "/**",
+    }
+    if (u.port) entry.port = u.port
+    return [entry]
+  } catch {
+    return []
+  }
+}
+
 /**
  * @type {import('next').NextConfig}
  */
@@ -57,6 +77,7 @@ const nextConfig = {
             },
           ]
         : []),
+      ...remotePatternsFromMedusaBackend(),
     ],
   },
 }

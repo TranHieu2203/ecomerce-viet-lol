@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "docker:up": "docker compose up -d",
+    "docker:prod:up": "docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build",
+    "docker:prod:down": "docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production down",
     "dev:backend": "npm run dev --prefix apps/backend",
     "dev:storefront": "npm run dev --prefix apps/backend-storefront"
   }

@@ -1,0 +1,13 @@
+.git
+**/.git
+**/node_modules
+**/.next
+**/.medusa
+*.log
+.DS_Store
+_bmad-output
+.claude
+.cursor
+apps/backend/static/**
+!apps/backend/static/.gitkeep
+deploy/.env.production
