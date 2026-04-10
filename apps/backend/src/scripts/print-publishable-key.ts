@@ -8,15 +8,11 @@ import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
 export default async function printPublishableKey({ container }: ExecArgs) {
   const query = container.resolve(ContainerRegistrationKeys.QUERY)
-  const { data, errors } = await query.graph({
+  const { data } = await query.graph({
     entity: "api_key",
     fields: ["token"],
     filters: { type: "publishable" },
   })
-  if (errors?.length) {
-    console.error("[print-publishable-key]", JSON.stringify(errors))
-    process.exit(1)
-  }
   const tok = data?.[0]?.token
   if (typeof tok !== "string" || !tok.startsWith("pk_")) {
     console.error(
