@@ -80,22 +80,7 @@ services:
     networks:
       - app
 
-  medusa-backend-2:
-    <<: *medusa
-    volumes:
-      - medusa_uploads:/app/apps/backend/static
-
-  # Nginx thuần — không có UI; chỉ cân bằng 2 Medusa. UI quản trị nằm ở service nginx-proxy-manager (:81).
-  medusa-lb:
-    image: nginx:alpine
-    restart: unless-stopped
-    volumes:
-      - ./nginx-medusa-lb.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - medusa-backend-1
-      - medusa-backend-2
-    networks:
-      - app
+  # Nếu cần scale, có thể thêm medusa-backend-2 và LB sau.
 
   storefront:
     image: ${STOREFRONT_IMAGE:?set STOREFRONT_IMAGE in .env.production}
@@ -107,7 +92,7 @@ services:
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
       NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
     depends_on:
-      - medusa-lb
+      - medusa-backend-1
     networks:
       - app
 

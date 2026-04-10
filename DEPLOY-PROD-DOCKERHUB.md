@@ -1,0 +1,183 @@
+# Deploy Production (DockerHub images, VPS chỉ pull)
+
+Flow chuẩn:
+
+- **Local/Windows**: build image → push DockerHub
+- **VPS/Ubuntu**: pull image → chạy init/update (migrate/seed)
+
+---
+
+## Yêu cầu
+
+### Local (máy dev)
+
+- Docker Desktop (đang chạy)
+- Đã đăng nhập DockerHub: `docker login`
+
+### VPS (Ubuntu)
+
+- Docker Engine + docker compose plugin + git
+- Lần đầu có thể chạy:
+
+```bash
+sudo bash deploy/bootstrap-ubuntu-git-docker.sh
+```
+
+---
+
+## Cấu hình production env
+
+File dùng cho production là `deploy/.env.production`.
+
+Các biến quan trọng:
+
+- **DockerHub images**
+  - `DOCKERHUB_NAMESPACE=hieutech2203`
+  - `BACKEND_IMAGE=hieutech2203/ecomerce-viet-lol-backend:prod`
+  - `STOREFRONT_IMAGE=hieutech2203/ecomerce-viet-lol-storefront:prod`
+- **Database**
+  - `POSTGRES_PASSWORD=...` (volume DB đã tạo rồi thì **không đổi** được nếu không reset volume)
+- **Domain/CORS**
+  - `STORE_CORS=...`
+  - `ADMIN_CORS=...`
+  - `AUTH_CORS=...`
+  - `MEDUSA_BACKEND_URL=https://admin.<domain>`
+- **Secrets**
+  - `JWT_SECRET`, `COOKIE_SECRET`, `REVALIDATE_SECRET`
+  - Lần đầu chạy `init`, script `deploy/deploy-on-server.sh` sẽ tự gen nếu còn `CHANGE_ME_*`.
+
+---
+
+## 1) Build + Push images lên DockerHub (Local)
+
+Chạy tại root repo:
+
+```bat
+.\PROD-1CLICK-LOCAL-BUILD-PUSH-DOCKERHUB.bat
+```
+
+Lưu ý:
+
+- File `.bat` chỉ chạy trên **Windows**.
+- Trên Linux/VPS, bạn chỉ chạy `bash deploy/deploy-on-server.sh ...` (không chạy `.bat` bằng `bash`).
+
+Script sẽ:
+
+- build + push **backend** với 2 tag:
+  - `:<gitsha>` (ví dụ `:088dc62`)
+  - `:prod` (dùng cho VPS pull)
+- build + push **storefront** với 2 tag tương tự
+
+---
+
+## 2) Deploy lần đầu (init) lên VPS
+
+### Cách nhanh từ Windows (SSH 1-click)
+
+```bat
+.\PROD-1CLICK-DEPLOY-VPS-PULL-IMAGES.bat init
+```
+
+Nó sẽ SSH vào VPS và chạy:
+
+- `bash deploy/deploy-on-server.sh init`
+
+### Chạy trực tiếp trên VPS (Linux)
+
+SSH vào VPS, vào thư mục repo rồi chạy:
+
+```bash
+bash deploy/deploy-on-server.sh init
+```
+
+`init` sẽ:
+
+- `docker compose pull` + `up -d`
+- `db:migrate`
+- `npm run seed` + `seed:ensure-shipping`
+- đọc `pk_...` trong DB và ghi vào `deploy/.env.production`
+
+---
+
+## 3) Deploy lần sau (update) lên VPS
+
+```bat
+.\PROD-1CLICK-DEPLOY-VPS-PULL-IMAGES.bat update
+```
+
+### Chạy trực tiếp trên VPS (Linux)
+
+```bash
+bash deploy/deploy-on-server.sh update
+```
+
+`update` sẽ:
+
+- `docker compose pull` + `up -d`
+- `db:migrate`
+- **không seed**, **không xoá volume**
+
+---
+
+## Quy trình “lần sau” (build bản mới + update VPS)
+
+Mỗi lần bạn sửa code và muốn lên production:
+
+### Bước 1 — build + push image mới (Local/Windows)
+
+```bat
+.\PROD-1CLICK-LOCAL-BUILD-PUSH-DOCKERHUB.bat
+```
+
+Script sẽ push **2 tag** cho mỗi image:
+
+- `:prod` (VPS sẽ pull theo tag này)
+- `:<gitsha>` (để trace/rollback, ví dụ `:088dc62`)
+
+### Bước 2 — pull image mới + migrate (VPS)
+
+- Chạy trực tiếp trên VPS:
+
+```bash
+bash deploy/deploy-on-server.sh update
+```
+
+- Hoặc chạy từ Windows (SSH 1-click):
+
+```bat
+.\PROD-1CLICK-DEPLOY-VPS-PULL-IMAGES.bat update
+```
+
+---
+
+## Nginx Proxy Manager (SSL + domain)
+
+Sau khi stack chạy, cấu hình proxy/SSL theo:
+
+- `deploy/nginx-proxy-manager.md`
+
+Giao diện NPM: `http://<IP-VPS>:81`.
+
+Lưu ý: production compose hiện chạy **1 Medusa backend** (`medusa-backend-1`). Vì vậy Proxy Host `admin.*` sẽ forward tới `medusa-backend-1:9000` (không qua `medusa-lb`).
+
+---
+
+## Lưu ý quan trọng về `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY`
+
+Storefront build yêu cầu `NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY` (check ở `apps/backend-storefront/next.config.js`).
+
+Vì `init` có thể tạo/ghi `pk_` mới vào `deploy/.env.production` trên VPS, nên **sau init** bạn nên:
+
+- chạy lại `.\PROD-1CLICK-LOCAL-BUILD-PUSH-DOCKERHUB.bat` để build/push storefront (tag `:prod`) với `pk_` mới
+- rồi chạy `update` để VPS pull storefront mới
+
+---
+
+## Troubleshooting nhanh
+
+- **Push bị `denied/unauthorized`**: chạy lại `docker login` (đúng account) và kiểm tra repo trên DockerHub đã được tạo/quyền push.
+- **Đổi `POSTGRES_PASSWORD` xong không vào DB**: do volume DB cũ vẫn dùng password cũ → giữ nguyên password, hoặc reset volume DB (mất dữ liệu).
+- **Backend restart với lỗi `Cannot find module '/app/apps/backend/medusa-config'`**:
+  - Image thiếu file config runtime. Repo đã có `apps/backend/medusa-config.js` để chạy production; hãy build/push lại image `:prod` rồi `update` trên VPS.
+- **Storefront restart với lỗi `Cannot find module 'ansi-colors'`**:
+  - Do `ansi-colors` bị prune (devDependencies). Repo đã chuyển `ansi-colors` sang `dependencies`; hãy build/push lại image `:prod` rồi `update` trên VPS.

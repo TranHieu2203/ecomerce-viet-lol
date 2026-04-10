@@ -8,6 +8,11 @@ ssh-root-server.bat
 apps/*/.env
 !apps/*/.env.template
 !apps/*/.env.test
+
+# Production env (chứa secrets) — KHÔNG commit
+deploy/.env.production
+deploy/.env.production.*
+!deploy/.env.production.example
 .DS_Store
 *.log
 .next/
