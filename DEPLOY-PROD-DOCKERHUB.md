@@ -141,7 +141,7 @@ Script sẽ push **2 tag** cho mỗi image:
 - Chạy trực tiếp trên VPS:
 
 ```bash
-bash deploy/deploy-on-server.sh update
+bash deploy/prod-update.sh
 ```
 
 - Hoặc chạy từ Windows (SSH 1-click):
@@ -179,6 +179,11 @@ Vì `init` có thể tạo/ghi `pk_` mới vào `deploy/.env.production` trên V
 
 - **Push bị `denied/unauthorized`**: chạy lại `docker login` (đúng account) và kiểm tra repo trên DockerHub đã được tạo/quyền push.
 - **Đổi `POSTGRES_PASSWORD` xong không vào DB**: do volume DB cũ vẫn dùng password cũ → giữ nguyên password, hoặc reset volume DB (mất dữ liệu).
+- **Migrate bị `KnexTimeoutError` / `SELECT 1` timeout**:
+  - Thường do `DATABASE_URL` bị sai (đặc biệt khi password có ký tự đặc biệt như `@`, `:`, `#`, `/`…).
+  - Cách xử lý tốt nhất:
+    - Đặt password chỉ gồm chữ/số/`_`/`-`, hoặc
+    - Set `DATABASE_URL` với password **URL-encode** (ví dụ `@` → `%40`), và đảm bảo có `?ssl=false`.
 - **Backend restart, log có `relation "xxx" does not exist` (thiếu bảng `tax_provider`, `payment_provider`, `currency`...)**:
   - Nguyên nhân: DB chưa được migrate (hoặc migrate không chạy do backend crash-loop).
   - Cách xử lý:
