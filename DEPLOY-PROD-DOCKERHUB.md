@@ -87,12 +87,14 @@ Nó sẽ SSH vào VPS và chạy:
 SSH vào VPS, vào thư mục repo rồi chạy:
 
 ```bash
-bash deploy/deploy-on-server.sh init
+# INIT (xoá sạch toàn bộ dữ liệu volumes + seed lại từ đầu)
+bash deploy/prod-init.sh
 ```
 
-`init` sẽ:
+`prod-init.sh` sẽ:
 
-- `docker compose pull` + `up -d`
+- `docker compose pull` + `down -v` (xoá sạch volumes: DB/redis/uploads/NPM data)
+- `docker compose up -d`
 - `db:migrate`
 - `npm run seed` + `seed:ensure-shipping`
 - đọc `pk_...` trong DB và ghi vào `deploy/.env.production`
@@ -108,10 +110,10 @@ bash deploy/deploy-on-server.sh init
 ### Chạy trực tiếp trên VPS (Linux)
 
 ```bash
-bash deploy/deploy-on-server.sh update
+bash deploy/prod-update.sh
 ```
 
-`update` sẽ:
+`prod-update.sh` sẽ:
 
 - `docker compose pull` + `up -d`
 - `db:migrate`
