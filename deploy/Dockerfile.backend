@@ -11,30 +11,25 @@ RUN npm ci --no-audit --no-fund
 
 COPY apps/backend ./
 RUN npm run build \
-  # Medusa admin loader có thể kỳ vọng build ở `.medusa/admin`.
-  # Trong thực tế `medusa build` emit admin vào `.medusa/server/public/admin`.
-  # Để tránh mismatch path giữa các phiên bản, copy sang cả 2 nơi.
   && test -f .medusa/server/public/admin/index.html \
-  && mkdir -p .medusa/admin \
-  && cp -R .medusa/server/public/admin/. .medusa/admin/ \
-  && test -f .medusa/admin/index.html \
-  && npm prune --omit=dev --no-audit --no-fund
+  # Install runtime deps for built server bundle (.medusa/server is recreated on build)
+  && cd .medusa/server \
+  && npm ci --omit=dev --no-audit --no-fund
 
 FROM node:20-bookworm-slim AS runner
-WORKDIR /app/apps/backend
+WORKDIR /app/apps/backend/.medusa/server
 ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
   && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/apps/backend /app/apps/backend
 
-# Medusa 2 production: `medusa start` từ thư mục app root tìm admin tại `./public/admin`
-# (xem https://docs.medusajs.com/learn/build — output thật nằm ở `.medusa/server/public/admin`).
-# Symlink để loader khớp đường dẫn khi vẫn chạy `npm run start` từ `apps/backend`.
-RUN cd /app/apps/backend \
-  && rm -rf public \
-  && ln -sfn .medusa/server/public public \
-  && test -f public/admin/index.html
+# Uploads volume currently mounts at /app/apps/backend/static.
+# When running from .medusa/server, ensure static path exists there too.
+RUN mkdir -p /app/apps/backend/static \
+  && rm -rf /app/apps/backend/.medusa/server/static \
+  && ln -sfn /app/apps/backend/static /app/apps/backend/.medusa/server/static \
+  && test -f /app/apps/backend/.medusa/server/public/admin/index.html
 
 # Production runtime phải chạy từ output build `.medusa/server`.
 # Nếu ship cả TypeScript trong `src/(subscribers|workflows|links)`, Medusa có thể scan + dynamic-import `.ts`
