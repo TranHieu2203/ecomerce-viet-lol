@@ -1,6 +1,6 @@
 # Nginx Proxy Manager — quatangtaya.com
 
-Áp dụng sau khi `docker compose -f deploy/docker-compose.prod.yml ... up -d` và mở được UI NPM tại `http://<IP-VPS>:81`.
+Áp dụng sau khi `docker compose -f deploy/docker-compose.prod.yml ... up -d`. **Giao diện quản trị** là container **`nginx-proxy-manager`** (image Nginx Proxy Manager): mở `http://<IP-VPS>:81` — lần đầu NPM thường yêu cầu tạo tài khoản admin (email + mật khẩu của bạn).
 
 ## DNS
 
@@ -45,8 +45,7 @@ Tab **SSL:** Let’s Encrypt + Force SSL.
 
 git clone https://github.com/TranHieu2203/ecomerce-viet-lol.git
 cd ecomerce-viet-lol
-cp deploy/.env.production.example deploy/.env.production
-nano deploy/.env.production   # điền mật khẩu + secret + publishable key
+# deploy/.env.production đã có trong repo (domain quatangtaya.com) — trên server: nano deploy/.env.production và đổi mọi CHANGE_ME_*
 
 docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build
 ```
@@ -59,3 +58,9 @@ docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.producti
 ```
 
 Tạo user admin / publishable key trong Admin tại `https://admin.quatangtaya.com/app` (sau khi NPM đã có SSL).
+
+## Deploy từ Windows (tùy chọn)
+
+- Trên VPS có script `deploy/deploy-on-server.sh` (`init` = lần đầu: `up` + `db:migrate`; `update` = `pull` + `up` + `db:migrate`).
+- Ở máy Windows: sao chép `deploy-vps.example.bat` → `deploy-vps.bat` (file này trong `.gitignore`), điền `SSH_HOST` / `REMOTE_DIR`, rồi `deploy-vps.bat init` hoặc `deploy-vps.bat update`.
+- **Lần đầu:** `deploy/.env.production` đã có trong repo (placeholder); trên VPS vẫn nên đổi mọi `CHANGE_ME_*` trước khi go live.

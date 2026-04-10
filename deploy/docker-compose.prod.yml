@@ -1,11 +1,13 @@
 # Production: Postgres + Redis + Medusa x2 + Nginx LB + Storefront + Nginx Proxy Manager
 #
+# Giao diện quản trị reverse proxy (SSL, domain): Nginx Proxy Manager — http://SERVER_IP:81
+# (image jc21/nginx-proxy-manager; KHÔNG phải nginx:alpine ở medusa-lb — medusa-lb chỉ LB nội bộ, không có UI).
+#
 # Trên server (sau khi clone repo):
-#   cp deploy/.env.production.example deploy/.env.production
-#   chỉnh mật khẩu / secret / publishable key
+#   chỉnh deploy/.env.production (đổi mọi CHANGE_ME_* — file có sẵn trong repo theo domain quatangtaya.com)
 #   docker compose -f deploy/docker-compose.prod.yml --env-file deploy/.env.production up -d --build
 #
-# NPM: http://SERVER_IP:81 — xem deploy/nginx-proxy-manager.md
+# Hướng dẫn NPM: deploy/nginx-proxy-manager.md
 
 name: ecomerce-viet-lol-prod
 
@@ -75,6 +77,7 @@ services:
     volumes:
       - medusa_uploads:/app/apps/backend/static
 
+  # Nginx thuần — không có UI; chỉ cân bằng 2 Medusa. UI quản trị nằm ở service nginx-proxy-manager (:81).
   medusa-lb:
     image: nginx:alpine
     restart: unless-stopped
@@ -107,7 +110,8 @@ services:
     networks:
       - app
 
-  npm:
+  # Nginx Proxy Manager — bản có giao diện web (đăng nhập lần đầu tại http://IP:81).
+  nginx-proxy-manager:
     image: jc21/nginx-proxy-manager:latest
     restart: unless-stopped
     ports:

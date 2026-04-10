@@ -2,9 +2,8 @@ node_modules/
 
 # SSH shortcut may local (chua thong tin server, khong commit)
 ssh-root-server.bat
-
-# Production secrets (deploy)
-deploy/.env.production
+ssh-npm-ui-tunnel.bat
+deploy-vps.bat
 
 .env
 .env.local
