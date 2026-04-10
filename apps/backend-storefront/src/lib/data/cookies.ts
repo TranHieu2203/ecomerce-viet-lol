@@ -67,8 +67,12 @@ export const removeAuthToken = async () => {
 }
 
 export const getCartId = async () => {
-  const cookies = await nextCookies()
-  return cookies.get("_medusa_cart_id")?.value
+  try {
+    const cookies = await nextCookies()
+    return cookies.get("_medusa_cart_id")?.value
+  } catch {
+    return undefined
+  }
 }
 
 export const setCartId = async (cartId: string) => {

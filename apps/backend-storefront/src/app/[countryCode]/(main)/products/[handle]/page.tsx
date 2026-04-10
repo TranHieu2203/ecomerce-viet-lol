@@ -3,6 +3,7 @@ import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { displayProduct } from "@lib/util/i18n-catalog"
+import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
 import { SUPPORTED_LOCALES } from "@lib/util/locales"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -104,7 +105,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     openGraph: {
       title: pageTitle,
       description,
-      images: product.thumbnail ? [product.thumbnail] : [],
+      images: product.thumbnail
+        ? [normalizeMedusaAssetUrl(product.thumbnail) || product.thumbnail]
+        : [],
     },
   }
 }
