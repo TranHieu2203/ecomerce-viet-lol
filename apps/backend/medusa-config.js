@@ -1,3 +1,4 @@
+const path = require("path")
 const { loadEnv, defineConfig } = require("@medusajs/framework/utils")
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
@@ -9,8 +10,8 @@ module.exports = defineConfig({
       // Nếu trỏ vào `src/modules/*` (TypeScript) thì runtime `require()` sẽ fail.
       resolve:
         process.env.NODE_ENV === "production"
-          ? "./.medusa/server/src/modules/store-cms"
-          : "./src/modules/store-cms",
+          ? path.resolve(__dirname, ".medusa/server/src/modules/store-cms")
+          : path.resolve(__dirname, "src/modules/store-cms"),
     },
   ],
   projectConfig: {
