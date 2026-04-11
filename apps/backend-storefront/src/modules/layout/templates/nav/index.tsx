@@ -46,7 +46,10 @@ export default async function Nav({
         (x): x is string => typeof x === "string" && x.length > 0
       )
     : []
-  const displayNames = new Intl.DisplayNames([countryCode], { type: "language" })
+  const displayNames = new Intl.DisplayNames(
+    [countryCode].filter(Boolean),
+    { type: "language" }
+  )
   const localesForMenu: Locale[] =
     enabledCmsLocales.length > 0
       ? enabledCmsLocales.map((code) => ({
