@@ -12,6 +12,7 @@ import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
+import StockBadge from "@modules/products/components/stock-badge"
 import { useRouter } from "next/navigation"
 
 type ProductActionsProps = {
@@ -163,6 +164,13 @@ export default function ProductActions({
         </div>
 
         <ProductPrice product={product} variant={selectedVariant} />
+
+        {/* Epic 14 — Story 14.6: Badge trạng thái tồn kho */}
+        <StockBadge
+          variantId={selectedVariant?.id}
+          locale={countryCode}
+          backendUrl={process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}
+        />
 
         <Button
           onClick={handleAddToCart}

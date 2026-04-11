@@ -18,6 +18,7 @@
     "seed:ensure-admin-user": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-ensure-admin-user.ts",
     "seed:ensure-shipping": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/ensure-shipping-readiness.ts",
     "seed:appendix": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-appendix-only.ts",
+    "seed:inventory-setup": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-inventory-setup.ts",
     "seed:sales-kit": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-sales-kit.ts",
     "seed:sales-kit:confirm": "cross-env SEED_SALES_KIT_ALLOW=1 node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/seed-sales-kit.ts",
     "print:publishable-key": "node ./node_modules/@medusajs/cli/cli.js exec ./src/scripts/print-publishable-key.ts",
