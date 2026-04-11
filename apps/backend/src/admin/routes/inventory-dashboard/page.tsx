@@ -43,6 +43,7 @@ type Dashboard = {
 type ShortageVariant = {
   inventory_item_id: string
   sku: string | null
+  inventory_title?: string | null
   product_title: string | null
   variant_title: string | null
   stocked_quantity: number
@@ -128,26 +129,45 @@ const InventoryDashboard = () => {
 
   const load = useCallback(async () => {
     setLoading(true)
-    try {
-      const [dash, svRes, soRes] = await Promise.all([
-        adminFetch("/admin/custom/inventory/dashboard") as Promise<{ dashboard: Dashboard }>,
-        adminFetch("/admin/custom/inventory/shortage/variants?include_zero=true") as Promise<{
-          shortage_variants: ShortageVariant[]
-        }>,
-        adminFetch("/admin/custom/inventory/shortage/orders") as Promise<{
-          shortage_orders: ShortageOrder[]
-        }>,
-      ])
-      setDashboard(dash.dashboard)
-      setShortageVariants(svRes.shortage_variants ?? [])
-      setShortageOrders(soRes.shortage_orders ?? [])
-    } catch (e: unknown) {
-      toast.error("Lỗi tải dữ liệu tồn kho", {
-        description: e instanceof Error ? e.message : "Không xác định",
+    const results = await Promise.allSettled([
+      adminFetch("/admin/custom/inventory/dashboard") as Promise<{ dashboard: Dashboard }>,
+      adminFetch("/admin/custom/inventory/shortage/variants?include_zero=true") as Promise<{
+        shortage_variants: ShortageVariant[]
+      }>,
+      adminFetch("/admin/custom/inventory/shortage/orders") as Promise<{
+        shortage_orders: ShortageOrder[]
+      }>,
+    ])
+
+    const [dashR, svR, soR] = results
+    if (dashR.status === "fulfilled") {
+      setDashboard(dashR.value.dashboard)
+    } else {
+      toast.error("Không tải được dashboard tồn kho", {
+        description:
+          dashR.reason instanceof Error ? dashR.reason.message : "Không xác định",
       })
-    } finally {
-      setLoading(false)
     }
+    if (svR.status === "fulfilled") {
+      setShortageVariants(svR.value.shortage_variants ?? [])
+    } else {
+      setShortageVariants([])
+      toast.error("Không tải được danh sách variant thiếu/hết", {
+        description:
+          svR.reason instanceof Error ? svR.reason.message : "Không xác định",
+      })
+    }
+    if (soR.status === "fulfilled") {
+      setShortageOrders(soR.value.shortage_orders ?? [])
+    } else {
+      setShortageOrders([])
+      toast.error("Không tải được đơn hàng bị ảnh hưởng", {
+        description:
+          soR.reason instanceof Error ? soR.reason.message : "Không xác định",
+      })
+    }
+
+    setLoading(false)
   }, [])
 
   useEffect(() => {

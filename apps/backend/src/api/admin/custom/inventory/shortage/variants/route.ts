@@ -44,13 +44,10 @@ export async function GET(
       "location_levels.stocked_quantity",
       "location_levels.reserved_quantity",
       "location_levels.incoming_quantity",
-      "location_levels.available_quantity",
-      // link → variant → product
-      "variant_inventory_items.variant_id",
+      // Giữ đồng bộ với report/dashboard: một số bản Medusa 2.x lỗi graph khi kéo
+      // variant_id / product.thumbnail (hoặc product.id) qua link inventory_item.
       "variant_inventory_items.variant.title",
-      "variant_inventory_items.variant.product.id",
       "variant_inventory_items.variant.product.title",
-      "variant_inventory_items.variant.product.thumbnail",
     ],
   })
 
@@ -69,13 +66,10 @@ export async function GET(
       available_quantity: number | null
     }>
     variant_inventory_items?: Array<{
-      variant_id: string
       variant?: {
         title?: string | null
         product?: {
-          id?: string | null
           title?: string | null
-          thumbnail?: string | null
         } | null
       } | null
     }>
@@ -90,7 +84,6 @@ export async function GET(
     variant_title: string | null
     product_id: string | null
     product_title: string | null
-    product_thumbnail: string | null
     stocked_quantity: number
     reserved_quantity: number
     available_quantity: number
@@ -150,9 +143,8 @@ export async function GET(
         sku: item.sku,
         inventory_title: item.title,
         variant_title: variant?.title ?? null,
-        product_id: product?.id ?? null,
+        product_id: null,
         product_title: product?.title ?? null,
-        product_thumbnail: product?.thumbnail ?? null,
         stocked_quantity: totalStocked,
         reserved_quantity: totalReserved,
         available_quantity: available,
