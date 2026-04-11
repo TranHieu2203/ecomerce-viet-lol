@@ -1,5 +1,8 @@
 node_modules/
 
+# CommonJS script cục bộ / deploy helper (không theo dõi trong git)
+*.cjs
+
 # SSH shell thang VPS (neu ban dat IP that trong file — co the ignore)
 ssh-root-server.bat
 
