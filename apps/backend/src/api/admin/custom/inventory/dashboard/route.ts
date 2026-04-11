@@ -64,7 +64,7 @@ export async function GET(
     }>
   }
 
-  const inventoryItems = (items ?? []) as InvItem[]
+  const inventoryItems = (items ?? []) as unknown as InvItem[]
 
   // Tính KPI tổng hợp
   let totalStocked = 0

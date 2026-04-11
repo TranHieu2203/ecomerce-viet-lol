@@ -221,11 +221,12 @@ export async function PATCH(
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await inventoryService.updateInventoryLevels(
       location_levels.map((l) => ({
         id: l.inventory_level_id,
         incoming_quantity: l.incoming_quantity,
-      }))
+      })) as any
     )
   }
 

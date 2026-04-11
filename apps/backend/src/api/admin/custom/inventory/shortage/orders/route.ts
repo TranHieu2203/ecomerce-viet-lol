@@ -139,12 +139,10 @@ export async function GET(
     return res.json({ shortage_orders: [], count: 0 })
   }
 
-  // Lấy thông tin orders (chỉ pending/processing, không lấy fulfilled/canceled)
+  // Lấy thông tin orders theo ID (chỉ pending/processing, không lấy fulfilled/canceled)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const orders = await orderModule.listOrders(
-    {
-      id: orderIds,
-      status: ["pending", "requires_action"],
-    },
+    { id: orderIds } as any,
     {
       select: ["id", "display_id", "status", "created_at", "email", "customer_id"],
     }

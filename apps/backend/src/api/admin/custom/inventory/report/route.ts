@@ -143,7 +143,7 @@ export async function GET(
 
 function exportExcel(
   res: MedusaResponse,
-  rows: ReturnType<typeof buildRows>,
+  rows: buildRows,
   locations: Array<{ id: string; name: string }>
 ) {
   // Sheet 1: Tổng hợp

@@ -81,9 +81,34 @@ export async function GET(
     }>
   }
 
-  const inventoryItems = (items ?? []) as InvItem[]
+  const inventoryItems = (items ?? []) as unknown as InvItem[]
 
-  const shortageRows = []
+  type ShortageRow = {
+    inventory_item_id: string
+    sku: string | null | undefined
+    inventory_title: string | null | undefined
+    variant_title: string | null
+    product_id: string | null
+    product_title: string | null
+    product_thumbnail: string | null
+    stocked_quantity: number
+    reserved_quantity: number
+    available_quantity: number
+    incoming_quantity: number
+    shortage: number
+    status: string
+    min_stock_threshold: number
+    by_location: Array<{
+      location_id: string
+      location_name: string
+      stocked: number
+      reserved: number
+      incoming: number
+      available: number
+    }>
+  }
+
+  const shortageRows: ShortageRow[] = []
 
   for (const item of inventoryItems) {
     const threshold = item.metadata?.min_stock_threshold ?? 19
@@ -91,7 +116,14 @@ export async function GET(
     let totalReserved = 0
     let totalIncoming = 0
 
-    const byLocation = []
+    const byLocation: Array<{
+      location_id: string
+      location_name: string
+      stocked: number
+      reserved: number
+      incoming: number
+      available: number
+    }> = []
     for (const level of item.location_levels ?? []) {
       totalStocked += level.stocked_quantity ?? 0
       totalReserved += level.reserved_quantity ?? 0
