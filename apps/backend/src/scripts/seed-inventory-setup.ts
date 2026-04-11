@@ -134,14 +134,19 @@ export default async function seedInventorySetup({ container }: ExecArgs) {
     logger.info("  ✓ Tất cả variants đã bật manage_inventory + allow_backorder")
   } else {
     const ids = variantsToUpdate.map((v: Record<string, unknown>) => v.id as string)
-    logger.info(`  → Cập nhật ${ids.length} variants...`)
-    await productModule.updateProductVariants(
-      ids.map((id) => ({
-        id,
-        manage_inventory: true,
-        allow_backorder: true,
-      }))
-    )
+    logger.info(`  → Cập nhật ${ids.length} variants (batch 20)...`)
+    // updateProductVariants(id, data) — gọi từng variant, batch 20 song song
+    for (let i = 0; i < ids.length; i += 20) {
+      const batch = ids.slice(i, i + 20)
+      await Promise.all(
+        batch.map((id) =>
+          productModule.updateProductVariants(id, {
+            manage_inventory: true,
+            allow_backorder: true,
+          })
+        )
+      )
+    }
     logger.info(`  ✓ Cập nhật xong ${ids.length} variants`)
   }
 
