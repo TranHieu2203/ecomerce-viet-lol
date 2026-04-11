@@ -4,50 +4,20 @@ import { getRegion } from "@lib/data/regions"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { displayProduct } from "@lib/util/i18n-catalog"
 import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
-import { SUPPORTED_LOCALES } from "@lib/util/locales"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
+
+// Layout uses cookies() (cart, auth) → force dynamic to avoid DYNAMIC_SERVER_USAGE
+// in ISR context caused by generateStaticParams + cookies() conflict.
+export const dynamic = "force-dynamic"
 
 type Props = {
   params: Promise<{ countryCode: string; handle: string }>
   searchParams: Promise<{ v_id?: string }>
 }
 
-export async function generateStaticParams() {
-  try {
-    const promises = SUPPORTED_LOCALES.map(async (country) => {
-      const { response } = await listProducts({
-        countryCode: country,
-        queryParams: { limit: 100, fields: "handle" },
-      })
-
-      return {
-        country,
-        products: response.products,
-      }
-    })
-
-    const countryProducts = await Promise.all(promises)
-
-    return countryProducts
-      .flatMap((countryData) =>
-        countryData.products.map((product) => ({
-          countryCode: countryData.country,
-          handle: product.handle,
-        }))
-      )
-      .filter((param) => param.handle)
-  } catch (error) {
-    console.error(
-      `Failed to generate static paths for product pages: ${
-        error instanceof Error ? error.message : "Unknown error"
-      }.`
-    )
-    return []
-  }
-}
 
 function getImagesForVariant(
   product: HttpTypes.StoreProduct,
