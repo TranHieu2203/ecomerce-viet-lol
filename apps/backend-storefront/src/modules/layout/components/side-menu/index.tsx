@@ -103,7 +103,7 @@ const SideMenu = ({
                       <button
                         type="button"
                         data-testid="close-menu-button"
-                        className="min-h-11 min-w-11 flex items-center justify-center rounded-full text-ui-fg-base hover:bg-brand-gold-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
+                        className="min-h-11 min-w-11 flex items-center justify-center rounded-full text-ui-fg-base hover:bg-brand-gold-muted/[14%] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-gold"
                         onClick={close}
                         aria-label={m.sideMenu.closeMenu}
                       >

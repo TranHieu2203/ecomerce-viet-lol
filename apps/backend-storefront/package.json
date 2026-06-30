@@ -12,6 +12,7 @@
     "build": "next build",
     "start": "next start -p 8000",
     "lint": "next lint",
+    "test": "node --test tailwind-color-utils.test.js",
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {

@@ -3,16 +3,22 @@
  * Ghi đè biến Medusa UI (light) sau preset.
  */
 :root {
-  --brand-gold: #b8944f;
-  --brand-gold-hover: #9a7a3f;
-  --brand-gold-muted: rgba(184, 148, 79, 0.14);
-  --brand-accent-red: #a52a2a;
-  --brand-cream: #faf7f2;
+  /**
+   * Giá trị kênh RGB cách nhau bằng khoảng trắng (không dùng hex/rgba()) —
+   * bắt buộc theo cách Tailwind dựng màu hỗ trợ opacity modifier (bg-brand-gold/50…)
+   * qua rgb(var(--brand-gold) / <alpha-value>) trong tailwind.config.js.
+   * Nếu đổi giá trị, PHẢI giữ định dạng "R G B" này.
+   */
+  --brand-gold: 184 148 79;
+  --brand-gold-hover: 154 122 63;
+  --brand-gold-muted: 184 148 79;
+  --brand-accent-red: 165 42 42;
+  --brand-cream: 250 247 242;
   /** Nền header — tách hẳn khỏi trắng trang (body thường #fff). */
-  --brand-header-surface: #e9e1d2;
-  --brand-header-surface-mid: #e4dac8;
-  --brand-header-surface-deep: #ddd2bc;
-  --brand-ink: #14110d;
+  --brand-header-surface: 233 225 210;
+  --brand-header-surface-mid: 228 218 200;
+  --brand-header-surface-deep: 221 210 188;
+  --brand-ink: 20 17 13;
 
   --fg-interactive: rgba(184, 148, 79, 1);
   --fg-interactive-hover: rgba(154, 122, 63, 1);

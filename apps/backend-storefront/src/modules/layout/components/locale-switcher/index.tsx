@@ -25,7 +25,7 @@ export default function LocaleSwitcher({ current, enabledLocales }: Props) {
   const codes = filtered?.length ? filtered : [...ALL_APP_LOCALE_CODES]
 
   return (
-    <div className="inline-flex items-center gap-px rounded-full border border-brand-gold/22 bg-white/75 p-0.5 shadow-[0_1px_2px_rgba(184,148,79,0.07)] backdrop-blur-sm">
+    <div className="inline-flex items-center gap-px rounded-full border border-brand-gold/[22%] bg-white/75 p-0.5 shadow-[0_1px_2px_rgba(184,148,79,0.07)] backdrop-blur-sm">
       {codes.map((code) => {
         const href = rest ? `/${code}/${rest}` : `/${code}`
         const active = current === code

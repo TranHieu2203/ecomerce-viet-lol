@@ -1,4 +1,5 @@
 const path = require("path")
+const { withOpacity } = require("./tailwind-color-utils")
 
 module.exports = {
   darkMode: "class",
@@ -46,14 +47,15 @@ module.exports = {
           90: "#111827",
         },
         brand: {
-          gold: "var(--brand-gold)",
-          "gold-hover": "var(--brand-gold-hover)",
-          cream: "var(--brand-cream)",
-          "header-surface": "var(--brand-header-surface)",
-          "header-mid": "var(--brand-header-surface-mid)",
-          "header-deep": "var(--brand-header-surface-deep)",
-          ink: "var(--brand-ink)",
-          accent: "var(--brand-accent-red)",
+          gold: withOpacity("--brand-gold"),
+          "gold-hover": withOpacity("--brand-gold-hover"),
+          "gold-muted": withOpacity("--brand-gold-muted", 0.14),
+          cream: withOpacity("--brand-cream"),
+          "header-surface": withOpacity("--brand-header-surface"),
+          "header-mid": withOpacity("--brand-header-surface-mid"),
+          "header-deep": withOpacity("--brand-header-surface-deep"),
+          ink: withOpacity("--brand-ink"),
+          accent: withOpacity("--brand-accent-red"),
         },
       },
       borderRadius: {
