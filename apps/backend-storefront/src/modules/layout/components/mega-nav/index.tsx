@@ -67,8 +67,6 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
     return null
   }
 
-  const hasAnyDropdown = rows.some((g) => g.children.length >= 2)
-
   return (
     <div
       role="navigation"
@@ -112,7 +110,7 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
                     {group.label}
                   </button>
                 )}
-                {hasAnyDropdown && isOpen ? (
+                {!onlyChild && isOpen ? (
                   <div
                     className="absolute left-0 top-full pt-1 z-50 min-w-[12rem]"
                     role="menu"

@@ -132,6 +132,18 @@
   .text-3xl-semi {
     @apply text-[32px] leading-[44px] font-semibold;
   }
+
+  .cms-page-body h2 {
+    @apply text-xl font-semibold text-ui-fg-base mt-6 mb-2;
+  }
+
+  .cms-page-body h3 {
+    @apply text-lg font-semibold text-ui-fg-base mt-5 mb-2;
+  }
+
+  .cms-page-body h4 {
+    @apply text-base font-semibold text-ui-fg-base mt-4 mb-2;
+  }
 }
 
 @layer base {
