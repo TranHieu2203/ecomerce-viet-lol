@@ -19,6 +19,15 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
   )
   const [activeIndex, setActiveIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  const [isZooming, setIsZooming] = useState(false)
+  const [zoomOrigin, setZoomOrigin] = useState("50% 50%")
+
+  const handleZoomMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top) / rect.height) * 100
+    setZoomOrigin(`${x}% ${y}%`)
+  }
 
   const index = Math.min(activeIndex, Math.max(validImages.length - 1, 0))
 
@@ -59,18 +68,25 @@ const ImageGallery = ({ images }: ImageGalleryProps) => {
         <button
           type="button"
           onClick={() => setIsLightboxOpen(true)}
+          onMouseEnter={() => setIsZooming(true)}
+          onMouseLeave={() => setIsZooming(false)}
+          onMouseMove={handleZoomMove}
           aria-label="Xem ảnh lớn"
-          className="absolute inset-0 cursor-zoom-in"
+          className="absolute inset-0 cursor-zoom-in overflow-hidden"
         >
           <Image
             src={normalizeMedusaAssetUrl(active.url) || active.url}
             priority
-            className="absolute inset-0 rounded-rounded"
+            className={clx(
+              "absolute inset-0 rounded-rounded transition-transform duration-200 ease-standard motion-reduce:!scale-100",
+              isZooming && "small:scale-[2.2]"
+            )}
             alt={`Ảnh sản phẩm ${index + 1}`}
             fill
             sizes="(max-width: 576px) 480px, (max-width: 768px) 600px, (max-width: 992px) 640px, 720px"
             style={{
               objectFit: "cover",
+              transformOrigin: zoomOrigin,
             }}
           />
         </button>
