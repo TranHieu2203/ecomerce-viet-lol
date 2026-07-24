@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Button, Container, Heading, Input, Label, Text, toast } from "@medusajs/ui"
-import { ArrowLeft, Plus, Trash2 } from "lucide-react"
+import { ArrowLeft, Pencil, Plus, Save, Trash2, X } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { CmsCollapsibleSection } from "../../components/cms-collapsible-section"
@@ -30,6 +30,17 @@ export default function CmsNewsTaxonomyPage() {
   const [tagSlug, setTagSlug] = useState("")
   const [tagVi, setTagVi] = useState("")
   const [tagEn, setTagEn] = useState("")
+
+  const [editingCatId, setEditingCatId] = useState<string | null>(null)
+  const [editCatSlug, setEditCatSlug] = useState("")
+  const [editCatVi, setEditCatVi] = useState("")
+  const [editCatEn, setEditCatEn] = useState("")
+  const [editCatParent, setEditCatParent] = useState("")
+
+  const [editingTagId, setEditingTagId] = useState<string | null>(null)
+  const [editTagSlug, setEditTagSlug] = useState("")
+  const [editTagVi, setEditTagVi] = useState("")
+  const [editTagEn, setEditTagEn] = useState("")
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -100,6 +111,80 @@ export default function CmsNewsTaxonomyPage() {
       await load()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Lỗi tạo nhãn")
+    }
+  }
+
+  const startEditCategory = (c: Cat) => {
+    setEditingCatId(c.id)
+    setEditCatSlug(c.slug)
+    setEditCatVi(c.title_i18n?.vi ?? "")
+    setEditCatEn(c.title_i18n?.en ?? "")
+    setEditCatParent(c.parent_id ?? "")
+  }
+
+  const cancelEditCategory = () => {
+    setEditingCatId(null)
+  }
+
+  const saveEditCategory = async () => {
+    if (!editingCatId) {
+      return
+    }
+    const slug = editCatSlug.trim()
+    if (!slug || !editCatVi.trim()) {
+      toast.error("Slug và tiêu đề (vi) là bắt buộc")
+      return
+    }
+    try {
+      await adminFetch(`/admin/custom/cms-news-categories/${editingCatId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          slug,
+          title: { vi: editCatVi.trim(), en: editCatEn.trim() || editCatVi.trim() },
+          parent_id: editCatParent.trim() || null,
+        }),
+      })
+      toast.success("Đã lưu")
+      setEditingCatId(null)
+      await load()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Lưu thất bại")
+    }
+  }
+
+  const startEditTag = (t: Tag) => {
+    setEditingTagId(t.id)
+    setEditTagSlug(t.slug)
+    setEditTagVi(t.title_i18n?.vi ?? "")
+    setEditTagEn(t.title_i18n?.en ?? "")
+  }
+
+  const cancelEditTag = () => {
+    setEditingTagId(null)
+  }
+
+  const saveEditTag = async () => {
+    if (!editingTagId) {
+      return
+    }
+    const slug = editTagSlug.trim()
+    if (!slug || !editTagVi.trim()) {
+      toast.error("Slug và tiêu đề (vi) là bắt buộc")
+      return
+    }
+    try {
+      await adminFetch(`/admin/custom/cms-news-tags/${editingTagId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          slug,
+          title: { vi: editTagVi.trim(), en: editTagEn.trim() || editTagVi.trim() },
+        }),
+      })
+      toast.success("Đã lưu")
+      setEditingTagId(null)
+      await load()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Lưu thất bại")
     }
   }
 
@@ -214,32 +299,113 @@ export default function CmsNewsTaxonomyPage() {
         >
           <Plus className="size-4" strokeWidth={2} />
         </Button>
-        <ul className="flex flex-col gap-1 border-t border-ui-border-base pt-3">
-          {categories.map((c) => (
-            <li
-              key={c.id}
-              className="flex flex-wrap items-center justify-between gap-2 text-small"
-            >
-              <span>
-                <span className="font-mono text-ui-fg-muted">{c.slug}</span>
-                {" · "}
-                {c.title_i18n?.vi ?? c.title_i18n?.en}
-                {" · "}
-                <span className="text-ui-fg-muted">cha: {parentLabel(c.parent_id)}</span>
-              </span>
-              <Button
-                size="small"
-                variant="danger"
-                type="button"
-                className="h-8 w-8 shrink-0 p-0"
-                title="Xóa chủ đề"
-                aria-label="Xóa chủ đề"
-                onClick={() => void removeCategory(c.id)}
+        <ul className="flex flex-col gap-2 border-t border-ui-border-base pt-3">
+          {categories.map((c) =>
+            editingCatId === c.id ? (
+              <li
+                key={c.id}
+                className="grid grid-cols-1 md:grid-cols-2 gap-2 border border-ui-border-base rounded-md p-3"
               >
-                <Trash2 className="size-4" strokeWidth={2} />
-              </Button>
-            </li>
-          ))}
+                <div>
+                  <Label>Slug</Label>
+                  <Input
+                    className="font-mono"
+                    value={editCatSlug}
+                    onChange={(e) => setEditCatSlug(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Chủ đề cha (tùy chọn)</Label>
+                  <select
+                    className="w-full rounded-md border border-ui-border-base bg-ui-bg-field px-2 py-2 text-sm"
+                    value={editCatParent}
+                    onChange={(e) => setEditCatParent(e.target.value)}
+                  >
+                    <option value="">— Gốc —</option>
+                    {categories
+                      .filter((opt) => opt.id !== c.id)
+                      .map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.slug} ({opt.title_i18n?.vi ?? ""})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div>
+                  <Label>Tiêu đề (vi)</Label>
+                  <Input
+                    value={editCatVi}
+                    onChange={(e) => setEditCatVi(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label>Tiêu đề (en)</Label>
+                  <Input
+                    value={editCatEn}
+                    onChange={(e) => setEditCatEn(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-2 md:col-span-2">
+                  <Button
+                    type="button"
+                    className="h-9 w-9 p-0"
+                    title="Lưu"
+                    aria-label="Lưu"
+                    onClick={() => void saveEditCategory()}
+                  >
+                    <Save className="size-4" strokeWidth={2} />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="h-9 w-9 p-0"
+                    title="Hủy"
+                    aria-label="Hủy"
+                    onClick={cancelEditCategory}
+                  >
+                    <X className="size-4" strokeWidth={2} />
+                  </Button>
+                </div>
+              </li>
+            ) : (
+              <li
+                key={c.id}
+                className="flex flex-wrap items-center justify-between gap-2 text-small"
+              >
+                <span>
+                  <span className="font-mono text-ui-fg-muted">{c.slug}</span>
+                  {" · "}
+                  {c.title_i18n?.vi ?? c.title_i18n?.en}
+                  {" · "}
+                  <span className="text-ui-fg-muted">cha: {parentLabel(c.parent_id)}</span>
+                </span>
+                <div className="flex gap-1 shrink-0">
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    type="button"
+                    className="h-8 w-8 p-0"
+                    title="Sửa chủ đề"
+                    aria-label="Sửa chủ đề"
+                    onClick={() => startEditCategory(c)}
+                  >
+                    <Pencil className="size-4" strokeWidth={2} />
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="danger"
+                    type="button"
+                    className="h-8 w-8 p-0"
+                    title="Xóa chủ đề"
+                    aria-label="Xóa chủ đề"
+                    onClick={() => void removeCategory(c.id)}
+                  >
+                    <Trash2 className="size-4" strokeWidth={2} />
+                  </Button>
+                </div>
+              </li>
+            )
+          )}
         </ul>
       </CmsCollapsibleSection>
 
@@ -279,26 +445,82 @@ export default function CmsNewsTaxonomyPage() {
           <Plus className="size-4" strokeWidth={2} />
         </Button>
         <ul className="flex flex-wrap gap-2 border-t border-ui-border-base pt-3">
-          {tags.map((t) => (
-            <li
-              key={t.id}
-              className="flex items-center gap-2 rounded-md border border-ui-border-base px-2 py-1 text-small"
-            >
-              <span className="font-mono text-ui-fg-muted">{t.slug}</span>
-              <span>{t.title_i18n?.vi ?? t.title_i18n?.en}</span>
-              <Button
-                size="small"
-                variant="transparent"
-                type="button"
-                className="h-7 w-7 shrink-0 p-0 text-ui-fg-error"
-                title="Xóa nhãn"
-                aria-label="Xóa nhãn"
-                onClick={() => void removeTag(t.id)}
+          {tags.map((t) =>
+            editingTagId === t.id ? (
+              <li
+                key={t.id}
+                className="grid grid-cols-1 md:grid-cols-3 gap-2 border border-ui-border-base rounded-md p-3 w-full"
               >
-                <Trash2 className="size-3.5" strokeWidth={2} />
-              </Button>
-            </li>
-          ))}
+                <Input
+                  className="font-mono"
+                  placeholder="Slug"
+                  value={editTagSlug}
+                  onChange={(e) => setEditTagSlug(e.target.value)}
+                />
+                <Input
+                  placeholder="Tiêu đề (vi)"
+                  value={editTagVi}
+                  onChange={(e) => setEditTagVi(e.target.value)}
+                />
+                <Input
+                  placeholder="Tiêu đề (en)"
+                  value={editTagEn}
+                  onChange={(e) => setEditTagEn(e.target.value)}
+                />
+                <div className="flex gap-2 md:col-span-3">
+                  <Button
+                    type="button"
+                    className="h-9 w-9 p-0"
+                    title="Lưu"
+                    aria-label="Lưu"
+                    onClick={() => void saveEditTag()}
+                  >
+                    <Save className="size-4" strokeWidth={2} />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="h-9 w-9 p-0"
+                    title="Hủy"
+                    aria-label="Hủy"
+                    onClick={cancelEditTag}
+                  >
+                    <X className="size-4" strokeWidth={2} />
+                  </Button>
+                </div>
+              </li>
+            ) : (
+              <li
+                key={t.id}
+                className="flex items-center gap-2 rounded-md border border-ui-border-base px-2 py-1 text-small"
+              >
+                <span className="font-mono text-ui-fg-muted">{t.slug}</span>
+                <span>{t.title_i18n?.vi ?? t.title_i18n?.en}</span>
+                <Button
+                  size="small"
+                  variant="transparent"
+                  type="button"
+                  className="h-7 w-7 shrink-0 p-0"
+                  title="Sửa nhãn"
+                  aria-label="Sửa nhãn"
+                  onClick={() => startEditTag(t)}
+                >
+                  <Pencil className="size-3.5" strokeWidth={2} />
+                </Button>
+                <Button
+                  size="small"
+                  variant="transparent"
+                  type="button"
+                  className="h-7 w-7 shrink-0 p-0 text-ui-fg-error"
+                  title="Xóa nhãn"
+                  aria-label="Xóa nhãn"
+                  onClick={() => void removeTag(t.id)}
+                >
+                  <Trash2 className="size-3.5" strokeWidth={2} />
+                </Button>
+              </li>
+            )
+          )}
         </ul>
       </CmsCollapsibleSection>
     </Container>

@@ -15,11 +15,13 @@ import {
   ArrowUp,
   FileText,
   FileX2,
+  Pencil,
   Plus,
   Power,
   Rocket,
   Save,
   Trash2,
+  X,
   Zap,
 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
@@ -74,6 +76,22 @@ const StorefrontCmsPage = () => {
   const [settings, setSettings] = useState<Settings | null>(null)
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({
+    image_file_id: "",
+    title_vi: "",
+    title_en: "",
+    title_ja: "",
+    subtitle_vi: "",
+    subtitle_en: "",
+    subtitle_ja: "",
+    cta_vi: "",
+    cta_en: "",
+    cta_ja: "",
+    target_url: "",
+    campaign_id: "",
+    variant_label: "",
+  })
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editForm, setEditForm] = useState({
     image_file_id: "",
     title_vi: "",
     title_en: "",
@@ -179,6 +197,66 @@ const StorefrontCmsPage = () => {
       await load()
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Create failed")
+    }
+  }
+
+  const startEdit = (s: Slide) => {
+    setEditingId(s.id)
+    setEditForm({
+      image_file_id: s.image_file_id ?? "",
+      title_vi: s.title?.vi ?? "",
+      title_en: s.title?.en ?? "",
+      title_ja: s.title?.ja ?? "",
+      subtitle_vi: s.subtitle?.vi ?? "",
+      subtitle_en: s.subtitle?.en ?? "",
+      subtitle_ja: s.subtitle?.ja ?? "",
+      cta_vi: s.cta_label?.vi ?? "",
+      cta_en: s.cta_label?.en ?? "",
+      cta_ja: s.cta_label?.ja ?? "",
+      target_url: s.target_url ?? "",
+      campaign_id: s.campaign_id ?? "",
+      variant_label: s.variant_label ?? "",
+    })
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null)
+  }
+
+  const saveEdit = async () => {
+    if (!editingId) {
+      return
+    }
+    try {
+      await adminFetch(`/admin/custom/banner-slides/${editingId}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          image_file_id: editForm.image_file_id,
+          title: {
+            vi: editForm.title_vi,
+            en: editForm.title_en,
+            ja: editForm.title_ja,
+          },
+          subtitle: {
+            vi: editForm.subtitle_vi,
+            en: editForm.subtitle_en,
+            ja: editForm.subtitle_ja,
+          },
+          cta_label: {
+            vi: editForm.cta_vi,
+            en: editForm.cta_en,
+            ja: editForm.cta_ja,
+          },
+          target_url: editForm.target_url || "",
+          campaign_id: editForm.campaign_id.trim() || null,
+          variant_label: editForm.variant_label.trim() || null,
+        }),
+      })
+      toast.success("Đã lưu")
+      setEditingId(null)
+      await load()
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Lưu thất bại")
     }
   }
 
@@ -647,6 +725,23 @@ const StorefrontCmsPage = () => {
                   variant="secondary"
                   type="button"
                   className="h-8 w-8 p-0"
+                  onClick={() =>
+                    editingId === s.id ? cancelEdit() : startEdit(s)
+                  }
+                  title={editingId === s.id ? "Hủy sửa" : "Sửa slide"}
+                  aria-label={editingId === s.id ? "Hủy sửa" : "Sửa slide"}
+                >
+                  {editingId === s.id ? (
+                    <X className="size-4" strokeWidth={2} />
+                  ) : (
+                    <Pencil className="size-4" strokeWidth={2} />
+                  )}
+                </Button>
+                <Button
+                  size="small"
+                  variant="secondary"
+                  type="button"
+                  className="h-8 w-8 p-0"
                   onClick={() => void toggleEnabled(s)}
                   title="Bật/tắt hiển thị slide"
                   aria-label="Bật tắt hiển thị slide"
@@ -700,6 +795,146 @@ const StorefrontCmsPage = () => {
                   : "—"}
                 {s.campaign_id ? ` — campaign ${s.campaign_id.slice(0, 8)}…` : ""}
               </Text>
+              {editingId === s.id ? (
+                <div className="grid gap-3 border-t border-ui-border-base pt-3 mt-1">
+                  <MediaPickerField
+                    htmlId={`cms-edit-slide-image-${s.id}`}
+                    label="Ảnh slide"
+                    value={editForm.image_file_id}
+                    onValueChange={(v) =>
+                      setEditForm((f) => ({ ...f, image_file_id: v }))
+                    }
+                  />
+                  <div className="grid grid-cols-1 small:grid-cols-3 gap-2">
+                    <Input
+                      placeholder="Title VI"
+                      value={editForm.title_vi}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, title_vi: e.target.value }))
+                      }
+                    />
+                    <Input
+                      placeholder="Title EN"
+                      value={editForm.title_en}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, title_en: e.target.value }))
+                      }
+                    />
+                    <Input
+                      placeholder="Title JA"
+                      value={editForm.title_ja}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, title_ja: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 small:grid-cols-3 gap-2">
+                    <Input
+                      placeholder="Subtitle VI"
+                      value={editForm.subtitle_vi}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          subtitle_vi: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      placeholder="Subtitle EN"
+                      value={editForm.subtitle_en}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          subtitle_en: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      placeholder="Subtitle JA"
+                      value={editForm.subtitle_ja}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          subtitle_ja: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 small:grid-cols-3 gap-2">
+                    <Input
+                      placeholder="CTA VI"
+                      value={editForm.cta_vi}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, cta_vi: e.target.value }))
+                      }
+                    />
+                    <Input
+                      placeholder="CTA EN"
+                      value={editForm.cta_en}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, cta_en: e.target.value }))
+                      }
+                    />
+                    <Input
+                      placeholder="CTA JA"
+                      value={editForm.cta_ja}
+                      onChange={(e) =>
+                        setEditForm((f) => ({ ...f, cta_ja: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <Input
+                    placeholder="Target URL"
+                    value={editForm.target_url}
+                    onChange={(e) =>
+                      setEditForm((f) => ({ ...f, target_url: e.target.value }))
+                    }
+                  />
+                  <div className="grid grid-cols-1 small:grid-cols-2 gap-2">
+                    <Input
+                      placeholder="Campaign id (dán từ danh sách)"
+                      value={editForm.campaign_id}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          campaign_id: e.target.value,
+                        }))
+                      }
+                    />
+                    <Input
+                      placeholder="Variant A hoặc B"
+                      value={editForm.variant_label}
+                      onChange={(e) =>
+                        setEditForm((f) => ({
+                          ...f,
+                          variant_label: e.target.value.toUpperCase().slice(0, 1),
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      className="h-9 w-9 p-0"
+                      onClick={() => void saveEdit()}
+                      title="Lưu"
+                      aria-label="Lưu"
+                    >
+                      <Save className="size-4" strokeWidth={2} />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className="h-9 w-9 p-0"
+                      onClick={cancelEdit}
+                      title="Hủy"
+                      aria-label="Hủy"
+                    >
+                      <X className="size-4" strokeWidth={2} />
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
             </li>
           ))}
         </ul>
