@@ -45,7 +45,7 @@ export default async function ProductPreview({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group flex flex-col h-full rounded-large bg-white shadow-elevation-card-rest hover:shadow-elevation-card-hover transition-shadow duration-180 ease-standard overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base"
+      className="group flex flex-col h-full rounded-large bg-white shadow-elevation-card-hover hover:shadow-[0px_0px_0px_1px_rgba(0,0,0,0.08),0px_2px_4px_-1px_rgba(0,0,0,0.1),0px_4px_12px_0px_rgba(0,0,0,0.12)] transition-shadow duration-180 ease-standard overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base"
     >
       <div data-testid="product-wrapper" className="flex flex-col h-full">
         <div className="relative">
