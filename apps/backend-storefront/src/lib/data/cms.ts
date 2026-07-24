@@ -518,6 +518,7 @@ export type CmsNewsListResult = {
 export type CmsNewsListFilters = {
   category_slug?: string
   tag_slug?: string
+  q?: string
 }
 
 async function fetchCmsNewsList(
@@ -537,6 +538,9 @@ async function fetchCmsNewsList(
     }
     if (filters?.tag_slug?.trim()) {
       query.tag_slug = filters.tag_slug.trim().toLowerCase()
+    }
+    if (filters?.q?.trim()) {
+      query.q = filters.q.trim()
     }
     const data = await sdk.client.fetch<{
       articles: CmsNewsListItem[]

@@ -11,8 +11,12 @@ export type StorefrontMessages = {
     searchLabel: string
     searchPlaceholder: string
     searchClear: string
+    searchSectionProducts: string
+    searchSectionNews: string
     /** `{query}` sẽ được thay bằng từ khóa. */
     searchViewAll: string
+    /** `{query}` sẽ được thay bằng từ khóa. */
+    searchViewAllNews: string
     /** `{query}` sẽ được thay bằng từ khóa. */
     searchNoResults: string
   }
@@ -128,6 +132,15 @@ export type StorefrontMessages = {
     outOfStock: string
     /** Nút mobile khi có nhiều biến thể */
     selectOptions: string
+    /** Tiền tố trước giá "từ" khi chưa chọn variant, VD: "Từ 100.000đ" */
+    priceFrom: string
+    /** Nhãn giá gốc khi đang giảm giá */
+    priceOriginal: string
+    /** Tiền tố chọn option, VD: "Chọn {title}" — `{title}` được thay bằng tên option. */
+    selectOptionPrefix: string
+    quantityLabel: string
+    quantityDecrease: string
+    quantityIncrease: string
   }
   store: {
     metaTitle: string
@@ -303,10 +316,13 @@ const vi: StorefrontMessages = {
     collectionsAria: "Menu điều hướng",
     viewMore: "Xem thêm",
     searchLabel: "Tìm kiếm sản phẩm",
-    searchPlaceholder: "Tìm sản phẩm…",
+    searchPlaceholder: "Tìm sản phẩm, tin tức…",
     searchClear: "Xóa tìm kiếm",
-    searchViewAll: "Xem tất cả kết quả cho “{query}”",
-    searchNoResults: "Không tìm thấy sản phẩm nào cho “{query}”",
+    searchSectionProducts: "Sản phẩm",
+    searchSectionNews: "Tin tức",
+    searchViewAll: "Xem tất cả sản phẩm cho “{query}”",
+    searchViewAllNews: "Xem tất cả tin tức cho “{query}”",
+    searchNoResults: "Không tìm thấy kết quả nào cho “{query}”",
   },
   sideMenu: {
     button: "Menu",
@@ -423,6 +439,12 @@ const vi: StorefrontMessages = {
     selectVariant: "Chọn phân loại",
     outOfStock: "Hết hàng",
     selectOptions: "Chọn tùy chọn",
+    priceFrom: "Từ ",
+    priceOriginal: "Giá gốc: ",
+    selectOptionPrefix: "Chọn {title}",
+    quantityLabel: "Số lượng",
+    quantityDecrease: "Giảm số lượng",
+    quantityIncrease: "Tăng số lượng",
   },
   store: {
     metaTitle: "Cửa hàng",
@@ -604,10 +626,13 @@ const en: StorefrontMessages = {
     collectionsAria: "Site navigation",
     viewMore: "View more",
     searchLabel: "Search products",
-    searchPlaceholder: "Search products…",
+    searchPlaceholder: "Search products, news…",
     searchClear: "Clear search",
-    searchViewAll: "View all results for “{query}”",
-    searchNoResults: "No products found for “{query}”",
+    searchSectionProducts: "Products",
+    searchSectionNews: "News",
+    searchViewAll: "View all products for “{query}”",
+    searchViewAllNews: "View all news for “{query}”",
+    searchNoResults: "No results found for “{query}”",
   },
   sideMenu: {
     button: "Menu",
@@ -724,6 +749,12 @@ const en: StorefrontMessages = {
     selectVariant: "Select variant",
     outOfStock: "Out of stock",
     selectOptions: "Select options",
+    priceFrom: "From ",
+    priceOriginal: "Original: ",
+    selectOptionPrefix: "Select {title}",
+    quantityLabel: "Quantity",
+    quantityDecrease: "Decrease quantity",
+    quantityIncrease: "Increase quantity",
   },
   store: {
     metaTitle: "Store",

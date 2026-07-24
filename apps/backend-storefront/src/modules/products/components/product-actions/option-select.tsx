@@ -1,3 +1,6 @@
+"use client"
+
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { HttpTypes } from "@medusajs/types"
 import { clx } from "@medusajs/ui"
 import React from "react"
@@ -19,11 +22,14 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   "data-testid": dataTestId,
   disabled,
 }) => {
+  const m = useStorefrontMessages().product
   const filteredOptions = (option.values ?? []).map((v) => v.value)
 
   return (
     <div className="flex flex-col gap-y-3">
-      <span className="text-sm">Select {title}</span>
+      <span className="text-sm">
+        {m.selectOptionPrefix.replace("{title}", title)}
+      </span>
       <div
         className="flex flex-wrap justify-between gap-2"
         data-testid={dataTestId}

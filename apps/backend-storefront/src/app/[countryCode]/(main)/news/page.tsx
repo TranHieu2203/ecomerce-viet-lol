@@ -17,12 +17,13 @@ type Props = {
     page?: string
     category_slug?: string
     tag_slug?: string
+    q?: string
   }>
 }
 
 function newsListHref(
   locale: string,
-  opts: { page?: number; category_slug?: string; tag_slug?: string }
+  opts: { page?: number; category_slug?: string; tag_slug?: string; q?: string }
 ): string {
   const p = new URLSearchParams()
   if (opts.page && opts.page > 1) {
@@ -34,12 +35,16 @@ function newsListHref(
   if (opts.tag_slug) {
     p.set("tag_slug", opts.tag_slug)
   }
+  if (opts.q) {
+    p.set("q", opts.q)
+  }
   const qs = p.toString()
   return qs ? `/${locale}/news?${qs}` : `/${locale}/news`
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const params = await props.params
+  const searchParams = await props.searchParams
   const cms = await getCmsSettingsPublic()
   const m = getStorefrontMessages(params.countryCode)
   const brand = resolveCmsSiteTitle(
@@ -48,14 +53,22 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     m,
     m.home.metaFallbackTitle
   )
-  const title =
-    params.countryCode === "en" ? `News | ${brand}` : `Tin tức | ${brand}`
+  const query = searchParams.q?.trim()
+  const isEn = params.countryCode === "en"
+
+  if (query) {
+    const title = isEn
+      ? `Search results for "${query}" | ${brand}`
+      : `Kết quả tìm kiếm cho "${query}" | ${brand}`
+    return { title, description: title, robots: { index: false, follow: true } }
+  }
+
+  const title = isEn ? `News | ${brand}` : `Tin tức | ${brand}`
   return {
     title,
-    description:
-      params.countryCode === "en"
-        ? "News and updates from the store."
-        : "Tin tức và cập nhật từ cửa hàng.",
+    description: isEn
+      ? "News and updates from the store."
+      : "Tin tức và cập nhật từ cửa hàng.",
   }
 }
 
@@ -71,11 +84,13 @@ export default async function NewsIndexPage(props: Props) {
   const categorySlug =
     searchParams.category_slug?.trim().toLowerCase() || undefined
   const tagSlug = searchParams.tag_slug?.trim().toLowerCase() || undefined
+  const query = searchParams.q?.trim() || undefined
   const listFilters =
-    categorySlug || tagSlug
+    categorySlug || tagSlug || query
       ? {
           ...(categorySlug ? { category_slug: categorySlug } : {}),
           ...(tagSlug ? { tag_slug: tagSlug } : {}),
+          ...(query ? { q: query } : {}),
         }
       : undefined
 
@@ -91,7 +106,7 @@ export default async function NewsIndexPage(props: Props) {
   const hasPrev = page > 1
   const hasNext = page < totalPages
 
-  const filterBase = { category_slug: categorySlug, tag_slug: tagSlug }
+  const filterBase = { category_slug: categorySlug, tag_slug: tagSlug, q: query }
   const prevHref = newsListHref(locale, {
     ...filterBase,
     page:
@@ -127,9 +142,15 @@ export default async function NewsIndexPage(props: Props) {
 
       <header className="max-w-4xl mb-8">
         <h1 className="text-3xl-semi text-ui-fg-base">
-          {isEn ? "News" : "Tin tức"}
+          {query
+            ? isEn
+              ? `Search results for "${query}"`
+              : `Kết quả tìm kiếm cho "${query}"`
+            : isEn
+              ? "News"
+              : "Tin tức"}
         </h1>
-        {rootCategories.length > 0 ? (
+        {!query && rootCategories.length > 0 ? (
           <div className="mt-4 flex flex-wrap gap-2" aria-label={isEn ? "Categories" : "Chủ đề"}>
             <Link
               href={`/${locale}/news`}
@@ -156,7 +177,7 @@ export default async function NewsIndexPage(props: Props) {
             ))}
           </div>
         ) : null}
-        {tagNav.length > 0 ? (
+        {!query && tagNav.length > 0 ? (
           <div className="mt-3 flex flex-wrap gap-2" aria-label={isEn ? "Tags" : "Nhãn"}>
             {tagNav.map((t) => (
               <Link
@@ -178,7 +199,13 @@ export default async function NewsIndexPage(props: Props) {
       {articles.length === 0 ? (
         <div className="text-center py-12 px-4 rounded-lg border border-dashed border-ui-border-base bg-ui-bg-subtle">
           <p className="text-ui-fg-muted mb-4">
-            {isEn ? "No articles yet." : "Chưa có bài tin nào."}
+            {query
+              ? isEn
+                ? `No articles found for "${query}".`
+                : `Không tìm thấy bài tin nào cho "${query}".`
+              : isEn
+                ? "No articles yet."
+                : "Chưa có bài tin nào."}
           </p>
           <Link
             href={`/${locale}`}

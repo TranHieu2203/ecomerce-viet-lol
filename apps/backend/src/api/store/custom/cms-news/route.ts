@@ -68,6 +68,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     ?.trim()
     .toLowerCase()
   const tagSlug = (req.query?.tag_slug as string | undefined)?.trim().toLowerCase()
+  const q = (req.query?.q as string | undefined)?.trim().toLowerCase()
 
   let allowedIds: Set<string> | null = null
 
@@ -137,26 +138,34 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     }
   )
 
-  const filtered = allowedIds
+  const scoped = allowedIds
     ? rows.filter((a) => allowedIds!.has(a.id))
     : rows
+
+  const resolved = scoped.map((a) => ({
+    row: a,
+    title: resolveCmsPageI18nField(a.title_i18n, locale, enabled, defaultLocale),
+    excerpt: resolveCmsPageI18nField(
+      a.excerpt_i18n,
+      locale,
+      enabled,
+      defaultLocale
+    ),
+  }))
+
+  const filtered = q
+    ? resolved.filter(
+        (r) =>
+          r.title.toLowerCase().includes(q) ||
+          r.excerpt.toLowerCase().includes(q)
+      )
+    : resolved
+
   const count = filtered.length
   const page = filtered.slice(offset, offset + limit)
 
   const items = await Promise.all(
-    page.map(async (a) => {
-      const title = resolveCmsPageI18nField(
-        a.title_i18n,
-        locale,
-        enabled,
-        defaultLocale
-      )
-      const excerpt = resolveCmsPageI18nField(
-        a.excerpt_i18n,
-        locale,
-        enabled,
-        defaultLocale
-      )
+    page.map(async ({ row: a, title, excerpt }) => {
       const featured_image_url = await filePublicUrl(req, a.featured_image_file_id)
       const pub = a.published_at
       const published_at =

@@ -4,8 +4,12 @@ import { addToCart } from "@lib/data/cart"
 import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
+import { Minus, Plus } from "@medusajs/icons"
 import { Button } from "@medusajs/ui"
+import Back from "@modules/common/icons/back"
 import Divider from "@modules/common/components/divider"
+import FastDelivery from "@modules/common/icons/fast-delivery"
+import Refresh from "@modules/common/icons/refresh"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
@@ -14,6 +18,8 @@ import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import StockBadge from "@modules/products/components/stock-badge"
 import { useRouter } from "next/navigation"
+
+const MAX_QUANTITY_UNTRACKED = 99
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -34,13 +40,16 @@ export default function ProductActions({
   product,
   disabled,
 }: ProductActionsProps) {
-  const p = useStorefrontMessages().product
+  const m = useStorefrontMessages()
+  const p = m.product
+  const t = m.productTabs
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const [isAdding, setIsAdding] = useState(false)
+  const [quantity, setQuantity] = useState(1)
   const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
@@ -119,6 +128,21 @@ export default function ProductActions({
     return false
   }, [selectedVariant])
 
+  const maxQuantity = useMemo(() => {
+    if (
+      selectedVariant?.manage_inventory &&
+      !selectedVariant?.allow_backorder
+    ) {
+      return Math.max(1, selectedVariant.inventory_quantity ?? 1)
+    }
+    return MAX_QUANTITY_UNTRACKED
+  }, [selectedVariant])
+
+  // reset về 1 khi đổi variant, tránh giữ số lượng vượt tồn kho của variant mới
+  useEffect(() => {
+    setQuantity(1)
+  }, [selectedVariant?.id])
+
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
@@ -131,7 +155,7 @@ export default function ProductActions({
 
     await addToCart({
       variantId: selectedVariant.id,
-      quantity: 1,
+      quantity,
       countryCode,
     })
 
@@ -172,6 +196,42 @@ export default function ProductActions({
           backendUrl={process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}
         />
 
+        {selectedVariant ? (
+          <div className="flex items-center gap-3">
+            <span className="text-small-regular text-ui-fg-subtle">
+              {p.quantityLabel}
+            </span>
+            <div className="flex items-center border border-ui-border-base rounded-rounded">
+              <button
+                type="button"
+                aria-label={p.quantityDecrease}
+                disabled={!!disabled || isAdding || quantity <= 1}
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="flex items-center justify-center w-9 h-9 text-ui-fg-subtle hover:text-ui-fg-base disabled:opacity-40 disabled:hover:text-ui-fg-subtle"
+              >
+                <Minus />
+              </button>
+              <span
+                className="w-8 text-center text-small-regular tabular-nums"
+                data-testid="product-quantity"
+              >
+                {quantity}
+              </span>
+              <button
+                type="button"
+                aria-label={p.quantityIncrease}
+                disabled={!!disabled || isAdding || quantity >= maxQuantity}
+                onClick={() =>
+                  setQuantity((q) => Math.min(maxQuantity, q + 1))
+                }
+                className="flex items-center justify-center w-9 h-9 text-ui-fg-subtle hover:text-ui-fg-base disabled:opacity-40 disabled:hover:text-ui-fg-subtle"
+              >
+                <Plus />
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <Button
           onClick={handleAddToCart}
           disabled={
@@ -192,6 +252,22 @@ export default function ProductActions({
             ? p.outOfStock
             : p.addToCart}
         </Button>
+
+        <div className="grid grid-cols-1 gap-y-2 pt-2 text-xsmall-regular text-ui-fg-subtle">
+          <div className="flex items-center gap-x-2">
+            <FastDelivery size={16} />
+            <span>{t.shipFastTitle}</span>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <Refresh size={16} />
+            <span>{t.exchangeTitle}</span>
+          </div>
+          <div className="flex items-center gap-x-2">
+            <Back size={16} />
+            <span>{t.returnsTitle}</span>
+          </div>
+        </div>
+
         <MobileActions
           product={product}
           variant={selectedVariant}

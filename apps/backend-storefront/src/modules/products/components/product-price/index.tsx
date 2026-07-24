@@ -1,5 +1,8 @@
+"use client"
+
 import { clx } from "@medusajs/ui"
 
+import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
 
@@ -10,6 +13,7 @@ export default function ProductPrice({
   product: HttpTypes.StoreProduct
   variant?: HttpTypes.StoreProductVariant
 }) {
+  const p = useStorefrontMessages().product
   const { cheapestPrice, variantPrice } = getProductPrice({
     product,
     variantId: variant?.id,
@@ -28,7 +32,7 @@ export default function ProductPrice({
           "text-ui-fg-interactive": selectedPrice.price_type === "sale",
         })}
       >
-        {!variant && "From "}
+        {!variant && p.priceFrom}
         <span
           data-testid="product-price"
           data-value={selectedPrice.calculated_price_number}
@@ -39,7 +43,7 @@ export default function ProductPrice({
       {selectedPrice.price_type === "sale" && (
         <>
           <p>
-            <span className="text-ui-fg-subtle">Original: </span>
+            <span className="text-ui-fg-subtle">{p.priceOriginal}</span>
             <span
               className="line-through"
               data-testid="original-product-price"
