@@ -1325,12 +1325,16 @@ export default async function seedSalesKitFromDocs({ container }: ExecArgs) {
       footer_contact: {
         social: [
           {
-            url: "https://www.facebook.com",
+            url: "https://www.facebook.com/2FSaffron",
             label: { vi: "Facebook", en: "Facebook" },
           },
           {
-            url: "https://zalo.me",
+            url: "https://zalo.me/0825564686",
             label: { vi: "Zalo", en: "Zalo" },
+          },
+          {
+            url: "https://m.me/2FSaffron",
+            label: { vi: "Messenger", en: "Messenger" },
           },
         ],
       },

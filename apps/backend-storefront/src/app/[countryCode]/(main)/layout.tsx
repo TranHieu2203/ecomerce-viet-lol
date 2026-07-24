@@ -9,6 +9,7 @@ import { StoreCartShippingOption } from "@medusajs/types"
 import AnnouncementBar from "@modules/layout/components/announcement-bar"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
 import { DocumentLang } from "@modules/layout/components/document-lang"
+import OrganizationJsonLd from "@modules/layout/components/organization-json-ld"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
@@ -37,6 +38,7 @@ export default async function PageLayout(props: {
   return (
     <StorefrontI18nProvider locale={params.countryCode}>
       <DocumentLang locale={params.countryCode} />
+      <OrganizationJsonLd countryCode={params.countryCode} />
       <Nav countryCode={params.countryCode} />
       <AnnouncementBar
         locale={params.countryCode}

@@ -111,6 +111,7 @@ services:
         NEXT_PUBLIC_MEDUSA_BACKEND_URL: ${NEXT_PUBLIC_MEDUSA_BACKEND_URL:?}
         REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
         NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
+        NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://quatangtaya.com}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -119,6 +120,7 @@ services:
       NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY: ${NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY:?}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:?}
       NEXT_PUBLIC_DEFAULT_REGION: ${NEXT_PUBLIC_DEFAULT_REGION:-vn}
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://quatangtaya.com}
     depends_on:
       - medusa-backend-1
     ports:
