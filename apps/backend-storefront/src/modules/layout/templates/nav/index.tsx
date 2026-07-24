@@ -18,6 +18,7 @@ import CartButton from "@modules/layout/components/cart-button"
 import LocaleSwitcher from "@modules/layout/components/locale-switcher"
 import MegaNav from "@modules/layout/components/mega-nav"
 import NavStickyHeader from "@modules/layout/components/nav-sticky-header"
+import SearchBar from "@modules/layout/components/search-bar"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 
@@ -114,6 +115,7 @@ export default async function Nav({
           </div>
 
           <div className="flex items-center gap-x-2 xsmall:gap-x-4 shrink-0 h-full">
+            <SearchBar countryCode={countryCode} />
             {socialLinks.length ? (
               <div className="hidden small:flex items-center gap-x-3 h-full">
                 {socialLinks.slice(0, 3).map((s) => {

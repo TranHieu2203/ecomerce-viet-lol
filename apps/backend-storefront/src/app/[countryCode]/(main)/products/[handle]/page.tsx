@@ -2,7 +2,7 @@ import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
-import { displayProduct } from "@lib/util/i18n-catalog"
+import { displayCollection, displayProduct } from "@lib/util/i18n-catalog"
 import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
 import { getBaseURL } from "@lib/util/env"
 import { getProductPrice } from "@lib/util/get-product-price"
@@ -166,11 +166,49 @@ export default async function ProductPage(props: Props) {
       : {}),
   }
 
+  const collectionTitle =
+    pricedProduct.collection &&
+    displayCollection(
+      params.countryCode,
+      pricedProduct.collection.title,
+      pricedProduct.collection.metadata as
+        | Record<string, unknown>
+        | null
+        | undefined
+    ).title
+  const homeUrl = `${getBaseURL()}/${params.countryCode}`
+  const breadcrumbItems = [
+    { name: m.sideMenu.home, item: homeUrl },
+    ...(pricedProduct.collection
+      ? [
+          {
+            name: collectionTitle || pricedProduct.collection.title,
+            item: `${homeUrl}/collections/${pricedProduct.collection.handle}`,
+          },
+        ]
+      : []),
+    { name: title, item: canonical },
+  ]
+  const breadcrumbJsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((b, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: b.name,
+      item: b.item,
+    })),
+  }
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: safeJsonLd(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       <ProductTemplate
         product={pricedProduct}

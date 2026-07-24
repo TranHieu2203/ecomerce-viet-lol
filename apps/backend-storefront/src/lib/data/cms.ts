@@ -306,6 +306,26 @@ export function resolveCmsTagline(
   return messages.footer.tagline
 }
 
+/** SEO mặc định (trang chủ) cấu hình ở Admin → Storefront CMS → seo_defaults. */
+export function resolveCmsSeoDefaults(
+  locale: string,
+  cms: CmsSettingsPublic
+): { title: string; description: string } {
+  const sd = cms.seo_defaults
+  const metaTitle =
+    sd && typeof sd === "object" && !Array.isArray(sd)
+      ? (sd as Record<string, unknown>).meta_title
+      : null
+  const metaDescription =
+    sd && typeof sd === "object" && !Array.isArray(sd)
+      ? (sd as Record<string, unknown>).meta_description
+      : null
+  return {
+    title: pickLocaleString(metaTitle as CmsLocaleStrings, locale),
+    description: pickLocaleString(metaDescription as CmsLocaleStrings, locale),
+  }
+}
+
 const CMS_FALLBACK: CmsSettingsPublic = {
   default_locale: "vi",
   enabled_locales: ["vi", "en"],

@@ -4,9 +4,11 @@ import {
   getCmsNewsList,
   getCmsSettingsPublic,
   listBannerSlides,
+  resolveCmsSeoDefaults,
   resolveCmsSiteTitle,
 } from "@lib/data/cms"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import { getBaseURL } from "@lib/util/env"
 import FeaturedProducts from "@modules/home/components/featured-products"
 import HeroSlider from "@modules/home/components/hero-slider"
 import CmsNewsTeaser from "@modules/home/components/cms-news-teaser"
@@ -21,10 +23,28 @@ export async function generateMetadata({
   const { countryCode } = await params
   const m = getStorefrontMessages(countryCode)
   const cms = await getCmsSettingsPublic()
-  const title = resolveCmsSiteTitle(countryCode, cms, m, m.home.metaFallbackTitle)
+  const seoDefaults = resolveCmsSeoDefaults(countryCode, cms)
+  const siteTitle = resolveCmsSiteTitle(
+    countryCode,
+    cms,
+    m,
+    m.home.metaFallbackTitle
+  )
+  const title = seoDefaults.title || siteTitle
+  const description = seoDefaults.description || m.home.metaDescription
+  const canonical = `${getBaseURL()}/${countryCode}`
+
   return {
     title,
-    description: m.home.metaDescription,
+    description,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+    },
   }
 }
 

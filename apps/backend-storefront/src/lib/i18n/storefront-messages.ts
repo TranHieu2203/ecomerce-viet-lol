@@ -8,6 +8,13 @@ export type StorefrontMessages = {
     collectionsAria: string
     /** FR-24: nhóm gom mục vượt ngưỡng desktop. */
     viewMore: string
+    searchLabel: string
+    searchPlaceholder: string
+    searchClear: string
+    /** `{query}` sẽ được thay bằng từ khóa. */
+    searchViewAll: string
+    /** `{query}` sẽ được thay bằng từ khóa. */
+    searchNoResults: string
   }
   sideMenu: {
     button: string
@@ -130,6 +137,11 @@ export type StorefrontMessages = {
     sortLatest: string
     sortPriceAsc: string
     sortPriceDesc: string
+    /** `{query}` sẽ được thay bằng từ khóa. */
+    searchResultsFor: string
+    searchEmptyTitle: string
+    /** `{query}` sẽ được thay bằng từ khóa. */
+    searchEmptyBody: string
   }
   home: {
     viewAll: string
@@ -290,6 +302,11 @@ const vi: StorefrontMessages = {
     cartFallback: "Giỏ hàng",
     collectionsAria: "Menu điều hướng",
     viewMore: "Xem thêm",
+    searchLabel: "Tìm kiếm sản phẩm",
+    searchPlaceholder: "Tìm sản phẩm…",
+    searchClear: "Xóa tìm kiếm",
+    searchViewAll: "Xem tất cả kết quả cho “{query}”",
+    searchNoResults: "Không tìm thấy sản phẩm nào cho “{query}”",
   },
   sideMenu: {
     button: "Menu",
@@ -415,6 +432,9 @@ const vi: StorefrontMessages = {
     sortLatest: "Mới nhất",
     sortPriceAsc: "Giá: thấp → cao",
     sortPriceDesc: "Giá: cao → thấp",
+    searchResultsFor: "Kết quả tìm kiếm cho “{query}”",
+    searchEmptyTitle: "Không tìm thấy sản phẩm",
+    searchEmptyBody: "Không có sản phẩm nào khớp với “{query}”. Thử từ khóa khác.",
   },
   home: {
     viewAll: "Xem tất cả",
@@ -583,6 +603,11 @@ const en: StorefrontMessages = {
     cartFallback: "Cart",
     collectionsAria: "Site navigation",
     viewMore: "View more",
+    searchLabel: "Search products",
+    searchPlaceholder: "Search products…",
+    searchClear: "Clear search",
+    searchViewAll: "View all results for “{query}”",
+    searchNoResults: "No products found for “{query}”",
   },
   sideMenu: {
     button: "Menu",
@@ -708,6 +733,9 @@ const en: StorefrontMessages = {
     sortLatest: "Latest arrivals",
     sortPriceAsc: "Price: Low → High",
     sortPriceDesc: "Price: High → Low",
+    searchResultsFor: "Search results for “{query}”",
+    searchEmptyTitle: "No products found",
+    searchEmptyBody: "No products matched “{query}”. Try a different keyword.",
   },
   home: {
     viewAll: "View all",
