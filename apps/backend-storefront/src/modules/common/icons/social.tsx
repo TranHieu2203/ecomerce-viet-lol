@@ -177,6 +177,84 @@ export const SocialMessenger: React.FC<IconProps> = ({
   )
 }
 
+export const SocialWhatsapp: React.FC<IconProps> = ({
+  size = "18",
+  color = "currentColor",
+  ...attributes
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...attributes}
+    >
+      <path
+        d="M12 2C6.477 2 2 6.145 2 11.25c0 2.9 1.446 5.487 3.71 7.178V22l3.39-1.86c.905.25 1.867.386 2.9.386 5.523 0 10-4.145 10-9.276S17.523 2 12 2Z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 10.6c0 3.4 2.5 5.9 5.9 5.9.5 0 .9-.3.9-.8v-1.1a.6.6 0 0 0-.4-.6l-1.7-.6a.6.6 0 0 0-.6.2l-.4.5c-.9-.5-1.7-1.3-2.2-2.2l.5-.4a.6.6 0 0 0 .2-.6l-.6-1.7a.6.6 0 0 0-.6-.4H9.8a.6.6 0 0 0-.8.8Z"
+        fill={color}
+      />
+    </svg>
+  )
+}
+
+export const SocialX: React.FC<IconProps> = ({
+  size = "18",
+  color = "currentColor",
+  ...attributes
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...attributes}
+    >
+      <path
+        d="M4.5 4.5 19.5 19.5M19.5 4.5 4.5 19.5"
+        stroke={color}
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+}
+
+export const SocialPinterest: React.FC<IconProps> = ({
+  size = "18",
+  color = "currentColor",
+  ...attributes
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...attributes}
+    >
+      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" />
+      <path
+        d="M10 16.5 12 7.5m-1.9 3.1c0-1.7 1.3-2.9 3-2.9 1.8 0 3.1 1.2 3.1 3.1 0 2.2-1.1 4.2-3.1 4.2-.7 0-1.3-.3-1.6-.7"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+    </svg>
+  )
+}
+
 export const SocialZalo: React.FC<IconProps> = ({
   size = "18",
   color = "currentColor",
@@ -227,6 +305,15 @@ export function resolveSocialIcon(
   }
   if (blob.includes("youtube.com") || blob.includes("youtu.be")) {
     return SocialYoutube
+  }
+  if (blob.includes("whatsapp.com") || blob.includes("wa.me")) {
+    return SocialWhatsapp
+  }
+  if (blob.includes("twitter.com") || blob.includes("x.com")) {
+    return SocialX
+  }
+  if (blob.includes("pinterest.com") || blob.includes("pin.it")) {
+    return SocialPinterest
   }
   return SocialGlobe
 }

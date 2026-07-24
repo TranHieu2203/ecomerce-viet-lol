@@ -1,7 +1,10 @@
 import { displayCollection, displayProduct } from "@lib/util/i18n-catalog"
+import { getBaseURL } from "@lib/util/env"
+import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import ShareButtons from "@modules/common/components/share-buttons"
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
@@ -48,6 +51,11 @@ const ProductInfo = ({ product, locale }: ProductInfoProps) => {
         >
           {description}
         </Text>
+        <ShareButtons
+          url={`${getBaseURL()}/${locale}/products/${product.handle}`}
+          title={title}
+          image={normalizeMedusaAssetUrl(product.thumbnail) || undefined}
+        />
       </div>
     </div>
   )

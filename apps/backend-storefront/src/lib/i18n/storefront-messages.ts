@@ -2,6 +2,21 @@ import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from "@lib/util/locales"
 
 /** Chuỗi UI cố định storefront (vi | en). Catalog/CMS vẫn dùng metadata.i18n. */
 export type StorefrontMessages = {
+  share: {
+    label: string
+    native: string
+    facebook: string
+    zalo: string
+    copyLink: string
+    copied: string
+    more: string
+    telegram: string
+    whatsapp: string
+    x: string
+    pinterest: string
+    linkedin: string
+    email: string
+  }
   nav: {
     account: string
     cartFallback: string
@@ -312,6 +327,21 @@ export type StorefrontMessages = {
 }
 
 const vi: StorefrontMessages = {
+  share: {
+    label: "Chia sẻ",
+    native: "Chia sẻ",
+    facebook: "Chia sẻ lên Facebook",
+    zalo: "Chia sẻ lên Zalo",
+    copyLink: "Sao chép liên kết",
+    copied: "Đã sao chép liên kết",
+    more: "Kênh khác",
+    telegram: "Chia sẻ lên Telegram",
+    whatsapp: "Chia sẻ lên WhatsApp",
+    x: "Chia sẻ lên X",
+    pinterest: "Ghim lên Pinterest",
+    linkedin: "Chia sẻ lên LinkedIn",
+    email: "Chia sẻ qua email",
+  },
   nav: {
     account: "Tài khoản",
     cartFallback: "Giỏ hàng",
@@ -624,6 +654,21 @@ const vi: StorefrontMessages = {
 }
 
 const en: StorefrontMessages = {
+  share: {
+    label: "Share",
+    native: "Share",
+    facebook: "Share on Facebook",
+    zalo: "Share on Zalo",
+    copyLink: "Copy link",
+    copied: "Link copied",
+    more: "More",
+    telegram: "Share on Telegram",
+    whatsapp: "Share on WhatsApp",
+    x: "Share on X",
+    pinterest: "Pin on Pinterest",
+    linkedin: "Share on LinkedIn",
+    email: "Share via email",
+  },
   nav: {
     account: "Account",
     cartFallback: "Cart",

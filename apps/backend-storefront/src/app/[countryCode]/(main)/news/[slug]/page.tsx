@@ -5,9 +5,11 @@ import {
   resolveCmsSiteTitle,
 } from "@lib/data/cms"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import ShareButtons from "@modules/common/components/share-buttons"
 
 type Props = {
   params: Promise<{ countryCode: string; slug: string }>
@@ -167,6 +169,13 @@ export default async function NewsArticlePage(props: Props) {
             ))}
           </div>
         ) : null}
+        <ShareButtons
+          url={`${getBaseURL()}/${params.countryCode}/news/${encodeURIComponent(article.slug)}`}
+          title={article.title}
+          image={article.featured_image_url || undefined}
+          className="mb-8"
+        />
+
         {article.featured_image_url ? (
           <div className="mb-8 rounded-lg overflow-hidden border border-ui-border-base max-h-[min(50vh,420px)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
