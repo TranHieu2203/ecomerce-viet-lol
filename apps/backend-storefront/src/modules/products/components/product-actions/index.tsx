@@ -25,6 +25,12 @@ type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+  /**
+   * Đồng bộ `v_id` vào URL của trang hiện tại (dùng cho trang chi tiết sản phẩm).
+   * Tắt khi nhúng trong ngữ cảnh khác (VD: modal Quick Look trên trang danh sách) —
+   * nếu không, `router.replace` sẽ ghi đè URL trang đó và cuộn trang về đầu.
+   */
+  syncUrl?: boolean
 }
 
 const optionsAsKeymap = (
@@ -39,6 +45,7 @@ const optionsAsKeymap = (
 export default function ProductActions({
   product,
   disabled,
+  syncUrl = true,
 }: ProductActionsProps) {
   const m = useStorefrontMessages()
   const p = m.product
@@ -88,6 +95,10 @@ export default function ProductActions({
   }, [product.variants, options])
 
   useEffect(() => {
+    if (!syncUrl) {
+      return
+    }
+
     const params = new URLSearchParams(searchParams.toString())
     const value = isValidVariant ? selectedVariant?.id : null
 
@@ -102,7 +113,7 @@ export default function ProductActions({
     }
 
     router.replace(pathname + "?" + params.toString())
-  }, [selectedVariant, isValidVariant])
+  }, [selectedVariant, isValidVariant, syncUrl])
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {

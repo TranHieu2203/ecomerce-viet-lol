@@ -49,8 +49,16 @@ export const listProducts = async ({
     ...(await getAuthHeaders()),
   }
 
+  const sessionCacheOptions = await getCacheOptions("products")
+  const sessionTags =
+    "tags" in sessionCacheOptions ? sessionCacheOptions.tags : []
+
   const next = {
-    ...(await getCacheOptions("products")),
+    // Tag "products" cố định (không phụ thuộc cookie phiên) để backend revalidate
+    // ngay khi Admin sửa/xóa sản phẩm (subscriber product-changed-revalidate.ts).
+    tags: [...sessionTags, "products"],
+    // Lưới an toàn phòng khi webhook lỗi/chưa cấu hình — tự làm mới sau tối đa 3 phút.
+    revalidate: 180,
   }
 
   const catalogScoped =

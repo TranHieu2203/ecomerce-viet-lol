@@ -59,7 +59,7 @@ export default function QuickLookButton({ handle, region }: Props) {
         type="button"
         onClick={openQuickLook}
         aria-label={m.quickLook}
-        className="hidden small:flex absolute inset-x-3 bottom-3 items-center justify-center gap-2 h-10 rounded-full bg-white/95 text-ui-fg-base text-small-semi opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-[opacity,transform] duration-180 ease-standard motion-reduce:transition-none shadow-elevation-card-hover focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+        className="hidden small:flex absolute inset-x-3 bottom-3 items-center justify-center gap-2 h-10 rounded-full bg-brand-cream/95 border border-brand-gold/40 text-brand-ink text-small-semi opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-brand-gold hover:text-white hover:border-brand-gold transition-[opacity,transform,background-color,color,border-color] duration-180 ease-standard motion-reduce:transition-none shadow-elevation-card-hover focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
       >
         <Eye />
         {m.quickLook}
@@ -129,7 +129,11 @@ export default function QuickLookButton({ handle, region }: Props) {
                         <Dialog.Title className="text-xl-semi text-ui-fg-base pr-8">
                           {displayTitle}
                         </Dialog.Title>
-                        <ProductActions product={product} region={region} />
+                        <ProductActions
+                          product={product}
+                          region={region}
+                          syncUrl={false}
+                        />
                       </div>
                     </div>
                   )}
