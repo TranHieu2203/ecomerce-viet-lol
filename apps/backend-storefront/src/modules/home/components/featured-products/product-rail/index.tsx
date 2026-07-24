@@ -39,7 +39,7 @@ export default async function ProductRail({
   }
 
   return (
-    <div className="content-container py-8 xsmall:py-10 small:py-12 border-b border-ui-border-base last:border-b-0">
+    <div className="bg-white rounded-large shadow-elevation-card-rest px-4 xsmall:px-6 small:px-8 py-6 xsmall:py-8 small:py-10">
       <div className="flex flex-col gap-3 xsmall:flex-row xsmall:items-end xsmall:justify-between mb-4 xsmall:mb-6">
         <Text className="txt-xlarge text-ui-fg-base font-semibold tracking-tight">
           {displayTitle}

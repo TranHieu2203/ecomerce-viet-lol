@@ -29,26 +29,28 @@ export default function CollectionTemplate({
   )
 
   return (
-    <div className="flex flex-col small:flex-row small:items-start py-6 content-container">
-      <RefinementList sortBy={sort} />
-      <div className="w-full">
-        <div className="mb-8 text-2xl-semi">
-          <h1>{displayTitle}</h1>
-        </div>
-        <Suspense
-          fallback={
-            <SkeletonProductGrid
-              numberOfProducts={collection.products?.length}
+    <div className="bg-ui-bg-subtle py-6">
+      <div className="flex flex-col small:flex-row small:items-start gap-6 content-container">
+        <RefinementList sortBy={sort} />
+        <div className="w-full bg-white rounded-large shadow-elevation-card-rest p-4 xsmall:p-6 small:p-8">
+          <div className="mb-8 text-2xl-semi">
+            <h1>{displayTitle}</h1>
+          </div>
+          <Suspense
+            fallback={
+              <SkeletonProductGrid
+                numberOfProducts={collection.products?.length}
+              />
+            }
+          >
+            <PaginatedProducts
+              sortBy={sort}
+              page={pageNumber}
+              collectionId={collection.id}
+              countryCode={countryCode}
             />
-          }
-        >
-          <PaginatedProducts
-            sortBy={sort}
-            page={pageNumber}
-            collectionId={collection.id}
-            countryCode={countryCode}
-          />
-        </Suspense>
+          </Suspense>
+        </div>
       </div>
     </div>
   )
