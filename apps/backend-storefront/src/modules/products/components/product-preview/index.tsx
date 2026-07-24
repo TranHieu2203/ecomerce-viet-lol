@@ -45,21 +45,22 @@ export default async function ProductPreview({
   return (
     <LocalizedClientLink
       href={`/products/${product.handle}`}
-      className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base rounded-large"
+      className="group flex flex-col h-full rounded-large border border-ui-border-base bg-white shadow-elevation-card-rest hover:shadow-elevation-card-hover transition-shadow duration-180 ease-standard overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base"
     >
-      <div data-testid="product-wrapper">
+      <div data-testid="product-wrapper" className="flex flex-col h-full">
         <div className="relative">
           <Thumbnail
             thumbnail={product.thumbnail}
             images={product.images}
             size="full"
             isFeatured={isFeatured}
+            className="!shadow-none !rounded-none"
           />
           {product.handle ? (
             <QuickLookButton handle={product.handle} region={region} />
           ) : null}
         </div>
-        <div className="txt-compact-medium mt-4">
+        <div className="txt-compact-medium p-3 xsmall:p-4 flex-1">
           <div className="flex justify-between gap-x-4">
             <Text className="text-ui-fg-subtle" data-testid="product-title">
               {title}

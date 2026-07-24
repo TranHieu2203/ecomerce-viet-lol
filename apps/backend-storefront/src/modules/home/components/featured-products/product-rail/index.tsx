@@ -39,9 +39,9 @@ export default async function ProductRail({
   }
 
   return (
-    <div className="bg-white rounded-large shadow-elevation-card-rest px-4 xsmall:px-6 small:px-8 py-6 xsmall:py-8 small:py-10">
-      <div className="flex flex-col gap-3 xsmall:flex-row xsmall:items-end xsmall:justify-between mb-4 xsmall:mb-6">
-        <Text className="txt-xlarge text-ui-fg-base font-semibold tracking-tight">
+    <div>
+      <div className="flex flex-col gap-3 xsmall:flex-row xsmall:items-end xsmall:justify-between mb-6 xsmall:mb-8">
+        <Text className="text-2xl-semi text-ui-fg-base tracking-tight">
           {displayTitle}
         </Text>
         <InteractiveLink href={`/collections/${collection.handle}`}>
@@ -50,11 +50,12 @@ export default async function ProductRail({
       </div>
       <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-4 xsmall:gap-x-6 gap-y-6 xsmall:gap-y-8 small:gap-y-10">
         {pricedProducts.map((product, idx) => (
-          <li key={product.id}>
+          <li key={product.id} className="h-full">
             <Reveal
               variant="up"
               delayMs={Math.min(240, idx * 40)}
               initialInView={idx < 5}
+              className="h-full"
             >
               <ProductPreview
                 product={product}

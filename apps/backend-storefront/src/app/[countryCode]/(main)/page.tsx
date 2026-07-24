@@ -72,8 +72,8 @@ export default async function Home(props: {
   return (
     <>
       <HeroSlider slides={slides} locale={countryCode} />
-      <div className="py-8 xsmall:py-12 bg-ui-bg-subtle">
-        <ul className="content-container flex flex-col gap-6 xsmall:gap-8">
+      <div className="py-8 xsmall:py-12 bg-white">
+        <ul className="content-container flex flex-col gap-y-12 xsmall:gap-y-16 small:gap-y-20">
           <FeaturedProducts
             collections={collections}
             region={region}

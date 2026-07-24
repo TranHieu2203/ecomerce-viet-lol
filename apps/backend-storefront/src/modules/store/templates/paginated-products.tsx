@@ -82,11 +82,12 @@ export default async function PaginatedProducts({
       >
         {products.map((p, idx) => {
           return (
-            <li key={p.id}>
+            <li key={p.id} className="h-full">
               <Reveal
                 variant="up"
                 delayMs={Math.min(300, idx * 30)}
                 initialInView={idx < 8}
+                className="h-full"
               >
                 <ProductPreview product={p} region={region} locale={countryCode} />
               </Reveal>
