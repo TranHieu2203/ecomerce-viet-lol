@@ -24,7 +24,7 @@ export default function CmsNewsTeaser({ locale, articles, isEn }: Props) {
 
   return (
     <section
-      className="py-8 xsmall:py-12 px-4 small:px-8 max-w-[1200px] mx-auto w-full border-t border-ui-border-base"
+      className="content-container py-8 xsmall:py-12 border-t border-ui-border-base"
       aria-labelledby="home-news-heading"
     >
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
@@ -46,7 +46,7 @@ export default function CmsNewsTeaser({ locale, articles, isEn }: Props) {
           {seeAll} →
         </Link>
       </div>
-      <ul className="grid grid-cols-1 small:grid-cols-2 gap-6">
+      <ul className="grid grid-cols-1 small:grid-cols-2 large:grid-cols-4 gap-6">
         {slice.map((a, idx) => (
           <li key={a.slug} className="min-w-0">
             <Reveal

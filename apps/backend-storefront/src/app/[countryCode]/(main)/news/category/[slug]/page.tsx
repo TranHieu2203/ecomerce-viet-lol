@@ -108,11 +108,7 @@ export default async function NewsCategoryPage(props: Props) {
 
       <header className="max-w-4xl mb-8">
         <h1 className="text-3xl-semi text-ui-fg-base">{titleLabel}</h1>
-        <p className="text-base-regular text-ui-fg-muted mt-2">
-          {isEn
-            ? "Posts in this category (including subcategories)."
-            : "Bài trong chủ đề này (gồm cả chủ đề con)."}
-        </p>
+       
         <Link
           href={`/${locale}/news`}
           className="text-small-semi text-ui-fg-interactive hover:underline inline-block mt-3"

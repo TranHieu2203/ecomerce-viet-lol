@@ -149,6 +149,34 @@ export const SocialTiktok: React.FC<IconProps> = ({
   )
 }
 
+export const SocialMessenger: React.FC<IconProps> = ({
+  size = "18",
+  color = "currentColor",
+  ...attributes
+}) => {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...attributes}
+    >
+      <path
+        d="M12 2C6.477 2 2 6.145 2 11.25c0 2.9 1.446 5.487 3.71 7.178V22l3.39-1.86c.905.25 1.867.386 2.9.386 5.523 0 10-4.145 10-9.276S17.523 2 12 2Z"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 14.2 11.4 8.2 13.1 11.4 16 7.7 12.6 13.7 10.9 10.5Z"
+        fill={color}
+      />
+    </svg>
+  )
+}
+
 export const SocialZalo: React.FC<IconProps> = ({
   size = "18",
   color = "currentColor",
@@ -178,6 +206,9 @@ export function resolveSocialIcon(
   const h = (hostname || "").toLowerCase()
   const u = (href || "").toLowerCase()
   const blob = `${h} ${u}`
+  if (blob.includes("m.me") || blob.includes("messenger.com")) {
+    return SocialMessenger
+  }
   if (blob.includes("facebook.com") || blob.includes("fb.com")) {
     return SocialFacebook
   }

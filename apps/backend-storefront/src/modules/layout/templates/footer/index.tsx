@@ -92,7 +92,7 @@ export default async function Footer({
           <div className="max-w-xs shrink-0">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-base hover:text-ui-fg-subtle font-semibold tracking-tight"
+              className="txt-compact-xlarge-plus text-ui-fg-base hover:text-ui-fg-subtle transition-colors duration-180 ease-standard font-semibold tracking-tight"
             >
               {brandName}
             </LocalizedClientLink>
@@ -135,7 +135,7 @@ export default async function Footer({
                       >
                         <LocalizedClientLink
                           className={clx(
-                            "hover:text-ui-fg-base",
+                            "hover:text-ui-fg-base transition-colors duration-180 ease-standard",
                             children && "txt-small-plus"
                           )}
                           href={`/categories/${c.handle}`}
@@ -149,7 +149,7 @@ export default async function Footer({
                               children.map((child) => (
                                 <li key={child.id}>
                                   <LocalizedClientLink
-                                    className="hover:text-ui-fg-base"
+                                    className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                                     href={`/categories/${child.handle}`}
                                     data-testid="category-link"
                                   >
@@ -172,7 +172,7 @@ export default async function Footer({
                 </span>
                 {hotline && telHref ? (
                   <a
-                    className="block text-ui-fg-subtle txt-small hover:text-ui-fg-base"
+                    className="block text-ui-fg-subtle txt-small hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                     href={telHref}
                   >
                     <span className="text-ui-fg-muted">
@@ -183,7 +183,7 @@ export default async function Footer({
                 ) : null}
                 {email ? (
                   <a
-                    className="block text-ui-fg-subtle txt-small hover:text-ui-fg-base break-words"
+                    className="block text-ui-fg-subtle txt-small hover:text-ui-fg-base transition-colors duration-180 ease-standard break-words"
                     href={`mailto:${email}`}
                   >
                     <span className="text-ui-fg-muted">
@@ -199,7 +199,7 @@ export default async function Footer({
                       return (
                         <li key={s.href}>
                           <a
-                            className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                            className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors duration-180 ease-standard focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
                             href={s.href}
                             target="_blank"
                             rel="noreferrer noopener"
@@ -231,7 +231,7 @@ export default async function Footer({
                     return (
                       <li key={c.id}>
                         <LocalizedClientLink
-                          className="hover:text-ui-fg-base"
+                          className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                           href={`/collections/${c.handle}`}
                         >
                           {colTitle}
@@ -251,7 +251,7 @@ export default async function Footer({
                   {cmsPageLinks.map((c) => (
                     <li key={c.href}>
                       <LocalizedClientLink
-                        className="hover:text-ui-fg-base"
+                        className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                         href={c.href}
                       >
                         {c.label}
@@ -268,7 +268,7 @@ export default async function Footer({
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
                 <li>
                   <LocalizedClientLink
-                    className="hover:text-ui-fg-base"
+                    className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                     href="/store"
                   >
                     {m.footer.linkStore}
@@ -276,7 +276,7 @@ export default async function Footer({
                 </li>
                 <li>
                   <LocalizedClientLink
-                    className="hover:text-ui-fg-base"
+                    className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                     href="/cart"
                   >
                     {m.footer.linkCart}
@@ -284,7 +284,7 @@ export default async function Footer({
                 </li>
                 <li>
                   <LocalizedClientLink
-                    className="hover:text-ui-fg-base"
+                    className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                     href="/account"
                   >
                     {m.footer.linkAccount}

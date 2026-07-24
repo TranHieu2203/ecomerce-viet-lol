@@ -69,7 +69,7 @@ export default async function Nav({
           <div className="flex items-center gap-2 xsmall:gap-3 min-w-0 flex-1">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base flex items-center justify-start shrink-0"
+              className="txt-compact-xlarge-plus hover:text-ui-fg-base flex items-center justify-start shrink-0 transition-colors duration-180 ease-standard"
               data-testid="nav-store-link"
             >
               {logoSrc && !logoIsSvg ? (
@@ -124,7 +124,7 @@ export default async function Nav({
                       href={s.href}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                      className="inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors duration-180 ease-standard focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
                       aria-label={s.label}
                       title={s.label}
                     >
@@ -143,7 +143,7 @@ export default async function Nav({
             />
             <div className="hidden small:flex items-center gap-x-6 h-full">
               <LocalizedClientLink
-                className="hover:text-ui-fg-base"
+                className="hover:text-ui-fg-base transition-colors duration-180 ease-standard"
                 href="/account"
                 data-testid="nav-account-link"
               >

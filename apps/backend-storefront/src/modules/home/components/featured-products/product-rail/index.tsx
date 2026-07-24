@@ -6,6 +6,7 @@ import { Text } from "@medusajs/ui"
 
 import InteractiveLink from "@modules/common/components/interactive-link"
 import ProductPreview from "@modules/products/components/product-preview"
+import Reveal from "@modules/common/components/reveal"
 
 export default async function ProductRail({
   collection,
@@ -33,7 +34,7 @@ export default async function ProductRail({
     },
   })
 
-  if (!pricedProducts) {
+  if (!pricedProducts || pricedProducts.length === 0) {
     return null
   }
 
@@ -48,9 +49,13 @@ export default async function ProductRail({
         </InteractiveLink>
       </div>
       <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-4 xsmall:gap-x-6 gap-y-10 xsmall:gap-y-16 small:gap-y-24">
-        {pricedProducts &&
-          pricedProducts.map((product) => (
-            <li key={product.id}>
+        {pricedProducts.map((product, idx) => (
+          <li key={product.id}>
+            <Reveal
+              variant="up"
+              delayMs={Math.min(240, idx * 40)}
+              initialInView={idx < 5}
+            >
               <ProductPreview
                 product={product}
                 region={region}
@@ -58,8 +63,9 @@ export default async function ProductRail({
                 locale={countryCode}
                 showDescription
               />
-            </li>
-          ))}
+            </Reveal>
+          </li>
+        ))}
       </ul>
     </div>
   )

@@ -89,7 +89,7 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
                 {onlyChild?.href ? (
                   <LocalizedClientLink
                     href={onlyChild.href}
-                    className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                    className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base transition-colors duration-180 ease-standard whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
                     role="menuitem"
                   >
                     {group.label}
@@ -100,7 +100,7 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
                     ref={(el) => {
                       triggerRefs.current.set(index, el)
                     }}
-                    className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
+                    className="flex items-center min-h-11 px-2 rounded-rounded hover:text-ui-fg-base transition-colors duration-180 ease-standard whitespace-nowrap text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
                     aria-expanded={isOpen}
                     aria-haspopup="true"
                     onClick={() =>
@@ -112,7 +112,7 @@ export default function MegaNav({ groups, ariaLabel }: MegaNavProps) {
                 )}
                 {!onlyChild && isOpen ? (
                   <div
-                    className="absolute left-0 top-full pt-1 z-50 min-w-[12rem]"
+                    className="absolute left-0 top-full pt-1 z-50 min-w-[12rem] animate-fade-in-top motion-reduce:animate-none"
                     role="menu"
                     onMouseEnter={clearCloseTimer}
                     onMouseLeave={scheduleClose}
