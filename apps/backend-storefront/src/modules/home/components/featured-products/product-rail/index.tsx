@@ -39,8 +39,8 @@ export default async function ProductRail({
   }
 
   return (
-    <div className="content-container py-10 xsmall:py-14 small:py-20 border-b border-ui-border-base last:border-b-0">
-      <div className="flex flex-col gap-3 xsmall:flex-row xsmall:items-end xsmall:justify-between mb-6 xsmall:mb-8">
+    <div className="content-container py-8 xsmall:py-10 small:py-12 border-b border-ui-border-base last:border-b-0">
+      <div className="flex flex-col gap-3 xsmall:flex-row xsmall:items-end xsmall:justify-between mb-4 xsmall:mb-6">
         <Text className="txt-xlarge text-ui-fg-base font-semibold tracking-tight">
           {displayTitle}
         </Text>
@@ -48,7 +48,7 @@ export default async function ProductRail({
           {m.home.viewAll}
         </InteractiveLink>
       </div>
-      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-4 xsmall:gap-x-6 gap-y-10 xsmall:gap-y-16 small:gap-y-24">
+      <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 large:grid-cols-5 gap-x-4 xsmall:gap-x-6 gap-y-6 xsmall:gap-y-8 small:gap-y-10">
         {pricedProducts.map((product, idx) => (
           <li key={product.id}>
             <Reveal

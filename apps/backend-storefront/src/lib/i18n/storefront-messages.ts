@@ -141,6 +141,8 @@ export type StorefrontMessages = {
     quantityLabel: string
     quantityDecrease: string
     quantityIncrease: string
+    quickLook: string
+    quickLookClose: string
   }
   store: {
     metaTitle: string
@@ -445,6 +447,8 @@ const vi: StorefrontMessages = {
     quantityLabel: "Số lượng",
     quantityDecrease: "Giảm số lượng",
     quantityIncrease: "Tăng số lượng",
+    quickLook: "Xem nhanh",
+    quickLookClose: "Đóng xem nhanh",
   },
   store: {
     metaTitle: "Cửa hàng",
@@ -755,6 +759,8 @@ const en: StorefrontMessages = {
     quantityLabel: "Quantity",
     quantityDecrease: "Decrease quantity",
     quantityIncrease: "Increase quantity",
+    quickLook: "Quick look",
+    quickLookClose: "Close quick look",
   },
   store: {
     metaTitle: "Store",

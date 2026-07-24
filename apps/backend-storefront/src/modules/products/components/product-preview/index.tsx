@@ -4,6 +4,7 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import { displayProduct } from "@lib/util/i18n-catalog"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import QuickLookButton from "@modules/products/components/quick-look-button"
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
 
@@ -47,12 +48,17 @@ export default async function ProductPreview({
       className="group focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive focus-visible:ring-offset-2 focus-visible:ring-offset-ui-bg-base rounded-large"
     >
       <div data-testid="product-wrapper">
-        <Thumbnail
-          thumbnail={product.thumbnail}
-          images={product.images}
-          size="full"
-          isFeatured={isFeatured}
-        />
+        <div className="relative">
+          <Thumbnail
+            thumbnail={product.thumbnail}
+            images={product.images}
+            size="full"
+            isFeatured={isFeatured}
+          />
+          {product.handle ? (
+            <QuickLookButton handle={product.handle} region={region} />
+          ) : null}
+        </div>
         <div className="txt-compact-medium mt-4">
           <div className="flex justify-between gap-x-4">
             <Text className="text-ui-fg-subtle" data-testid="product-title">
