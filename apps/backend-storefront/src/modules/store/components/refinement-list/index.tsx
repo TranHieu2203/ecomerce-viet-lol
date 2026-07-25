@@ -35,10 +35,10 @@ function FilterDropdown({
         <button
           type="button"
           className={clx(
-            "inline-flex items-center gap-1.5 h-10 px-4 rounded-full border text-small-regular transition-colors duration-150",
+            "inline-flex items-center gap-1.5 h-9 px-3.5 rounded-full border text-small-regular transition-colors duration-150 bg-white",
             active
-              ? "border-brand-gold bg-brand-cream text-brand-ink"
-              : "border-ui-border-base text-ui-fg-subtle hover:border-ui-border-interactive"
+              ? "border-brand-gold text-brand-ink font-medium"
+              : "border-ui-border-base text-ui-fg-subtle hover:border-brand-gold/60"
           )}
         >
           {label}
@@ -144,95 +144,109 @@ const RefinementList = ({
     setQueryParams({ minPrice: null, maxPrice: null })
   }
 
+  const formatVnd = (n: string) => Number(n).toLocaleString("vi-VN")
   const priceLabel =
     minPrice || maxPrice
-      ? `${s.filterPriceTitle}: ${minPrice || "0"} - ${maxPrice || "∞"}`
-      : s.filterPriceTitle
+      ? `${s.filterPriceTitle}: ${minPrice ? formatVnd(minPrice) : "0"} - ${
+          maxPrice ? formatVnd(maxPrice) : "∞"
+        }`
+      : `${s.filterPriceTitle}: ${s.filterRatingAll}`
 
   return (
-    <div className="flex flex-wrap items-center gap-3 py-4 mb-6">
-      <FilterDropdown
-        label={`${s.sortBy}: ${sortItems.find((i) => i.value === sortBy)?.label || ""}`}
-        active={sortBy !== "created_at"}
-      >
-        <Text className="txt-compact-small-plus text-ui-fg-muted mb-3">{s.sortBy}</Text>
-        <DropdownRadioList
-          items={sortItems}
-          value={sortBy}
-          onSelect={(value) => setQueryParams({ sortBy: value }, false)}
-        />
-      </FilterDropdown>
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3 mb-6 rounded-xl border border-brand-gold/20 bg-brand-cream/30">
+      <div className="flex flex-wrap items-center gap-2">
+        <Text className="text-small-regular text-ui-fg-subtle mr-1 shrink-0">
+          {s.sortBy}
+        </Text>
+        {sortItems.map((item) => (
+          <button
+            key={item.value}
+            type="button"
+            onClick={() => setQueryParams({ sortBy: item.value }, false)}
+            className={clx(
+              "h-9 px-3.5 rounded-full text-small-regular transition-colors duration-150 whitespace-nowrap",
+              sortBy === item.value
+                ? "bg-brand-gold text-white font-medium"
+                : "text-ui-fg-subtle hover:bg-white"
+            )}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
 
-      {categories.length > 0 ? (
+      <div className="flex flex-wrap items-center gap-2">
+        {categories.length > 0 ? (
+          <FilterDropdown
+            label={`${s.filterCategoryTitle}: ${
+              categoryOptions.find((c) => c.value === (categoryId || ""))?.label ||
+              s.filterCategoryAll
+            }`}
+            active={Boolean(categoryId)}
+          >
+            <Text className="txt-compact-small-plus text-ui-fg-muted mb-3">
+              {s.filterCategoryTitle}
+            </Text>
+            <DropdownRadioList
+              items={categoryOptions}
+              value={categoryId || ""}
+              onSelect={(value) => setQueryParams({ categoryId: value || null })}
+            />
+          </FilterDropdown>
+        ) : null}
+
         <FilterDropdown
-          label={`${s.filterCategoryTitle}: ${
-            categoryOptions.find((c) => c.value === (categoryId || ""))?.label ||
-            s.filterCategoryAll
+          label={`${s.filterRatingTitle}: ${
+            ratingOptions.find((r) => r.value === (minRating || ""))?.label ||
+            s.filterRatingAll
           }`}
-          active={Boolean(categoryId)}
+          active={Boolean(minRating)}
         >
           <Text className="txt-compact-small-plus text-ui-fg-muted mb-3">
-            {s.filterCategoryTitle}
+            {s.filterRatingTitle}
           </Text>
           <DropdownRadioList
-            items={categoryOptions}
-            value={categoryId || ""}
-            onSelect={(value) => setQueryParams({ categoryId: value || null })}
+            items={ratingOptions}
+            value={minRating || ""}
+            onSelect={(value) => setQueryParams({ minRating: value || null })}
           />
         </FilterDropdown>
-      ) : null}
 
-      <FilterDropdown
-        label={`${s.filterRatingTitle}: ${
-          ratingOptions.find((r) => r.value === (minRating || ""))?.label ||
-          s.filterRatingAll
-        }`}
-        active={Boolean(minRating)}
-      >
-        <Text className="txt-compact-small-plus text-ui-fg-muted mb-3">
-          {s.filterRatingTitle}
-        </Text>
-        <DropdownRadioList
-          items={ratingOptions}
-          value={minRating || ""}
-          onSelect={(value) => setQueryParams({ minRating: value || null })}
-        />
-      </FilterDropdown>
-
-      <FilterDropdown label={priceLabel} active={Boolean(minPrice || maxPrice)}>
-        <Text className="txt-compact-small-plus text-ui-fg-muted mb-3">
-          {s.filterPriceTitle}
-        </Text>
-        <div className="flex items-center gap-2">
-          <Input
-            type="number"
-            min={0}
-            placeholder={s.filterPriceFrom}
-            value={priceFrom}
-            onChange={(e) => setPriceFrom(e.target.value)}
-            className="min-w-0 flex-1"
-          />
-          <span className="text-ui-fg-muted shrink-0">—</span>
-          <Input
-            type="number"
-            min={0}
-            placeholder={s.filterPriceTo}
-            value={priceTo}
-            onChange={(e) => setPriceTo(e.target.value)}
-            className="min-w-0 flex-1"
-          />
-        </div>
-        <div className="flex items-center gap-2 mt-3">
-          <Button size="small" variant="secondary" onClick={applyPriceFilter}>
-            {s.filterPriceApply}
-          </Button>
-          {minPrice || maxPrice ? (
-            <Button size="small" variant="transparent" onClick={clearPriceFilter}>
-              {s.filterPriceClear}
+        <FilterDropdown label={priceLabel} active={Boolean(minPrice || maxPrice)}>
+          <Text className="txt-compact-small-plus text-ui-fg-muted mb-3">
+            {s.filterPriceTitle}
+          </Text>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min={0}
+              placeholder={s.filterPriceFrom}
+              value={priceFrom}
+              onChange={(e) => setPriceFrom(e.target.value)}
+              className="min-w-0 flex-1"
+            />
+            <span className="text-ui-fg-muted shrink-0">—</span>
+            <Input
+              type="number"
+              min={0}
+              placeholder={s.filterPriceTo}
+              value={priceTo}
+              onChange={(e) => setPriceTo(e.target.value)}
+              className="min-w-0 flex-1"
+            />
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Button size="small" variant="secondary" onClick={applyPriceFilter}>
+              {s.filterPriceApply}
             </Button>
-          ) : null}
-        </div>
-      </FilterDropdown>
+            {minPrice || maxPrice ? (
+              <Button size="small" variant="transparent" onClick={clearPriceFilter}>
+                {s.filterPriceClear}
+              </Button>
+            ) : null}
+          </div>
+        </FilterDropdown>
+      </div>
     </div>
   )
 }
