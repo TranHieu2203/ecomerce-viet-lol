@@ -13,6 +13,15 @@ import {
 
 export const AUTHENTICATE = false
 
+/** Bỏ dấu tiếng Việt + chuẩn hoá để so khớp tìm kiếm không phân biệt hoa/thường, có/không dấu. */
+function normalizeForSearch(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(new RegExp("[̀-ͯ]", "g"), "")
+    .replace(/đ/g, "d")
+}
+
 async function filePublicUrl(
   req: MedusaRequest,
   fileId: string | null | undefined
@@ -69,6 +78,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     .toLowerCase()
   const tagSlug = (req.query?.tag_slug as string | undefined)?.trim().toLowerCase()
   const q = (req.query?.q as string | undefined)?.trim().toLowerCase()
+  const qTokens = q ? q.split(/\s+/).filter(Boolean) : []
 
   let allowedIds: Set<string> | null = null
 
@@ -153,12 +163,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     ),
   }))
 
-  const filtered = q
-    ? resolved.filter(
-        (r) =>
-          r.title.toLowerCase().includes(q) ||
-          r.excerpt.toLowerCase().includes(q)
-      )
+  const filtered = qTokens.length
+    ? resolved.filter((r) => {
+        const haystack = normalizeForSearch(`${r.title} ${r.excerpt}`)
+        return qTokens.every((t) => haystack.includes(normalizeForSearch(t)))
+      })
     : resolved
 
   const count = filtered.length

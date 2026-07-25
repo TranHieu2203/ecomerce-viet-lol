@@ -11,6 +11,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 
 const DEBOUNCE_MS = 300
 
@@ -24,10 +25,15 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
   const [news, setNews] = useState<CmsNewsListItem[]>([])
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const desktopInputRef = useRef<HTMLInputElement | null>(null)
   const mobileInputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -282,53 +288,58 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
         </div>
       ) : null}
 
-      {/* Mobile: chiếm toàn màn hình — tránh hẳn bài toán neo/tràn vị trí của dropdown nhỏ. */}
-      {isOpen ? (
-        <div className="small:hidden fixed inset-0 z-[70] bg-white flex flex-col">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              goToProductResults()
-            }}
-            className="flex items-center gap-2 p-3 border-b border-ui-border-base shrink-0"
-          >
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              aria-label={m.searchClear}
-              className="flex items-center justify-center w-9 h-9 shrink-0 rounded-rounded text-ui-fg-subtle hover:bg-ui-bg-subtle"
-            >
-              <ArrowLeftMini />
-            </button>
-            <div className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full border border-ui-border-base bg-ui-bg-subtle focus-within:border-ui-border-interactive transition-colors duration-180 ease-standard">
-              <MagnifyingGlass className="text-ui-fg-muted shrink-0" />
-              <input
-                ref={mobileInputRef}
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={m.searchPlaceholder}
-                aria-label={m.searchLabel}
-                className="flex-1 min-w-0 bg-transparent outline-none text-small-regular placeholder:text-ui-fg-muted"
-              />
-              {query ? (
+      {/* Mobile: chiếm toàn màn hình — render qua portal vào <body> vì header cha có
+          backdrop-blur (backdrop-filter tạo containing block mới cho position:fixed,
+          khiến "fixed inset-0" bị co lại theo kích thước header thay vì toàn viewport). */}
+      {mounted && isOpen
+        ? createPortal(
+            <div className="small:hidden fixed inset-0 z-[70] bg-white flex flex-col">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  goToProductResults()
+                }}
+                className="flex items-center gap-2 p-3 border-b border-ui-border-base shrink-0"
+              >
                 <button
                   type="button"
+                  onClick={() => setIsOpen(false)}
                   aria-label={m.searchClear}
-                  onClick={() => setQuery("")}
-                  className="text-ui-fg-muted hover:text-ui-fg-base shrink-0"
+                  className="flex items-center justify-center w-9 h-9 shrink-0 rounded-rounded text-ui-fg-subtle hover:bg-ui-bg-subtle"
                 >
-                  <XMark />
+                  <ArrowLeftMini />
                 </button>
-              ) : null}
-            </div>
-          </form>
+                <div className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full border border-ui-border-base bg-ui-bg-subtle focus-within:border-ui-border-interactive transition-colors duration-180 ease-standard">
+                  <MagnifyingGlass className="text-ui-fg-muted shrink-0" />
+                  <input
+                    ref={mobileInputRef}
+                    type="search"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={m.searchPlaceholder}
+                    aria-label={m.searchLabel}
+                    className="flex-1 min-w-0 bg-transparent outline-none text-small-regular placeholder:text-ui-fg-muted"
+                  />
+                  {query ? (
+                    <button
+                      type="button"
+                      aria-label={m.searchClear}
+                      onClick={() => setQuery("")}
+                      className="text-ui-fg-muted hover:text-ui-fg-base shrink-0"
+                    >
+                      <XMark />
+                    </button>
+                  ) : null}
+                </div>
+              </form>
 
-          <div className="flex-1 overflow-y-auto flex flex-col">
-            {resultsPanel}
-          </div>
-        </div>
-      ) : null}
+              <div className="flex-1 overflow-y-auto flex flex-col">
+                {resultsPanel}
+              </div>
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   )
 }

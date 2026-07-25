@@ -2,6 +2,7 @@ import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
 import { getCollectionByHandle, listCollections } from "@lib/data/collections"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { displayCollection } from "@lib/util/i18n-catalog"
+import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { SUPPORTED_LOCALES } from "@lib/util/locales"
@@ -70,10 +71,29 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     collection.metadata as Record<string, unknown> | null | undefined
   )
   const title = `${colTitle} | ${brand}`
+  const description = `${colTitle}`.trim() || title
+  const firstThumbnail = collection.products?.find((p) => p.thumbnail)
+    ?.thumbnail
+  const ogImage =
+    (firstThumbnail && normalizeMedusaAssetUrl(firstThumbnail)) ||
+    firstThumbnail ||
+    cms.og_image_url ||
+    "/og-default.jpg"
 
   return {
     title,
-    description: `${colTitle}`.trim() || title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
   }
 }
 

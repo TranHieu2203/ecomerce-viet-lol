@@ -55,20 +55,40 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   )
   const query = searchParams.q?.trim()
   const isEn = params.countryCode === "en"
+  const ogImage = cms.og_image_url || "/og-default.jpg"
 
   if (query) {
     const title = isEn
       ? `Search results for "${query}" | ${brand}`
       : `Kết quả tìm kiếm cho "${query}" | ${brand}`
-    return { title, description: title, robots: { index: false, follow: true } }
+    return {
+      title,
+      description: title,
+      robots: { index: false, follow: true },
+      openGraph: { title, description: title, images: [ogImage] },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description: title,
+        images: [ogImage],
+      },
+    }
   }
 
   const title = isEn ? `News | ${brand}` : `Tin tức | ${brand}`
+  const description = isEn
+    ? "News and updates from the store."
+    : "Tin tức và cập nhật từ cửa hàng."
   return {
     title,
-    description: isEn
-      ? "News and updates from the store."
-      : "Tin tức và cập nhật từ cửa hàng.",
+    description,
+    openGraph: { title, description, images: [ogImage] },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
   }
 }
 

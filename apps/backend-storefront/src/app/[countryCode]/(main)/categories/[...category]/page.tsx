@@ -1,6 +1,7 @@
 import { getCmsSettingsPublic, resolveCmsSiteTitle } from "@lib/data/cms"
 import { getCategoryByHandle, listCategories } from "@lib/data/categories"
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
+import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listRegions } from "@lib/data/regions"
@@ -66,12 +67,31 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     const title = `${productCategory.name} | ${brand}`
     const description =
       productCategory.description?.trim() || `${productCategory.name}`
+    const firstThumbnail = productCategory.products?.find(
+      (p: { thumbnail?: string | null }) => p.thumbnail
+    )?.thumbnail
+    const ogImage =
+      (firstThumbnail && normalizeMedusaAssetUrl(firstThumbnail)) ||
+      firstThumbnail ||
+      cms.og_image_url ||
+      "/og-default.jpg"
 
     return {
       title,
       description,
       alternates: {
         canonical: `${params.category.join("/")}`,
+      },
+      openGraph: {
+        title,
+        description,
+        images: [ogImage],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: [ogImage],
       },
     }
   } catch (error) {

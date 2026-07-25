@@ -31,9 +31,20 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const label = cat?.title ?? params.slug
   const isEn = params.countryCode === "en"
   const title = isEn ? `${label} | News | ${brand}` : `${label} | Tin tức | ${brand}`
+  const description = isEn
+    ? `Articles in ${label}.`
+    : `Bài viết trong chủ đề ${label}.`
+  const ogImage = cms.og_image_url || "/og-default.jpg"
   return {
     title,
-    description: isEn ? `Articles in ${label}.` : `Bài viết trong chủ đề ${label}.`,
+    description,
+    openGraph: { title, description, images: [ogImage] },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+    },
   }
 }
 

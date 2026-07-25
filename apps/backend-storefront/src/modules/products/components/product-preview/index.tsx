@@ -56,14 +56,15 @@ export default async function ProductPreview({
             <QuickLookButton handle={product.handle} region={region} />
           ) : null}
         </div>
-        <div className="txt-compact-medium p-3 xsmall:p-4 flex-1">
-          <div className="flex justify-between gap-x-4">
-            <Text className="text-ui-fg-subtle" data-testid="product-title">
-              {title}
-            </Text>
-            <div className="flex items-center gap-x-2 shrink-0">
-              {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
-            </div>
+        <div className="txt-compact-medium p-3 xsmall:p-4 flex-1 flex flex-col">
+          <Text
+            className="text-ui-fg-subtle line-clamp-2"
+            data-testid="product-title"
+          >
+            {title}
+          </Text>
+          <div className="flex items-center gap-x-2 mt-auto pt-1.5">
+            {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>
         </div>
       </div>
