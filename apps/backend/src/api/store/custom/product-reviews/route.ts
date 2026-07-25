@@ -2,6 +2,7 @@ import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { PRODUCT_REVIEWS_MODULE } from "../../../../modules/product-reviews"
 import type ProductReviewsModuleService from "../../../../modules/product-reviews/service"
 import { PRODUCT_REVIEW_STATUS } from "../../../../modules/product-reviews/models/product-review"
+import { applyRatingOverride, fetchRatingOverrides } from "../../../../lib/rating-override"
 
 export const AUTHENTICATE = false
 
@@ -36,6 +37,12 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     ? allApproved.reduce((sum, r) => sum + r.rating, 0) / allApproved.length
     : 0
 
+  const overrides = await fetchRatingOverrides(req.scope, [productId])
+  const { average: finalAverage, count: finalCount } = applyRatingOverride(
+    { average: Math.round(average * 10) / 10, count: allApproved.length },
+    overrides.get(productId)
+  )
+
   res.json({
     reviews: rows.map((r) => ({
       id: r.id,
@@ -48,8 +55,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     count,
     limit,
     offset,
-    average: Math.round(average * 10) / 10,
-    total_reviews: allApproved.length,
+    average: finalAverage,
+    total_reviews: finalCount,
   })
 }
 

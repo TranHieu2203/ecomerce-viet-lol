@@ -1,7 +1,9 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
+import { Modules } from "@medusajs/framework/utils"
 import { PRODUCT_REVIEWS_MODULE } from "../../../../../modules/product-reviews"
 import type ProductReviewsModuleService from "../../../../../modules/product-reviews/service"
 import { PRODUCT_REVIEW_STATUS } from "../../../../../modules/product-reviews/models/product-review"
+import { applyRatingOverride, fetchRatingOverrides } from "../../../../../lib/rating-override"
 
 export const AUTHENTICATE = false
 
@@ -44,11 +46,22 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     byProduct.set(r.product_id, cur)
   }
 
+  const overrides = await fetchRatingOverrides(req.scope, productIds)
+
   const summaries: Record<string, { average: number; count: number }> = {}
   for (const [productId, { sum, count }] of byProduct.entries()) {
-    summaries[productId] = {
-      average: Math.round((sum / count) * 10) / 10,
-      count,
+    summaries[productId] = applyRatingOverride(
+      { average: Math.round((sum / count) * 10) / 10, count },
+      overrides.get(productId)
+    )
+  }
+  // Sản phẩm chưa có review thật nào nhưng có ghi đè thủ công vẫn cần hiện.
+  for (const productId of productIds) {
+    if (!summaries[productId] && overrides.has(productId)) {
+      summaries[productId] = applyRatingOverride(
+        { average: 0, count: 0 },
+        overrides.get(productId)
+      )
     }
   }
 
