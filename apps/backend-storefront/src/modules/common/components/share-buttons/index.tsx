@@ -90,8 +90,8 @@ export default function ShareButtons({ url, title, image, className }: Props) {
   const zaloHref = `https://zalo.me/share?u=${encodedUrl}`
   const telegramHref = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
   const whatsappHref = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`
-  const xHref = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
-  const pinterestHref = `https://pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}${
+  const xHref = `https://x.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
+  const pinterestHref = `https://www.pinterest.com/pin/create/button/?url=${encodedUrl}&description=${encodedTitle}${
     image ? `&media=${encodeURIComponent(image)}` : ""
   }`
   const linkedinHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`
