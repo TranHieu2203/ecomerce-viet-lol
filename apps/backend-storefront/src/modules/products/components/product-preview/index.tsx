@@ -13,13 +13,11 @@ export default async function ProductPreview({
   isFeatured,
   region,
   locale,
-  showDescription,
 }: {
   product: HttpTypes.StoreProduct
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
   locale: string
-  showDescription?: boolean
 }) {
   // const pricedProduct = await listProducts({
   //   regionId: region.id,
@@ -33,14 +31,12 @@ export default async function ProductPreview({
   const { cheapestPrice } = getProductPrice({
     product,
   })
-  const { title, description } = displayProduct(
+  const { title } = displayProduct(
     locale,
     product.title,
     product.description,
     product.metadata as Record<string, unknown> | null | undefined
   )
-
-  const showDescriptionBlock = Boolean(showDescription && description?.trim())
 
   return (
     <LocalizedClientLink
@@ -69,11 +65,6 @@ export default async function ProductPreview({
               {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
             </div>
           </div>
-          {showDescriptionBlock && (
-            <Text className="text-ui-fg-muted mt-2 line-clamp-2">
-              {description}
-            </Text>
-          )}
         </div>
       </div>
     </LocalizedClientLink>

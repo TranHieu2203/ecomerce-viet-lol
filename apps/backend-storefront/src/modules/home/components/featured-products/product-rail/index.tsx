@@ -62,7 +62,6 @@ export default async function ProductRail({
                 region={region}
                 isFeatured
                 locale={countryCode}
-                showDescription
               />
             </Reveal>
           </li>
