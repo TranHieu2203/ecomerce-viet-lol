@@ -90,7 +90,7 @@ export default async function Home(props: {
     <>
       <HeroSlider slides={slides} locale={countryCode} />
       <CategoryQuickLinks categories={categories} locale={countryCode} />
-      <div className="py-5 xsmall:py-8 bg-white">
+      <div className="py-5 xsmall:py-8">
         <ul className="content-container flex flex-col gap-y-8 xsmall:gap-y-10 small:gap-y-12">
           <FeaturedProducts
             collections={collections}

@@ -73,3 +73,37 @@
     0px 0px 0px 2px rgba(255, 255, 255, 1),
     0px 0px 0px 4px rgba(184, 148, 79, 0.32);
 }
+
+/**
+ * Nền Trung Thu theo mùa — thay mảng trắng của body bằng ảnh bánh trung thu
+ * tông kem, làm mờ để chữ và ảnh sản phẩm vẫn rõ.
+ *
+ * Bật/tắt bằng class .taya-midautumn trên <html> (xem src/app/layout.tsx).
+ * Trang thanh toán tự giữ nền trắng vì có bg-white riêng — cố ý, để khách
+ * không bị phân tán lúc trả tiền.
+ *
+ * Ảnh: Unsplash License — được dùng cho mục đích thương mại, không cần ghi nguồn.
+ */
+html.taya-midautumn {
+  background-color: rgb(var(--brand-cream));
+}
+
+html.taya-midautumn::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("/midautumn-bg-sm.webp");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.3;
+  filter: saturate(0.8);
+}
+
+/** Màn hình lớn mới tải bản ảnh nặng hơn — điện thoại dùng bản 58 KB. */
+@media (min-width: 901px) {
+  html.taya-midautumn::before {
+    background-image: url("/midautumn-bg.webp");
+  }
+}
