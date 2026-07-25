@@ -13,6 +13,8 @@ import { model } from "@medusajs/framework/utils"
 const StoreBackground = model.define("store_background", {
   id: model.id().primaryKey(),
   name: model.text(),
+  /** Nhóm nền theo dịp: "trung-thu" | "saffron" | "tet" | "khac". */
+  theme: model.text().default("khac"),
   image_url: model.text().nullable(),
   image_file_id: model.text().nullable(),
   /** Độ mờ của ảnh, tính theo phần trăm (0–100). */

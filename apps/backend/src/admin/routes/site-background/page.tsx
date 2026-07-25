@@ -5,9 +5,18 @@ import { useCallback, useEffect, useState } from "react"
 import { adminFetch } from "../storefront-cms/admin-fetch"
 import { MediaPickerField } from "../storefront-cms/media-picker-field"
 
+const THEMES = [
+  { value: "all", label: "Tất cả" },
+  { value: "trung-thu", label: "Trung Thu" },
+  { value: "saffron", label: "Saffron" },
+  { value: "tet", label: "Tết" },
+  { value: "khac", label: "Khác" },
+] as const
+
 type BackgroundRow = {
   id: string
   name: string
+  theme: string
   image_url: string | null
   image_file_id: string | null
   resolved_image_url: string | null
@@ -63,6 +72,7 @@ const SiteBackgroundPage = () => {
   const [newName, setNewName] = useState("")
   const [newFileId, setNewFileId] = useState("")
   const [creating, setCreating] = useState(false)
+  const [themeFilter, setThemeFilter] = useState<string>("all")
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -167,6 +177,10 @@ const SiteBackgroundPage = () => {
   }
 
   const activeRow = rows.find((r) => r.is_active)
+  const visibleRows =
+    themeFilter === "all" ? rows : rows.filter((r) => r.theme === themeFilter)
+  const countFor = (t: string) =>
+    t === "all" ? rows.length : rows.filter((r) => r.theme === t).length
 
   return (
     <Container className="flex flex-col gap-6 p-8">
@@ -187,11 +201,30 @@ const SiteBackgroundPage = () => {
         ) : null}
       </div>
 
+      <div className="flex flex-wrap items-center gap-2">
+        {THEMES.map((t) => (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => setThemeFilter(t.value)}
+            className={`h-8 rounded-full border px-3 text-sm transition-colors ${
+              themeFilter === t.value
+                ? "border-ui-fg-interactive text-ui-fg-interactive"
+                : "border-ui-border-base text-ui-fg-subtle hover:border-ui-fg-interactive"
+            }`}
+          >
+            {t.label} ({countFor(t.value)})
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <Text>Đang tải…</Text>
+      ) : visibleRows.length === 0 ? (
+        <Text className="text-ui-fg-muted">Chưa có nền nào trong chủ đề này.</Text>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {rows.map((row) => (
+          {visibleRows.map((row) => (
             <div
               key={row.id}
               className={`flex flex-col gap-3 rounded-lg border p-4 ${
@@ -256,17 +289,15 @@ const SiteBackgroundPage = () => {
                 >
                   {row.is_active ? "Đang dùng" : "Dùng nền này"}
                 </Button>
-                {!row.is_preset ? (
-                  <Button
-                    size="small"
-                    variant="transparent"
-                    className="h-8 w-8 p-0"
-                    title="Xoá"
-                    onClick={() => void remove(row)}
-                  >
-                    <Trash />
-                  </Button>
-                ) : null}
+                <Button
+                  size="small"
+                  variant="transparent"
+                  className="h-8 w-8 p-0"
+                  title="Xoá nền này"
+                  onClick={() => void remove(row)}
+                >
+                  <Trash />
+                </Button>
               </div>
             </div>
           ))}

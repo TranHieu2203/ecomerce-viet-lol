@@ -53,6 +53,9 @@ export async function POST(
   if (typeof body.base_color === "string" && body.base_color.trim()) {
     update.base_color = body.base_color.trim()
   }
+  if (typeof body.theme === "string" && body.theme.trim()) {
+    update.theme = body.theme.trim()
+  }
 
   if (Object.keys(update).length > 1) {
     await cms.updateStoreBackgrounds([update as never])
@@ -73,12 +76,9 @@ export async function DELETE(
   if (!existing) {
     return res.status(404).json({ message: "Không tìm thấy nền này" })
   }
-  if (existing.is_preset) {
-    return res
-      .status(400)
-      .json({ message: "Nền dựng sẵn không xoá được — chỉ cần chọn nền khác" })
-  }
 
+  // Xoá được cả nền dựng sẵn — bộ nền khá nhiều nên cần dọn cho gọn. Chạy lại
+  // script seed-backgrounds là các nền dựng sẵn quay về đầy đủ.
   await cms.deleteStoreBackgrounds([id])
   res.json({ id, deleted: true })
 }

@@ -24,6 +24,16 @@
           "nullable": false,
           "mappedType": "text"
         },
+        "theme": {
+          "name": "theme",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "default": "'khac'",
+          "mappedType": "text"
+        },
         "image_url": {
           "name": "image_url",
           "type": "text",

@@ -84,6 +84,10 @@ export async function POST(
   const [created] = await cms.createStoreBackgrounds([
     {
       name,
+      theme:
+        typeof body.theme === "string" && body.theme.trim()
+          ? body.theme.trim()
+          : "khac",
       image_url,
       image_file_id,
       opacity: clamp(body.opacity, 0, 100, 30),
