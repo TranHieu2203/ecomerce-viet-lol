@@ -41,9 +41,14 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
     }
   }, [isOpen])
 
-  // Khóa cuộn nền khi panel toàn màn hình trên mobile đang mở.
+  // Khóa cuộn nền khi panel toàn màn hình trên mobile đang mở — CHỈ áp dụng
+  // dưới breakpoint "small" (1024px), nơi panel thực sự chiếm toàn màn hình.
+  // Trên desktop, isOpen chỉ mở 1 dropdown neo nhỏ nên không được khoá cuộn trang.
   useEffect(() => {
-    if (!isOpen) {
+    if (!isOpen || typeof window === "undefined" || !window.matchMedia) {
+      return
+    }
+    if (!window.matchMedia("(max-width: 1023px)").matches) {
       return
     }
     const original = document.body.style.overflow
