@@ -67,7 +67,7 @@ export default async function Home(props: {
 
   const [{ collections }, slides, newsList] = await Promise.all([
     listCollections({
-      fields: "id, handle, title",
+      fields: "id, handle, title, metadata",
     }),
     listBannerSlides(countryCode),
     getCmsNewsList(countryCode, 4, 0),

@@ -8,7 +8,7 @@ import QuickLookButton from "@modules/products/components/quick-look-button"
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
 
-export default async function ProductPreview({
+export default function ProductPreview({
   product,
   isFeatured,
   region,
