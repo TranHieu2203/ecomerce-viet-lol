@@ -6,6 +6,7 @@ import {
   Drawer,
   Heading,
   Input,
+  Popover,
   Select,
   Text,
   Textarea,
@@ -89,6 +90,7 @@ const ProductReviewsList = () => {
     title: string
   } | null>(null)
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const [productDropdownOpen, setProductDropdownOpen] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -145,17 +147,16 @@ const ProductReviewsList = () => {
 
   const productResults = (() => {
     const q = normalizeVi(productQuery)
-    if (!q) {
-      return []
-    }
-    return allProducts
-      .filter((p) => normalizeVi(p.title).includes(q))
-      .slice(0, 15)
+    const matches = q
+      ? allProducts.filter((p) => normalizeVi(p.title).includes(q))
+      : allProducts
+    return matches.slice(0, 30)
   })()
 
   const openCreate = () => {
     setSelectedProduct(null)
     setProductQuery("")
+    setProductDropdownOpen(false)
     setNewReview({
       rating: 5,
       title: "",
@@ -470,32 +471,51 @@ const ProductReviewsList = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="flex flex-col gap-1">
-                  <Input
-                    placeholder="Gõ tên sản phẩm để tìm..."
-                    value={productQuery}
-                    onChange={(e) => setProductQuery(e.target.value)}
-                  />
-                  {loadingProducts ? (
-                    <Text className="text-xs text-ui-fg-muted">Đang tải danh sách sản phẩm…</Text>
-                  ) : productResults.length > 0 ? (
-                    <ul className="flex flex-col border border-ui-border-base rounded-md overflow-hidden">
-                      {productResults.map((p) => (
-                        <li key={p.id}>
-                          <button
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-subtle"
-                            onClick={() => {
-                              setSelectedProduct(p)
-                            }}
-                          >
-                            {p.title}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
+                <Popover open={productDropdownOpen} onOpenChange={setProductDropdownOpen}>
+                  <Popover.Anchor asChild>
+                    <Input
+                      placeholder="Gõ tên sản phẩm để tìm, hoặc bấm để xem danh sách..."
+                      value={productQuery}
+                      onFocus={() => setProductDropdownOpen(true)}
+                      onChange={(e) => {
+                        setProductQuery(e.target.value)
+                        setProductDropdownOpen(true)
+                      }}
+                    />
+                  </Popover.Anchor>
+                  <Popover.Content
+                    align="start"
+                    className="w-[--radix-popover-trigger-width] max-h-64 overflow-y-auto p-1"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    {loadingProducts ? (
+                      <Text className="text-xs text-ui-fg-muted p-2">
+                        Đang tải danh sách sản phẩm…
+                      </Text>
+                    ) : productResults.length > 0 ? (
+                      <ul className="flex flex-col">
+                        {productResults.map((p) => (
+                          <li key={p.id}>
+                            <button
+                              type="button"
+                              className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-ui-bg-subtle"
+                              onClick={() => {
+                                setSelectedProduct(p)
+                                setProductDropdownOpen(false)
+                              }}
+                            >
+                              {p.title}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <Text className="text-xs text-ui-fg-muted p-2">
+                        Không tìm thấy sản phẩm nào.
+                      </Text>
+                    )}
+                  </Popover.Content>
+                </Popover>
               )}
             </div>
             <div>
