@@ -2,6 +2,15 @@ import { DEFAULT_LOCALE, isAppLocale, type AppLocale } from "@lib/util/locales"
 
 /** Chuỗi UI cố định storefront (vi | en). Catalog/CMS vẫn dùng metadata.i18n. */
 export type StorefrontMessages = {
+  freeShipping: {
+    unlocked: string
+    unlock: string
+    /** `{amount}` sẽ được thay bằng số tiền còn thiếu. */
+    away: string
+    viewCart: string
+    viewProducts: string
+    close: string
+  }
   share: {
     label: string
     native: string
@@ -327,6 +336,14 @@ export type StorefrontMessages = {
 }
 
 const vi: StorefrontMessages = {
+  freeShipping: {
+    unlocked: "Bạn đã được miễn phí vận chuyển!",
+    unlock: "Mua thêm để được miễn phí vận chuyển",
+    away: "Còn thiếu {amount}",
+    viewCart: "Xem giỏ hàng",
+    viewProducts: "Xem sản phẩm",
+    close: "Đóng",
+  },
   share: {
     label: "Chia sẻ",
     native: "Chia sẻ",
@@ -654,6 +671,14 @@ const vi: StorefrontMessages = {
 }
 
 const en: StorefrontMessages = {
+  freeShipping: {
+    unlocked: "You've unlocked free shipping!",
+    unlock: "Add more to unlock free shipping",
+    away: "{amount} away",
+    viewCart: "View cart",
+    viewProducts: "View products",
+    close: "Close",
+  },
   share: {
     label: "Share",
     native: "Share",

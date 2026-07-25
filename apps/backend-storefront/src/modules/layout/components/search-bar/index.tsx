@@ -4,7 +4,7 @@ import { searchStorefront } from "@lib/data/search-actions"
 import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
 import { displayProduct } from "@lib/util/i18n-catalog"
-import { MagnifyingGlass, XMark } from "@medusajs/icons"
+import { ArrowLeftMini, MagnifyingGlass, XMark } from "@medusajs/icons"
 import { CmsNewsListItem } from "@lib/data/cms"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -32,6 +32,18 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
   useEffect(() => {
     if (isOpen) {
       mobileInputRef.current?.focus()
+    }
+  }, [isOpen])
+
+  // Khóa cuộn nền khi panel toàn màn hình trên mobile đang mở.
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+    const original = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    return () => {
+      document.body.style.overflow = original
     }
   }, [isOpen])
 
@@ -112,7 +124,7 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
   const resultsPanel = (
     <>
       {trimmedQuery ? (
-        <div className="max-h-[60vh] overflow-y-auto">
+        <div className="flex-1 overflow-y-auto small:max-h-[60vh]">
           {products.length > 0 ? (
             <div>
               <p className="px-3 pt-3 pb-1 text-xsmall-regular font-semibold text-ui-fg-muted uppercase tracking-wide">
@@ -218,12 +230,12 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Mobile: icon mở panel tìm kiếm (không đủ chỗ cho ô nhập luôn hiện). */}
+      {/* Mobile: icon mở tìm kiếm toàn màn hình (không đủ chỗ cho ô nhập luôn hiện trên header). */}
       <button
         type="button"
         aria-label={m.searchLabel}
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((v) => !v)}
+        onClick={() => setIsOpen(true)}
         className="small:hidden inline-flex items-center justify-center min-h-10 min-w-10 rounded-rounded hover:bg-ui-bg-subtle hover:text-ui-fg-base transition-colors duration-180 ease-standard focus:outline-none focus-visible:ring-2 focus-visible:ring-ui-fg-interactive"
       >
         <MagnifyingGlass />
@@ -260,42 +272,61 @@ export default function SearchBar({ countryCode }: { countryCode: string }) {
         ) : null}
       </form>
 
+      {/* Desktop: dropdown neo theo ô nhập — viewport rộng nên không lo tràn màn hình. */}
       {isOpen ? (
         <div
           role="search"
-          className="absolute right-0 top-full mt-2 z-50 w-[92vw] max-w-[380px] rounded-rounded border border-brand-gold/25 bg-white shadow-lg shadow-[0_12px_40px_-12px_rgba(184,148,79,0.2)] animate-fade-in-top motion-reduce:animate-none overflow-hidden"
+          className="hidden small:block absolute right-0 top-full mt-2 z-50 w-[380px] rounded-rounded border border-brand-gold/25 bg-white shadow-lg shadow-[0_12px_40px_-12px_rgba(184,148,79,0.2)] animate-fade-in-top motion-reduce:animate-none overflow-hidden"
         >
-          {/* Ô nhập cho mobile — bản desktop dùng ô luôn hiện phía trên, ẩn ở đây. */}
+          {resultsPanel}
+        </div>
+      ) : null}
+
+      {/* Mobile: chiếm toàn màn hình — tránh hẳn bài toán neo/tràn vị trí của dropdown nhỏ. */}
+      {isOpen ? (
+        <div className="small:hidden fixed inset-0 z-[70] bg-white flex flex-col">
           <form
             onSubmit={(e) => {
               e.preventDefault()
               goToProductResults()
             }}
-            className="small:hidden flex items-center gap-2 p-3 border-b border-ui-border-base"
+            className="flex items-center gap-2 p-3 border-b border-ui-border-base shrink-0"
           >
-            <MagnifyingGlass className="text-ui-fg-muted shrink-0" />
-            <input
-              ref={mobileInputRef}
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={m.searchPlaceholder}
-              aria-label={m.searchLabel}
-              className="flex-1 min-w-0 bg-transparent outline-none text-small-regular placeholder:text-ui-fg-muted"
-            />
-            {query ? (
-              <button
-                type="button"
-                aria-label={m.searchClear}
-                onClick={() => setQuery("")}
-                className="text-ui-fg-muted hover:text-ui-fg-base shrink-0"
-              >
-                <XMark />
-              </button>
-            ) : null}
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              aria-label={m.searchClear}
+              className="flex items-center justify-center w-9 h-9 shrink-0 rounded-rounded text-ui-fg-subtle hover:bg-ui-bg-subtle"
+            >
+              <ArrowLeftMini />
+            </button>
+            <div className="flex-1 flex items-center gap-2 h-10 px-3 rounded-full border border-ui-border-base bg-ui-bg-subtle focus-within:border-ui-border-interactive transition-colors duration-180 ease-standard">
+              <MagnifyingGlass className="text-ui-fg-muted shrink-0" />
+              <input
+                ref={mobileInputRef}
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={m.searchPlaceholder}
+                aria-label={m.searchLabel}
+                className="flex-1 min-w-0 bg-transparent outline-none text-small-regular placeholder:text-ui-fg-muted"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  aria-label={m.searchClear}
+                  onClick={() => setQuery("")}
+                  className="text-ui-fg-muted hover:text-ui-fg-base shrink-0"
+                >
+                  <XMark />
+                </button>
+              ) : null}
+            </div>
           </form>
 
-          {resultsPanel}
+          <div className="flex-1 overflow-y-auto flex flex-col">
+            {resultsPanel}
+          </div>
         </div>
       ) : null}
     </div>
