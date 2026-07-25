@@ -1,5 +1,6 @@
 import { MedusaService } from "@medusajs/framework/utils"
 import CmsSetting from "./models/store-cms-settings"
+import StoreBackground from "./models/store-background"
 import StoreBannerCampaign from "./models/store-banner-campaign"
 import StoreBannerSlide from "./models/store-banner-slide"
 import StoreCmsPage from "./models/store-cms-page"
@@ -16,6 +17,7 @@ export const CMS_SETTINGS_ID = "cms"
 class StoreCmsModuleService extends MedusaService({
   StoreBannerSlide,
   StoreBannerCampaign,
+  StoreBackground,
   CmsSetting,
   StoreCmsPage,
   StoreCmsNewsArticle,
@@ -49,6 +51,26 @@ class StoreCmsModuleService extends MedusaService({
       },
     ])
     return created
+  }
+
+  /**
+   * Bật một nền và tắt tất cả nền còn lại — luôn chỉ có tối đa một nền đang
+   * chạy. Truyền `null` để tắt hết, web trở lại nền trắng.
+   */
+  async activateBackgroundExclusively(id: string | null) {
+    const all = await this.listStoreBackgrounds({})
+    const updates = all
+      .filter((b) => b.is_active !== (b.id === id))
+      .map((b) => ({ id: b.id, is_active: b.id === id }))
+    if (updates.length) {
+      await this.updateStoreBackgrounds(updates)
+    }
+  }
+
+  /** Nền đang bật, hoặc `null` nếu web đang để nền trắng. */
+  async getActiveBackground() {
+    const [active] = await this.listStoreBackgrounds({ is_active: true })
+    return active ?? null
   }
 
   /**

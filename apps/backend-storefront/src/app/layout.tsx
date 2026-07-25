@@ -29,16 +29,16 @@ export const metadata: Metadata = {
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
-  // "taya-midautumn": nền Trung Thu theo mùa (định nghĩa trong tay-a-brand.css).
-  // Hết mùa chỉ cần bỏ class này là toàn site trở lại nền trắng như cũ.
   return (
     <html
       lang="vi"
       data-mode="light"
-      className={`${brandSans.variable} taya-midautumn`}
+      className={brandSans.variable}
       suppressHydrationWarning
     >
       {/* Extensions (e.g. some Chromium builds) may inject attributes on body before hydrate. */}
+      {/* body trong suốt để lớp nền của <SiteBackground /> (fixed, z-index -1)
+          hiện ra được; không bật nền nào thì canvas trắng như mặc định. */}
       <body
         className="font-sans antialiased bg-transparent text-ui-fg-base"
         suppressHydrationWarning

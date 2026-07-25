@@ -12,6 +12,7 @@ import { DocumentLang } from "@modules/layout/components/document-lang"
 import OrganizationJsonLd from "@modules/layout/components/organization-json-ld"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
+import SiteBackground from "@modules/layout/components/site-background"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default async function PageLayout(props: {
     <StorefrontI18nProvider locale={params.countryCode}>
       <DocumentLang locale={params.countryCode} />
       <OrganizationJsonLd countryCode={params.countryCode} />
+      <SiteBackground />
       <Nav countryCode={params.countryCode} />
       <AnnouncementBar
         locale={params.countryCode}
