@@ -89,7 +89,7 @@ export default function HeroSlider({
       aria-roledescription="carousel"
       aria-label={h.heroBanners}
     >
-      <div className="relative w-full aspect-[3/2] small:aspect-[16/9] max-h-[min(70vh,640px)] small:max-h-[75vh]">
+      <div className="relative w-full aspect-[16/10] small:aspect-[21/8] max-h-[45vh] small:max-h-[55vh]">
         {(() => {
           // Render đúng 2 layer để fade mượt nhưng không load tất cả ảnh.
           const prevIdx = slides.length > 1 ? (safe - 1 + slides.length) % slides.length : safe
