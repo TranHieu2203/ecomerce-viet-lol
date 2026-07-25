@@ -15,11 +15,11 @@ export default function CategoryQuickLinks({
   }
 
   const chipClass =
-    "inline-flex items-center h-10 px-4 rounded-full border border-brand-gold/30 bg-white text-small-regular text-ui-fg-subtle hover:border-brand-gold hover:text-brand-ink hover:bg-brand-cream/60 transition-colors duration-150 whitespace-nowrap"
+    "inline-flex items-center h-8 px-3 rounded-full text-xsmall-regular text-ui-fg-subtle bg-white border border-transparent hover:border-brand-gold hover:text-brand-ink transition-colors duration-150 whitespace-nowrap"
 
   return (
-    <div className="content-container py-4 xsmall:py-5">
-      <div className="flex items-center gap-2 xsmall:gap-3 overflow-x-auto">
+    <div className="content-container py-3 xsmall:py-4">
+      <div className="flex items-center gap-1.5 xsmall:gap-2 overflow-x-auto px-3 py-2 rounded-xl border border-brand-gold/20 bg-brand-cream/30">
         <LocalizedClientLink href="/store" className={chipClass}>
           {m.store.allProducts}
         </LocalizedClientLink>
