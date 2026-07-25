@@ -87,7 +87,7 @@ export default function ShareButtons({ url, title, image, className }: Props) {
   const encodedTitle = encodeURIComponent(title)
 
   const facebookHref = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
-  const zaloHref = `https://sp.zalo.me/plugins/share?u=${encodedUrl}`
+  const zaloHref = `https://zalo.me/share?u=${encodedUrl}`
   const telegramHref = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`
   const whatsappHref = `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`
   const xHref = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`
