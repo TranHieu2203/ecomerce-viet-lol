@@ -181,6 +181,17 @@ export type StorefrontMessages = {
     searchEmptyTitle: string
     /** `{query}` sẽ được thay bằng từ khóa. */
     searchEmptyBody: string
+    filterCategoryTitle: string
+    filterCategoryAll: string
+    filterRatingTitle: string
+    filterRatingAll: string
+    filterRating4: string
+    filterRating3: string
+    filterPriceTitle: string
+    filterPriceFrom: string
+    filterPriceTo: string
+    filterPriceApply: string
+    filterPriceClear: string
   }
   home: {
     viewAll: string
@@ -508,6 +519,17 @@ const vi: StorefrontMessages = {
     searchResultsFor: "Kết quả tìm kiếm cho “{query}”",
     searchEmptyTitle: "Không tìm thấy sản phẩm",
     searchEmptyBody: "Không có sản phẩm nào khớp với “{query}”. Thử từ khóa khác.",
+    filterCategoryTitle: "Danh mục",
+    filterCategoryAll: "Tất cả danh mục",
+    filterRatingTitle: "Đánh giá",
+    filterRatingAll: "Tất cả",
+    filterRating4: "Từ 4 sao trở lên",
+    filterRating3: "Từ 3 sao trở lên",
+    filterPriceTitle: "Khoảng giá",
+    filterPriceFrom: "Từ",
+    filterPriceTo: "Đến",
+    filterPriceApply: "Áp dụng",
+    filterPriceClear: "Xoá lọc giá",
   },
   home: {
     viewAll: "Xem tất cả",
@@ -843,6 +865,17 @@ const en: StorefrontMessages = {
     searchResultsFor: "Search results for “{query}”",
     searchEmptyTitle: "No products found",
     searchEmptyBody: "No products matched “{query}”. Try a different keyword.",
+    filterCategoryTitle: "Category",
+    filterCategoryAll: "All categories",
+    filterRatingTitle: "Rating",
+    filterRatingAll: "All",
+    filterRating4: "4 stars & up",
+    filterRating3: "3 stars & up",
+    filterPriceTitle: "Price range",
+    filterPriceFrom: "From",
+    filterPriceTo: "To",
+    filterPriceApply: "Apply",
+    filterPriceClear: "Clear price filter",
   },
   home: {
     viewAll: "View all",

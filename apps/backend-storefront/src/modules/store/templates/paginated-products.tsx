@@ -1,6 +1,9 @@
-import { listProductsWithSort } from "@lib/data/products"
+import { listProducts } from "@lib/data/products"
 import { getReviewSummaries } from "@lib/data/product-reviews"
 import { getRegion } from "@lib/data/regions"
+import { getProductPrice } from "@lib/util/get-product-price"
+import { sortProducts } from "@lib/util/sort-products"
+import { HttpTypes } from "@medusajs/types"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -13,7 +16,6 @@ type PaginatedProductsParams = {
   collection_id?: string
   category_id?: string
   id?: string[]
-  order?: string
   q?: string
 }
 
@@ -24,6 +26,9 @@ export default async function PaginatedProducts({
   categoryId,
   productsIds,
   q,
+  minRating,
+  minPrice,
+  maxPrice,
   countryCode,
 }: {
   sortBy?: SortOptions
@@ -32,10 +37,15 @@ export default async function PaginatedProducts({
   categoryId?: string
   productsIds?: string[]
   q?: string
+  minRating?: number
+  minPrice?: number
+  maxPrice?: number
   countryCode: string
 }) {
+  // Toàn bộ catalog hiện chỉ vài chục sản phẩm — lấy hết 1 lần rồi lọc/sắp
+  // xếp/phân trang ở đây, tránh phải xây filter giá/rating phía backend.
   const queryParams: PaginatedProductsParams = {
-    limit: 12,
+    limit: 100,
   }
 
   if (collectionId) {
@@ -54,27 +64,55 @@ export default async function PaginatedProducts({
     queryParams.q = q
   }
 
-  if (sortBy === "created_at") {
-    queryParams["order"] = "created_at"
-  }
-
   const region = await getRegion(countryCode)
 
   if (!region) {
     return null
   }
 
-  let {
-    response: { products, count },
-  } = await listProductsWithSort({
-    page,
+  const {
+    response: { products: fetchedProducts },
+  } = await listProducts({
+    pageParam: 1,
     queryParams,
-    sortBy,
     countryCode,
   })
 
+  const reviewSummaries = await getReviewSummaries(
+    fetchedProducts.map((p) => p.id)
+  )
+
+  let filtered: HttpTypes.StoreProduct[] = fetchedProducts
+
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    filtered = filtered.filter((p) => {
+      const price = getProductPrice({ product: p }).cheapestPrice
+        ?.calculated_price_number
+      if (price === undefined || price === null) {
+        return false
+      }
+      if (minPrice !== undefined && price < minPrice) {
+        return false
+      }
+      if (maxPrice !== undefined && price > maxPrice) {
+        return false
+      }
+      return true
+    })
+  }
+
+  if (minRating !== undefined) {
+    filtered = filtered.filter(
+      (p) => (reviewSummaries[p.id]?.average ?? 0) >= minRating
+    )
+  }
+
+  const sortedProducts = sortProducts(filtered, sortBy || "created_at")
+
+  const count = sortedProducts.length
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
-  const reviewSummaries = await getReviewSummaries(products.map((p) => p.id))
+  const offset = (page - 1) * PRODUCT_LIMIT
+  const products = sortedProducts.slice(offset, offset + PRODUCT_LIMIT)
 
   return (
     <>
