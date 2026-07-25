@@ -35,14 +35,17 @@ export default function LocaleSwitcher({ current, enabledLocales }: Props) {
             key={code}
             href={href}
             className={clx(
-              "uppercase rounded-full justify-center inline-flex items-center gap-1 px-2 py-0.5 text-[10px] 2xsmall:text-[11px] font-medium tracking-[0.04em] transition-[color,background-color,box-shadow] duration-200",
+              "uppercase rounded-full justify-center inline-flex items-center gap-1 px-1.5 small:px-2 py-0.5 text-[10px] 2xsmall:text-[11px] font-medium tracking-[0.04em] transition-[color,background-color,box-shadow] duration-200",
               active
                 ? "bg-white text-brand-gold-hover ring-1 ring-brand-gold/30 shadow-[0_1px_2px_rgba(184,148,79,0.12)]"
                 : "text-ui-fg-muted hover:text-ui-fg-subtle hover:bg-brand-gold-muted/45"
             )}
             hrefLang={code}
           >
-            <span className="shrink-0 inline-flex opacity-[0.92]" aria-hidden>
+            <span
+              className="hidden small:inline-flex shrink-0 opacity-[0.92]"
+              aria-hidden
+            >
               <Flag size={12} />
             </span>
             <span>{code}</span>

@@ -67,7 +67,7 @@ export default async function Nav({
   return (
     <NavStickyHeader>
       <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full min-h-[3.25rem] small:min-h-0 small:h-full text-small-regular gap-2">
-          <div className="flex items-center gap-2 xsmall:gap-3 min-w-0 flex-1">
+          <div className="flex items-center gap-2 xsmall:gap-3 min-w-fit flex-1">
             <LocalizedClientLink
               href="/"
               className="txt-compact-xlarge-plus hover:text-ui-fg-base flex items-center justify-start shrink-0 transition-colors duration-180 ease-standard"
@@ -97,7 +97,7 @@ export default async function Nav({
                 </span>
               ) : null}
             </LocalizedClientLink>
-            <div className="flex items-center gap-2 min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-fit flex-1">
               <div className="h-full shrink-0 block small:hidden">
                 <SideMenu
                   regions={regions}

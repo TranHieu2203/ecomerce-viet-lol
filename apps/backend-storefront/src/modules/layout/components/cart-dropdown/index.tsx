@@ -8,6 +8,7 @@ import {
 } from "@headlessui/react"
 import { useStorefrontMessages } from "@lib/i18n/storefront-i18n-provider"
 import { convertToLocale } from "@lib/util/money"
+import { ShoppingBag } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import DeleteButton from "@modules/common/components/delete-button"
@@ -84,10 +85,20 @@ const CartDropdown = ({
       <Popover className="relative h-full">
           <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="inline-flex items-center min-h-10 px-3.5 rounded-full text-ui-fg-base text-small-regular font-medium bg-brand-gold-muted/80 hover:bg-brand-gold/20 ring-1 ring-inset ring-brand-gold/40 transition-colors"
+            className="relative inline-flex items-center justify-center min-h-10 min-w-10 small:px-3.5 rounded-full text-ui-fg-base text-small-regular font-medium bg-brand-gold-muted/80 hover:bg-brand-gold/20 ring-1 ring-inset ring-brand-gold/40 transition-colors"
             href="/cart"
             data-testid="nav-cart-link"
-          >{`${m.nav.cartFallback} (${totalItems})`}</LocalizedClientLink>
+          >
+            <span className="small:hidden relative inline-flex items-center justify-center">
+              <ShoppingBag />
+              {totalItems > 0 ? (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-brand-gold text-white text-[10px] leading-4 text-center">
+                  {totalItems}
+                </span>
+              ) : null}
+            </span>
+            <span className="hidden small:inline">{`${m.nav.cartFallback} (${totalItems})`}</span>
+          </LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
