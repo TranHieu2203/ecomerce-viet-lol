@@ -12,7 +12,9 @@ import { getBaseURL } from "@lib/util/env"
 import FeaturedProducts from "@modules/home/components/featured-products"
 import HeroSlider from "@modules/home/components/hero-slider"
 import CmsNewsTeaser from "@modules/home/components/cms-news-teaser"
+import CategoryQuickLinks from "@modules/home/components/category-quick-links"
 import { listCollections } from "@lib/data/collections"
+import { listCategories } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
 
 export async function generateMetadata({
@@ -65,21 +67,29 @@ export default async function Home(props: {
 
   const region = await getRegion(countryCode)
 
-  const [{ collections }, slides, newsList] = await Promise.all([
+  const [{ collections }, slides, newsList, allCategories] = await Promise.all([
     listCollections({
       fields: "id, handle, title, metadata",
     }),
     listBannerSlides(countryCode),
     getCmsNewsList(countryCode, 4, 0),
+    listCategories({ fields: "id,name,parent_category_id" }).catch(() => []),
   ])
 
   if (!collections || !region) {
     return null
   }
 
+  // Loại bỏ danh mục gốc dạng "wrapper" (không có parent) — chỉ giữ danh
+  // mục con thực sự hữu ích để duyệt nhanh (vd "Saffron", "Mỹ Phẩm"...).
+  const categories = allCategories
+    .filter((c) => c.parent_category_id)
+    .map((c) => ({ id: c.id, name: c.name }))
+
   return (
     <>
       <HeroSlider slides={slides} locale={countryCode} />
+      <CategoryQuickLinks categories={categories} locale={countryCode} />
       <div className="py-5 xsmall:py-8 bg-white">
         <ul className="content-container flex flex-col gap-y-8 xsmall:gap-y-10 small:gap-y-12">
           <FeaturedProducts

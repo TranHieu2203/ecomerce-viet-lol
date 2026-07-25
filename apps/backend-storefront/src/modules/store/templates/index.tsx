@@ -42,10 +42,14 @@ const StoreTemplate = async ({
   const categories = allCategories.filter((c) => c.parent_category_id)
 
   return (
-    <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
-      data-testid="category-container"
-    >
+    <div className="flex flex-col py-6 content-container" data-testid="category-container">
+      <div className="mb-2 text-2xl-semi">
+        <h1 data-testid="store-page-title">
+          {query
+            ? m.store.searchResultsFor.replace("{query}", query)
+            : m.store.allProducts}
+        </h1>
+      </div>
       <RefinementList
         sortBy={sort}
         categoryId={categoryId}
@@ -54,27 +58,18 @@ const StoreTemplate = async ({
         maxPrice={maxPrice}
         categories={categories.map((c) => ({ id: c.id, name: c.name }))}
       />
-      <div className="w-full">
-        <div className="mb-8 text-2xl-semi">
-          <h1 data-testid="store-page-title">
-            {query
-              ? m.store.searchResultsFor.replace("{query}", query)
-              : m.store.allProducts}
-          </h1>
-        </div>
-        <Suspense fallback={<SkeletonProductGrid />}>
-          <PaginatedProducts
-            sortBy={sort}
-            page={pageNumber}
-            q={query}
-            categoryId={categoryId}
-            minRating={minRating ? Number(minRating) : undefined}
-            minPrice={minPrice ? Number(minPrice) : undefined}
-            maxPrice={maxPrice ? Number(maxPrice) : undefined}
-            countryCode={countryCode}
-          />
-        </Suspense>
-      </div>
+      <Suspense fallback={<SkeletonProductGrid />}>
+        <PaginatedProducts
+          sortBy={sort}
+          page={pageNumber}
+          q={query}
+          categoryId={categoryId}
+          minRating={minRating ? Number(minRating) : undefined}
+          minPrice={minPrice ? Number(minPrice) : undefined}
+          maxPrice={maxPrice ? Number(maxPrice) : undefined}
+          countryCode={countryCode}
+        />
+      </Suspense>
     </div>
   )
 }

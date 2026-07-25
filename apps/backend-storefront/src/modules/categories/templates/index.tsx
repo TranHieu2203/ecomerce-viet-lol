@@ -39,61 +39,56 @@ export default function CategoryTemplate({
   getParents(category)
 
   return (
-    <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
-      data-testid="category-container"
-    >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
-      <div className="w-full">
-        <div className="flex flex-row mb-8 text-2xl-semi gap-4">
-          {parents &&
-            parents.map((parent) => (
-              <span key={parent.id} className="text-ui-fg-subtle">
-                <LocalizedClientLink
-                  className="mr-4 hover:text-black"
-                  href={`/categories/${parent.handle}`}
-                  data-testid="sort-by-link"
-                >
-                  {parent.name}
-                </LocalizedClientLink>
-                /
-              </span>
-            ))}
-          <h1 data-testid="category-page-title">{category.name}</h1>
-        </div>
-        {category.description && (
-          <div className="mb-8 text-base-regular">
-            <p>{category.description}</p>
-          </div>
-        )}
-        {category.category_children && (
-          <div className="mb-8 text-base-large">
-            <ul className="grid grid-cols-1 gap-2">
-              {category.category_children?.map((c) => (
-                <li key={c.id}>
-                  <InteractiveLink href={`/categories/${c.handle}`}>
-                    {c.name}
-                  </InteractiveLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <Suspense
-          fallback={
-            <SkeletonProductGrid
-              numberOfProducts={category.products?.length ?? 8}
-            />
-          }
-        >
-          <PaginatedProducts
-            sortBy={sort}
-            page={pageNumber}
-            categoryId={category.id}
-            countryCode={countryCode}
-          />
-        </Suspense>
+    <div className="flex flex-col py-6 content-container" data-testid="category-container">
+      <div className="flex flex-row mb-2 text-2xl-semi gap-4">
+        {parents &&
+          parents.map((parent) => (
+            <span key={parent.id} className="text-ui-fg-subtle">
+              <LocalizedClientLink
+                className="mr-4 hover:text-black"
+                href={`/categories/${parent.handle}`}
+                data-testid="sort-by-link"
+              >
+                {parent.name}
+              </LocalizedClientLink>
+              /
+            </span>
+          ))}
+        <h1 data-testid="category-page-title">{category.name}</h1>
       </div>
+      {category.description && (
+        <div className="mb-4 text-base-regular">
+          <p>{category.description}</p>
+        </div>
+      )}
+      {category.category_children && (
+        <div className="mb-4 text-base-large">
+          <ul className="grid grid-cols-1 gap-2">
+            {category.category_children?.map((c) => (
+              <li key={c.id}>
+                <InteractiveLink href={`/categories/${c.handle}`}>
+                  {c.name}
+                </InteractiveLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <RefinementList sortBy={sort} />
+      <Suspense
+        fallback={
+          <SkeletonProductGrid
+            numberOfProducts={category.products?.length ?? 8}
+          />
+        }
+      >
+        <PaginatedProducts
+          sortBy={sort}
+          page={pageNumber}
+          categoryId={category.id}
+          countryCode={countryCode}
+        />
+      </Suspense>
     </div>
   )
 }
