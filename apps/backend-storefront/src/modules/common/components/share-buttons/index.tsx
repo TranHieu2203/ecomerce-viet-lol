@@ -160,7 +160,7 @@ export default function ShareButtons({ url, title, image, className }: Props) {
         {moreOpen ? (
           <div
             role="menu"
-            className="absolute left-0 top-full mt-2 z-50 w-56 rounded-rounded border border-ui-border-base bg-white shadow-lg shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] animate-fade-in-top motion-reduce:animate-none overflow-hidden py-1"
+            className="absolute right-0 top-full mt-2 z-50 w-56 max-w-[calc(100vw-2rem)] rounded-rounded border border-ui-border-base bg-white shadow-lg shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] animate-fade-in-top motion-reduce:animate-none overflow-hidden py-1"
           >
             <a
               href={telegramHref}

@@ -33,6 +33,7 @@ export async function generateMetadata({
   const title = seoDefaults.title || siteTitle
   const description = seoDefaults.description || m.home.metaDescription
   const canonical = `${getBaseURL()}/${countryCode}`
+  const ogImage = cms.og_image_url || "/og-default.jpg"
 
   return {
     title,
@@ -44,6 +45,13 @@ export async function generateMetadata({
       title,
       description,
       url: canonical,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
     },
   }
 }

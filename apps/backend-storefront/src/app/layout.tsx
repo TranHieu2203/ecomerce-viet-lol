@@ -17,6 +17,15 @@ export const metadata: Metadata = {
     apple: [{ url: "/tay-a-logo.png", type: "image/png", sizes: "180x180" }],
     shortcut: "/tay-a-logo.png",
   },
+  openGraph: {
+    type: "website",
+    siteName: "Tây Á",
+    images: [{ url: "/og-default.jpg", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-default.jpg"],
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

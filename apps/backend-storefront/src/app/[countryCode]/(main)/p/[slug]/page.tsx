@@ -43,7 +43,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     page.meta_description?.trim() || m.home.metaDescription
 
   const title = `${metaTitle} | ${brand}`
-  const ogImages = cms.og_image_url ? [cms.og_image_url] : []
+  const ogImage = cms.og_image_url || "/og-default.jpg"
 
   return {
     title,
@@ -51,7 +51,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     openGraph: {
       title,
       description: metaDesc,
-      images: ogImages,
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: metaDesc,
+      images: [ogImage],
     },
   }
 }

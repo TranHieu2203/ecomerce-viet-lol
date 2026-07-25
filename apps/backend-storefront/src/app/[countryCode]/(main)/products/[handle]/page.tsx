@@ -76,6 +76,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const pageTitle = `${metaTitle} | ${brand}`
   const description = (metaDesc || metaTitle).trim() || metaTitle
   const canonical = `${getBaseURL()}/${params.countryCode}/products/${handle}`
+  const ogImage =
+    (product.thumbnail && normalizeMedusaAssetUrl(product.thumbnail)) ||
+    product.thumbnail ||
+    cms.og_image_url ||
+    "/og-default.jpg"
 
   return {
     title: pageTitle,
@@ -87,9 +92,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       title: pageTitle,
       description,
       url: canonical,
-      images: product.thumbnail
-        ? [normalizeMedusaAssetUrl(product.thumbnail) || product.thumbnail]
-        : [],
+      images: [ogImage],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: pageTitle,
+      description,
+      images: [ogImage],
     },
   }
 }
