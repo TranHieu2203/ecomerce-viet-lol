@@ -2,6 +2,7 @@ import { Text } from "@medusajs/ui"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { displayProduct } from "@lib/util/i18n-catalog"
+import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import QuickLookButton from "@modules/products/components/quick-look-button"
@@ -40,6 +41,10 @@ export default function ProductPreview({
     product.description,
     product.metadata as Record<string, unknown> | null | undefined
   )
+  const m = getStorefrontMessages(locale)
+  const weightText = product.weight
+    ? m.productTabs.weightGrams.replace("{n}", String(product.weight))
+    : null
 
   return (
     <LocalizedClientLink
@@ -66,6 +71,11 @@ export default function ProductPreview({
           >
             {title}
           </Text>
+          {weightText ? (
+            <span className="text-[11px] text-ui-fg-muted mt-0.5">
+              {weightText}
+            </span>
+          ) : null}
           {reviewSummary && reviewSummary.count > 0 ? (
             <div className="mt-1">
               <StarRating

@@ -11,8 +11,8 @@ import {
   Textarea,
   toast,
 } from "@medusajs/ui"
-import { Star, Trash, PencilSquare, CheckCircleSolid, XCircleSolid } from "@medusajs/icons"
-import { useCallback, useEffect, useState } from "react"
+import { Star, Trash, PencilSquare, CheckCircleSolid, XCircleSolid, Plus } from "@medusajs/icons"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { adminFetch } from "../storefront-cms/admin-fetch"
 
 type ReviewRow = {
@@ -60,6 +60,27 @@ const ProductReviewsList = () => {
   const [editing, setEditing] = useState<ReviewRow | null>(null)
   const [saving, setSaving] = useState(false)
 
+  const [creating, setCreating] = useState(false)
+  const [creatingSaving, setCreatingSaving] = useState(false)
+  const [newReview, setNewReview] = useState({
+    rating: 5,
+    title: "",
+    comment: "",
+    customer_name: "",
+    customer_email: "",
+    status: "approved" as ReviewRow["status"],
+  })
+  const [productQuery, setProductQuery] = useState("")
+  const [productResults, setProductResults] = useState<
+    { id: string; title: string }[]
+  >([])
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string
+    title: string
+  } | null>(null)
+  const [searchingProducts, setSearchingProducts] = useState(false)
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -94,6 +115,87 @@ const ProductReviewsList = () => {
   useEffect(() => {
     void load()
   }, [load])
+
+  useEffect(() => {
+    if (!creating || selectedProduct) {
+      return
+    }
+    if (!productQuery.trim()) {
+      setProductResults([])
+      return
+    }
+    if (searchTimer.current) {
+      clearTimeout(searchTimer.current)
+    }
+    searchTimer.current = setTimeout(async () => {
+      setSearchingProducts(true)
+      try {
+        const res = (await adminFetch(
+          `/admin/products?q=${encodeURIComponent(productQuery)}&limit=10&fields=id,title`
+        )) as { products?: { id: string; title: string }[] }
+        setProductResults(res.products ?? [])
+      } catch {
+        setProductResults([])
+      } finally {
+        setSearchingProducts(false)
+      }
+    }, 300)
+    return () => {
+      if (searchTimer.current) {
+        clearTimeout(searchTimer.current)
+      }
+    }
+  }, [productQuery, creating, selectedProduct])
+
+  const openCreate = () => {
+    setSelectedProduct(null)
+    setProductQuery("")
+    setProductResults([])
+    setNewReview({
+      rating: 5,
+      title: "",
+      comment: "",
+      customer_name: "",
+      customer_email: "",
+      status: "approved",
+    })
+    setCreating(true)
+  }
+
+  const saveNew = async () => {
+    if (!selectedProduct) {
+      toast.error("Chưa chọn sản phẩm")
+      return
+    }
+    if (!newReview.comment.trim() || !newReview.customer_name.trim()) {
+      toast.error("Thiếu thông tin", {
+        description: "Cần nhập nội dung và tên khách hàng",
+      })
+      return
+    }
+    setCreatingSaving(true)
+    try {
+      await adminFetch(`/admin/custom/product-reviews`, {
+        method: "POST",
+        body: JSON.stringify({
+          product_id: selectedProduct.id,
+          rating: newReview.rating,
+          title: newReview.title.trim() || null,
+          comment: newReview.comment.trim(),
+          customer_name: newReview.customer_name.trim(),
+          customer_email: newReview.customer_email.trim() || undefined,
+          status: newReview.status,
+        }),
+      })
+      toast.success("Đã tạo đánh giá")
+      setCreating(false)
+      void load()
+    } catch (e: unknown) {
+      toast.error("Lỗi", { description: e instanceof Error ? e.message : String(e) })
+    } finally {
+      setCreatingSaving(false)
+    }
+  }
 
   const updateStatus = async (row: ReviewRow, status: string) => {
     try {
@@ -153,17 +255,22 @@ const ProductReviewsList = () => {
     <Container className="p-8 flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <Heading className="mb-1">Đánh giá sản phẩm</Heading>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <Select.Trigger className="w-48">
-            <Select.Value />
-          </Select.Trigger>
-          <Select.Content>
-            <Select.Item value="pending">Chờ duyệt</Select.Item>
-            <Select.Item value="approved">Đã duyệt</Select.Item>
-            <Select.Item value="rejected">Từ chối</Select.Item>
-            <Select.Item value="all">Tất cả</Select.Item>
-          </Select.Content>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select.Trigger className="w-48">
+              <Select.Value />
+            </Select.Trigger>
+            <Select.Content>
+              <Select.Item value="pending">Chờ duyệt</Select.Item>
+              <Select.Item value="approved">Đã duyệt</Select.Item>
+              <Select.Item value="rejected">Từ chối</Select.Item>
+              <Select.Item value="all">Tất cả</Select.Item>
+            </Select.Content>
+          </Select>
+          <Button size="small" onClick={openCreate}>
+            <Plus /> Thêm đánh giá mới
+          </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -328,6 +435,151 @@ const ProductReviewsList = () => {
             </Drawer.Close>
             <Button onClick={saveEdit} isLoading={saving}>
               Lưu
+            </Button>
+          </Drawer.Footer>
+        </Drawer.Content>
+      </Drawer>
+
+      <Drawer open={creating} onOpenChange={(open) => !open && setCreating(false)}>
+        <Drawer.Content>
+          <Drawer.Header>
+            <Drawer.Title>Thêm đánh giá mới</Drawer.Title>
+          </Drawer.Header>
+          <Drawer.Body className="flex flex-col gap-4">
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Sản phẩm
+              </Text>
+              {selectedProduct ? (
+                <div className="flex items-center justify-between gap-2 rounded-md border border-ui-border-base p-2">
+                  <Text className="text-sm">{selectedProduct.title}</Text>
+                  <Button
+                    size="small"
+                    variant="transparent"
+                    onClick={() => {
+                      setSelectedProduct(null)
+                      setProductQuery("")
+                    }}
+                  >
+                    Đổi
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-1">
+                  <Input
+                    placeholder="Gõ tên sản phẩm để tìm..."
+                    value={productQuery}
+                    onChange={(e) => setProductQuery(e.target.value)}
+                  />
+                  {searchingProducts ? (
+                    <Text className="text-xs text-ui-fg-muted">Đang tìm…</Text>
+                  ) : productResults.length > 0 ? (
+                    <ul className="flex flex-col border border-ui-border-base rounded-md overflow-hidden">
+                      {productResults.map((p) => (
+                        <li key={p.id}>
+                          <button
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-subtle"
+                            onClick={() => {
+                              setSelectedProduct(p)
+                              setProductResults([])
+                            }}
+                          >
+                            {p.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </div>
+              )}
+            </div>
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Số sao (1-5)
+              </Text>
+              <Input
+                type="number"
+                min={1}
+                max={5}
+                value={newReview.rating}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, rating: Number(e.target.value) })
+                }
+              />
+            </div>
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Tiêu đề
+              </Text>
+              <Input
+                value={newReview.title}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, title: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Nội dung
+              </Text>
+              <Textarea
+                rows={5}
+                value={newReview.comment}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, comment: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Tên khách hàng
+              </Text>
+              <Input
+                value={newReview.customer_name}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, customer_name: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Email khách hàng (không bắt buộc)
+              </Text>
+              <Input
+                value={newReview.customer_email}
+                onChange={(e) =>
+                  setNewReview({ ...newReview, customer_email: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Text size="small" weight="plus" className="mb-1">
+                Trạng thái
+              </Text>
+              <Select
+                value={newReview.status}
+                onValueChange={(v) =>
+                  setNewReview({ ...newReview, status: v as ReviewRow["status"] })
+                }
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="pending">Chờ duyệt</Select.Item>
+                  <Select.Item value="approved">Đã duyệt</Select.Item>
+                  <Select.Item value="rejected">Từ chối</Select.Item>
+                </Select.Content>
+              </Select>
+            </div>
+          </Drawer.Body>
+          <Drawer.Footer>
+            <Drawer.Close asChild>
+              <Button variant="secondary">Huỷ</Button>
+            </Drawer.Close>
+            <Button onClick={saveNew} isLoading={creatingSaving}>
+              Tạo đánh giá
             </Button>
           </Drawer.Footer>
         </Drawer.Content>
