@@ -7,6 +7,22 @@ import type { IFileModuleService } from "@medusajs/types"
 import { STORE_CMS_MODULE } from "../../../../modules/store-cms"
 import type StoreCmsModuleService from "../../../../modules/store-cms/service"
 
+/**
+ * Địa chỉ storefront để Admin xem trước được ảnh nền dựng sẵn.
+ *
+ * Ảnh dựng sẵn nằm trong storefront (`/backgrounds/...`), mà Admin chạy ở tên
+ * miền khác (admin.quatangtaya.com) nên đường dẫn tương đối sẽ trỏ nhầm sang
+ * tên miền Admin và ảnh không hiện. Lấy origin đầu tiên trong STORE_CORS —
+ * đúng cả ở local (localhost:8000) lẫn production (quatangtaya.com).
+ */
+function storefrontOrigin(): string | null {
+  const first = (process.env.STORE_CORS ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .find((s) => /^https?:\/\//i.test(s))
+  return first ? first.replace(/\/+$/, "") : null
+}
+
 /** Ghép URL ảnh cho từng nền để Admin xem trước được ngay. */
 async function withImageUrls(
   req: AuthenticatedMedusaRequest,
@@ -34,12 +50,20 @@ async function withImageUrls(
     )
   }
 
-  return rows.map((r) => ({
-    ...r,
-    resolved_image_url:
+  const origin = storefrontOrigin()
+
+  return rows.map((r) => {
+    const raw =
       r.image_url ??
-      (r.image_file_id ? urlByFileId.get(r.image_file_id) ?? null : null),
-  }))
+      (r.image_file_id ? urlByFileId.get(r.image_file_id) ?? null : null)
+
+    // Ảnh dựng sẵn là đường dẫn tương đối của storefront — phải ghép origin
+    // thì trình duyệt Admin (tên miền khác) mới tải được.
+    const resolved =
+      raw && raw.startsWith("/") && origin ? `${origin}${raw}` : raw
+
+    return { ...r, resolved_image_url: resolved }
+  })
 }
 
 export async function GET(
