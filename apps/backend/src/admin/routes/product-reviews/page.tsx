@@ -12,7 +12,7 @@ import {
   toast,
 } from "@medusajs/ui"
 import { Star, Trash, PencilSquare, CheckCircleSolid, XCircleSolid, Plus } from "@medusajs/icons"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { adminFetch } from "../storefront-cms/admin-fetch"
 
 type ReviewRow = {
@@ -29,6 +29,16 @@ type ReviewRow = {
 }
 
 type ProductTitleMap = Record<string, string>
+
+/** Bỏ dấu tiếng Việt để tìm không phân biệt có/không gõ dấu (vd "banh" vẫn khớp "Bánh"). */
+function normalizeVi(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(new RegExp("[\\u0300-\\u036f]", "g"), "")
+    .replace(/đ/gi, "d")
+    .toLowerCase()
+    .trim()
+}
 
 const STATUS_LABEL: Record<string, string> = {
   pending: "Chờ duyệt",
@@ -71,15 +81,14 @@ const ProductReviewsList = () => {
     status: "approved" as ReviewRow["status"],
   })
   const [productQuery, setProductQuery] = useState("")
-  const [productResults, setProductResults] = useState<
+  const [allProducts, setAllProducts] = useState<
     { id: string; title: string }[]
   >([])
   const [selectedProduct, setSelectedProduct] = useState<{
     id: string
     title: string
   } | null>(null)
-  const [searchingProducts, setSearchingProducts] = useState(false)
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [loadingProducts, setLoadingProducts] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -116,41 +125,37 @@ const ProductReviewsList = () => {
     void load()
   }, [load])
 
+  // Tải toàn bộ sản phẩm 1 lần rồi lọc ở client — tránh phụ thuộc tìm kiếm
+  // có dấu chính xác của backend (gõ không dấu vẫn tìm được, vd "banh" -> "Bánh").
   useEffect(() => {
-    if (!creating || selectedProduct) {
+    if (!creating || allProducts.length > 0) {
       return
     }
-    if (!productQuery.trim()) {
-      setProductResults([])
-      return
+    setLoadingProducts(true)
+    adminFetch(`/admin/products?limit=1000&fields=id,title`)
+      .then((res) => {
+        const list =
+          (res as { products?: { id: string; title: string }[] }).products ??
+          []
+        setAllProducts(list)
+      })
+      .catch(() => setAllProducts([]))
+      .finally(() => setLoadingProducts(false))
+  }, [creating, allProducts.length])
+
+  const productResults = (() => {
+    const q = normalizeVi(productQuery)
+    if (!q) {
+      return []
     }
-    if (searchTimer.current) {
-      clearTimeout(searchTimer.current)
-    }
-    searchTimer.current = setTimeout(async () => {
-      setSearchingProducts(true)
-      try {
-        const res = (await adminFetch(
-          `/admin/products?q=${encodeURIComponent(productQuery)}&limit=10&fields=id,title`
-        )) as { products?: { id: string; title: string }[] }
-        setProductResults(res.products ?? [])
-      } catch {
-        setProductResults([])
-      } finally {
-        setSearchingProducts(false)
-      }
-    }, 300)
-    return () => {
-      if (searchTimer.current) {
-        clearTimeout(searchTimer.current)
-      }
-    }
-  }, [productQuery, creating, selectedProduct])
+    return allProducts
+      .filter((p) => normalizeVi(p.title).includes(q))
+      .slice(0, 15)
+  })()
 
   const openCreate = () => {
     setSelectedProduct(null)
     setProductQuery("")
-    setProductResults([])
     setNewReview({
       rating: 5,
       title: "",
@@ -471,8 +476,8 @@ const ProductReviewsList = () => {
                     value={productQuery}
                     onChange={(e) => setProductQuery(e.target.value)}
                   />
-                  {searchingProducts ? (
-                    <Text className="text-xs text-ui-fg-muted">Đang tìm…</Text>
+                  {loadingProducts ? (
+                    <Text className="text-xs text-ui-fg-muted">Đang tải danh sách sản phẩm…</Text>
                   ) : productResults.length > 0 ? (
                     <ul className="flex flex-col border border-ui-border-base rounded-md overflow-hidden">
                       {productResults.map((p) => (
@@ -482,7 +487,6 @@ const ProductReviewsList = () => {
                             className="w-full text-left px-3 py-2 text-sm hover:bg-ui-bg-subtle"
                             onClick={() => {
                               setSelectedProduct(p)
-                              setProductResults([])
                             }}
                           >
                             {p.title}
