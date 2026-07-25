@@ -26,6 +26,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/store-cms",
     },
     {
+      resolve: "./src/modules/product-reviews",
+    },
+    {
       resolve: "@medusajs/medusa/file",
       options: {
         providers: [

@@ -1,17 +1,21 @@
 import { displayCollection, displayProduct } from "@lib/util/i18n-catalog"
 import { getBaseURL } from "@lib/util/env"
 import { normalizeMedusaAssetUrl } from "@lib/util/cms-assets"
+import { getReviewSummaries } from "@lib/data/product-reviews"
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ShareButtons from "@modules/common/components/share-buttons"
+import StarRating from "@modules/products/components/star-rating"
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
   locale: string
 }
 
-const ProductInfo = ({ product, locale }: ProductInfoProps) => {
+const ProductInfo = async ({ product, locale }: ProductInfoProps) => {
+  const reviewSummaries = await getReviewSummaries([product.id])
+  const reviewSummary = reviewSummaries[product.id]
   const collectionTitle =
     product.collection &&
     displayCollection(
@@ -44,6 +48,15 @@ const ProductInfo = ({ product, locale }: ProductInfoProps) => {
         >
           {title}
         </Heading>
+
+        {reviewSummary && reviewSummary.count > 0 ? (
+          <a href="#product-reviews" className="flex items-center gap-2 -mt-2">
+            <StarRating rating={reviewSummary.average} size="medium" />
+            <span className="text-small-regular text-ui-fg-muted">
+              {reviewSummary.average.toFixed(1)}/5 · {reviewSummary.count} đánh giá
+            </span>
+          </a>
+        ) : null}
 
         <Text
           className="text-medium text-ui-fg-subtle whitespace-pre-line"

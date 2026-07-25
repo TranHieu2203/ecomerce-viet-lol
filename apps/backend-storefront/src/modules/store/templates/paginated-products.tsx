@@ -1,4 +1,5 @@
 import { listProductsWithSort } from "@lib/data/products"
+import { getReviewSummaries } from "@lib/data/product-reviews"
 import { getRegion } from "@lib/data/regions"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
@@ -73,6 +74,7 @@ export default async function PaginatedProducts({
   })
 
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
+  const reviewSummaries = await getReviewSummaries(products.map((p) => p.id))
 
   return (
     <>
@@ -89,7 +91,12 @@ export default async function PaginatedProducts({
                 initialInView={idx < 8}
                 className="h-full"
               >
-                <ProductPreview product={p} region={region} locale={countryCode} />
+                <ProductPreview
+                  product={p}
+                  region={region}
+                  locale={countryCode}
+                  reviewSummary={reviewSummaries[p.id]}
+                />
               </Reveal>
             </li>
           )

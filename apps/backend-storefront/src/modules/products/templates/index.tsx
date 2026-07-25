@@ -4,6 +4,7 @@ import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
+import ProductReviews from "@modules/products/components/product-reviews"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import ProductBreadcrumb from "@modules/products/components/product-breadcrumb"
@@ -58,6 +59,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             <ProductActionsWrapper id={product.id} region={region} />
           </Suspense>
         </div>
+      </div>
+      <div id="product-reviews" className="content-container my-16 small:my-24 scroll-mt-24">
+        <ProductReviews productId={product.id} />
       </div>
       <div
         className="content-container my-16 small:my-32"

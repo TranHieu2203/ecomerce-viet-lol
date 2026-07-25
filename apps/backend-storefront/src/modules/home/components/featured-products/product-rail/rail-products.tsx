@@ -1,6 +1,7 @@
 "use client"
 
 import { listProducts } from "@lib/data/products"
+import { getReviewSummaries, ProductReviewSummary } from "@lib/data/product-reviews"
 import { HttpTypes } from "@medusajs/types"
 import ProductPreview from "@modules/products/components/product-preview"
 import Reveal from "@modules/common/components/reveal"
@@ -32,6 +33,7 @@ export default function RailProducts({
   region,
   countryCode,
   initialProducts,
+  initialReviewSummaries,
   count,
   limit,
 }: {
@@ -39,11 +41,13 @@ export default function RailProducts({
   region: HttpTypes.StoreRegion
   countryCode: string
   initialProducts: HttpTypes.StoreProduct[]
+  initialReviewSummaries: Record<string, ProductReviewSummary>
   count: number
   limit: number
 }) {
   const [page, setPage] = useState(1)
   const [products, setProducts] = useState(initialProducts)
+  const [reviewSummaries, setReviewSummaries] = useState(initialReviewSummaries)
   const [isPending, setIsPending] = useState(false)
   const totalPages = Math.ceil(count / limit)
 
@@ -58,9 +62,13 @@ export default function RailProducts({
         fields: "*variants.calculated_price",
       },
     })
-      .then(({ response }) => {
+      .then(async ({ response }) => {
         setProducts(response.products)
         setPage(newPage)
+        const summaries = await getReviewSummaries(
+          response.products.map((p) => p.id)
+        )
+        setReviewSummaries(summaries)
       })
       .finally(() => setIsPending(false))
   }
@@ -83,6 +91,7 @@ export default function RailProducts({
                 region={region}
                 isFeatured
                 locale={countryCode}
+                reviewSummary={reviewSummaries[product.id]}
               />
             </Reveal>
           </li>

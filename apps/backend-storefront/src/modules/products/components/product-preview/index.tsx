@@ -5,6 +5,7 @@ import { displayProduct } from "@lib/util/i18n-catalog"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import QuickLookButton from "@modules/products/components/quick-look-button"
+import StarRating from "@modules/products/components/star-rating"
 import Thumbnail from "../thumbnail"
 import PreviewPrice from "./price"
 
@@ -13,11 +14,13 @@ export default function ProductPreview({
   isFeatured,
   region,
   locale,
+  reviewSummary,
 }: {
   product: HttpTypes.StoreProduct
   isFeatured?: boolean
   region: HttpTypes.StoreRegion
   locale: string
+  reviewSummary?: { average: number; count: number }
 }) {
   // const pricedProduct = await listProducts({
   //   regionId: region.id,
@@ -63,6 +66,15 @@ export default function ProductPreview({
           >
             {title}
           </Text>
+          {reviewSummary && reviewSummary.count > 0 ? (
+            <div className="mt-1">
+              <StarRating
+                rating={reviewSummary.average}
+                count={reviewSummary.count}
+                showValue
+              />
+            </div>
+          ) : null}
           <div className="flex items-center gap-x-2 mt-auto pt-1.5">
             {cheapestPrice && <PreviewPrice price={cheapestPrice} />}
           </div>

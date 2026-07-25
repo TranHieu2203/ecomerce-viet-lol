@@ -1,5 +1,6 @@
 import { getStorefrontMessages } from "@lib/i18n/storefront-messages"
 import { listProducts } from "@lib/data/products"
+import { getReviewSummaries } from "@lib/data/product-reviews"
 import { displayCollection } from "@lib/util/i18n-catalog"
 import { HttpTypes } from "@medusajs/types"
 import { Text } from "@medusajs/ui"
@@ -40,6 +41,10 @@ export default async function ProductRail({
     return null
   }
 
+  const reviewSummaries = await getReviewSummaries(
+    pricedProducts.map((p) => p.id)
+  )
+
   return (
     <div>
       <div className="flex flex-col gap-3 xsmall:flex-row xsmall:items-end xsmall:justify-between mb-5 xsmall:mb-6 pb-2.5 xsmall:pb-3 border-b border-brand-gold/25">
@@ -55,6 +60,7 @@ export default async function ProductRail({
         region={region}
         countryCode={countryCode}
         initialProducts={pricedProducts}
+        initialReviewSummaries={reviewSummaries}
         count={count}
         limit={RAIL_PRODUCT_LIMIT}
       />
