@@ -32,6 +32,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/pricing-audit",
     },
     {
+      resolve: "./src/modules/stock-ledger",
+    },
+    {
       resolve: "@medusajs/medusa/file",
       options: {
         providers: [
