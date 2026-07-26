@@ -772,8 +772,8 @@ async function seedPublishedCmsPages(
     {
       slug: "lien-he",
       title: { vi: "Liên hệ", en: "Contact" },
-      bodyVi: `<p>Vui lòng cập nhật <strong>hotline</strong> và <strong>email</strong> trong Admin → Storefront CMS.</p><p>Gợi ý giờ làm việc: 9:00–18:00, thứ Hai–thứ Sáu.</p>`,
-      bodyEn: `<p>Please update the <strong>hotline</strong> and <strong>email</strong> in Admin → Storefront CMS.</p><p>Suggested hours: 9:00–18:00, Monday–Friday.</p>`,
+      bodyVi: `<p>Cảm ơn quý khách đã quan tâm đến sản phẩm của chúng tôi. Quý khách có nhu cầu đặt hàng lẻ, đặt quà tặng doanh nghiệp hoặc hợp tác phân phối, vui lòng liên hệ theo thông tin bên dưới.</p><p><strong>Giờ làm việc:</strong> 9:00–18:00, thứ Hai đến thứ Sáu. Đơn hàng và tin nhắn ngoài giờ sẽ được phản hồi vào ngày làm việc kế tiếp.</p>`,
+      bodyEn: `<p>Thank you for your interest in our products. For retail orders, corporate gifting or distribution partnerships, please reach us using the details below.</p><p><strong>Opening hours:</strong> 9:00–18:00, Monday to Friday. Orders and messages received outside these hours are answered on the next working day.</p>`,
       seo: {
         meta_title: {
           vi: "Liên hệ | Tây Á Group",
