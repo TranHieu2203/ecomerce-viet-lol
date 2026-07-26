@@ -8,6 +8,9 @@ import {
   createPriceListsWorkflow,
   updateProductVariantsWorkflow,
 } from "@medusajs/medusa/core-flows"
+import { PRICING_AUDIT_MODULE } from "../../../../../modules/pricing-audit"
+import type PricingAuditModuleService from "../../../../../modules/pricing-audit/service"
+import { PRICE_FIELD } from "../../../../../modules/pricing-audit/models/price-change"
 
 const CURRENCY = "vnd"
 const DEFAULT_PRICE_LIST_TITLE = "Giá khuyến mãi"
@@ -256,6 +259,62 @@ export async function POST(
     await batchPriceListPricesWorkflow(req.scope).run({
       input: { data: { id: listId, ...op } as never },
     })
+  }
+
+  // ----- 3) ghi nhật ký, chỉ những giá thực sự đổi -----
+  try {
+    const audit = req.scope.resolve(
+      PRICING_AUDIT_MODULE
+    ) as PricingAuditModuleService
+    const productTitle =
+      (await req.scope
+        .resolve(ContainerRegistrationKeys.QUERY)
+        .graph({
+          entity: "product",
+          fields: ["title"],
+          filters: { id: productId },
+        })
+        .then((r) => (r.data?.[0] as { title?: string })?.title)) ?? ""
+
+    const actorId = (req.auth_context?.actor_id as string | undefined) ?? null
+    const entries: Record<string, unknown>[] = []
+
+    for (const w of wanted) {
+      const common = {
+        product_id: productId,
+        variant_id: w.row.id,
+        product_title: productTitle,
+        variant_title: w.row.title || null,
+        currency_code: CURRENCY,
+        actor_id: actorId,
+        actor_email: null,
+      }
+      if (w.base !== w.row.base_amount) {
+        entries.push({
+          ...common,
+          field: PRICE_FIELD.BASE,
+          old_amount: w.row.base_amount,
+          new_amount: w.base,
+        })
+      }
+      if (w.sale !== w.row.sale_amount) {
+        entries.push({
+          ...common,
+          field: PRICE_FIELD.SALE,
+          old_amount: w.row.sale_amount,
+          new_amount: w.sale,
+        })
+      }
+    }
+
+    if (entries.length) {
+      await audit.createPriceChanges(entries as never)
+    }
+  } catch (e) {
+    // Giá đã lưu thành công rồi — nhật ký hỏng thì không được làm hỏng thao tác.
+    req.scope
+      .resolve(ContainerRegistrationKeys.LOGGER)
+      .warn(`Không ghi được nhật ký đổi giá: ${(e as Error).message}`)
   }
 
   res.json({ variants: await readPricing(req, productId) })

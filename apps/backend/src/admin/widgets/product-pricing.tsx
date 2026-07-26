@@ -14,7 +14,17 @@ type VariantPricing = {
 
 type Draft = { base: string; sale: string }
 
+type PriceChange = {
+  id: string
+  variant_title: string | null
+  field: "base" | "sale"
+  old_amount: number | null
+  new_amount: number | null
+  created_at: string
+}
+
 const vnd = (n: number) => n.toLocaleString("vi-VN") + " ₫"
+const vndOrDash = (n: number | null) => (n === null ? "—" : vnd(n))
 
 /**
  * Sửa giá ngay tại trang sản phẩm.
@@ -28,6 +38,8 @@ const ProductPricingWidget = () => {
   const [draft, setDraft] = useState<Record<string, Draft>>({})
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [history, setHistory] = useState<PriceChange[]>([])
+  const [showHistory, setShowHistory] = useState(false)
 
   const hydrate = useCallback((list: VariantPricing[]) => {
     setRows(list)
@@ -47,10 +59,16 @@ const ProductPricingWidget = () => {
     }
     setLoading(true)
     try {
-      const res = (await adminFetch(
-        `/admin/custom/product-pricing/${id}`
-      )) as { variants?: VariantPricing[] }
+      const [res, hist] = await Promise.all([
+        adminFetch(`/admin/custom/product-pricing/${id}`) as Promise<{
+          variants?: VariantPricing[]
+        }>,
+        adminFetch(`/admin/custom/product-pricing/${id}/history`).catch(
+          () => ({ changes: [] })
+        ) as Promise<{ changes?: PriceChange[] }>,
+      ])
       hydrate(res.variants ?? [])
+      setHistory(hist.changes ?? [])
     } catch (e: unknown) {
       toast.error("Không tải được giá", {
         description: e instanceof Error ? e.message : String(e),
@@ -81,6 +99,10 @@ const ProductPricingWidget = () => {
         }),
       })) as { variants?: VariantPricing[] }
       hydrate(res.variants ?? [])
+      const hist = (await adminFetch(
+        `/admin/custom/product-pricing/${id}/history`
+      ).catch(() => ({ changes: [] }))) as { changes?: PriceChange[] }
+      setHistory(hist.changes ?? [])
       toast.success("Đã lưu giá", {
         description: "Web cập nhật sau khoảng 3 phút, hoặc tải lại trang sản phẩm.",
       })
@@ -201,6 +223,45 @@ const ProductPricingWidget = () => {
         <Button variant="secondary" onClick={() => void load()} disabled={saving}>
           Huỷ thay đổi
         </Button>
+      </div>
+
+      <div className="pt-4">
+        <Button
+          variant="transparent"
+          size="small"
+          onClick={() => setShowHistory((v) => !v)}
+        >
+          {showHistory ? "Ẩn" : "Xem"} nhật ký đổi giá ({history.length})
+        </Button>
+
+        {showHistory ? (
+          history.length === 0 ? (
+            <Text size="small" className="mt-2 text-ui-fg-muted">
+              Chưa có lần đổi giá nào được ghi lại. Nhật ký chỉ tính từ lúc bật
+              tính năng này, không truy ngược được giá cũ trước đó.
+            </Text>
+          ) : (
+            <div className="mt-2 flex flex-col gap-1">
+              {history.map((h) => (
+                <div
+                  key={h.id}
+                  className="flex flex-wrap items-center gap-x-2 gap-y-0.5 border-b border-ui-border-base py-1.5 text-sm last:border-0"
+                >
+                  <Text className="text-xs text-ui-fg-muted">
+                    {new Date(h.created_at).toLocaleString("vi-VN")}
+                  </Text>
+                  <Text className="text-xs">
+                    {h.field === "base" ? "Giá gốc" : "Giá bán"}
+                    {h.variant_title ? ` · ${h.variant_title}` : ""}
+                  </Text>
+                  <Text className="text-xs text-ui-fg-muted">
+                    {vndOrDash(h.old_amount)} → <strong>{vndOrDash(h.new_amount)}</strong>
+                  </Text>
+                </div>
+              ))}
+            </div>
+          )
+        ) : null}
       </div>
     </Container>
   )
