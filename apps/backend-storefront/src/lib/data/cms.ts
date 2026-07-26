@@ -191,19 +191,42 @@ export function resolveCmsSocialLinks(
   return out
 }
 
-/** Hotline & email từ `footer_contact` (ADR-13), để hiển thị chân trang. */
+/**
+ * Thông tin liên hệ + pháp lý từ `footer_contact` (ADR-13), hiển thị chân trang.
+ *
+ * Tên công ty, địa chỉ và mã số thuế là thông tin website thương mại điện tử
+ * ở Việt Nam bắt buộc công khai, nên đọc luôn ở đây cùng hotline/email.
+ */
 export function resolveCmsFooterContactPlain(cms: CmsSettingsPublic): {
   hotline: string
   email: string
+  companyName: string
+  taxCode: string
+  address: string
+  businessLines: string
 } {
+  const empty = {
+    hotline: "",
+    email: "",
+    companyName: "",
+    taxCode: "",
+    address: "",
+    businessLines: "",
+  }
   const fc = cms.footer_contact
   if (!fc || typeof fc !== "object" || Array.isArray(fc)) {
-    return { hotline: "", email: "" }
+    return empty
   }
   const o = fc as Record<string, unknown>
-  const hotline = typeof o.hotline === "string" ? o.hotline.trim() : ""
-  const email = typeof o.email === "string" ? o.email.trim() : ""
-  return { hotline, email }
+  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "")
+  return {
+    hotline: str(o.hotline),
+    email: str(o.email),
+    companyName: str(o.company_name),
+    taxCode: str(o.tax_code),
+    address: str(o.address),
+    businessLines: str(o.business_lines),
+  }
 }
 
 function parseAnnouncementSafe(raw: unknown): CmsAnnouncementPublic {

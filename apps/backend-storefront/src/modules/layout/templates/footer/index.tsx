@@ -59,7 +59,8 @@ export default async function Footer({
     countryCode,
     m.footer.socialFallback
   )
-  const { hotline, email } = resolveCmsFooterContactPlain(cms)
+  const { hotline, email, companyName, taxCode, address, businessLines } =
+    resolveCmsFooterContactPlain(cms)
   const telHref = hotline
     ? `tel:${hotline.replace(/[\s().-]/g, "")}`
     : ""
@@ -294,6 +295,28 @@ export default async function Footer({
             </div>
           </div>
         </div>
+        {/* Thông tin pháp lý — website thương mại điện tử ở Việt Nam bắt buộc
+            công khai tên, địa chỉ và mã số thuế của chủ sở hữu. */}
+        {companyName || taxCode || address ? (
+          <div className="w-full border-t border-brand-gold/15 pt-8 mb-6 flex flex-col gap-1 text-ui-fg-muted">
+            {companyName ? (
+              <Text className="txt-compact-small-plus text-ui-fg-subtle">
+                {companyName}
+              </Text>
+            ) : null}
+            {address ? (
+              <Text className="txt-compact-small">Địa chỉ: {address}</Text>
+            ) : null}
+            {taxCode ? (
+              <Text className="txt-compact-small">Mã số thuế: {taxCode}</Text>
+            ) : null}
+            {businessLines ? (
+              <Text className="txt-compact-small">
+                Ngành nghề: {businessLines}
+              </Text>
+            ) : null}
+          </div>
+        ) : null}
         <div className="flex flex-col-reverse gap-4 xsmall:flex-row w-full mb-12 xsmall:mb-16 justify-between items-start xsmall:items-center text-ui-fg-muted border-t border-brand-gold/15 pt-8">
           <Text className="txt-compact-small">
             © {new Date().getFullYear()} {brandName}

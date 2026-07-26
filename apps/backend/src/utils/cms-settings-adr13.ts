@@ -77,6 +77,12 @@ export function parseFooterContact(raw: unknown): Record<string, unknown> | null
   const o = raw as Record<string, unknown>
   const hotline = trimStr(o.hotline, 80)
   const email = trimStr(o.email, 200)
+  // Thông tin pháp lý doanh nghiệp — website thương mại điện tử ở Việt Nam
+  // bắt buộc công khai tên, địa chỉ và mã số thuế của chủ sở hữu.
+  const company_name = trimStr(o.company_name, 200)
+  const tax_code = trimStr(o.tax_code, 40)
+  const address = trimStr(o.address, 300)
+  const business_lines = trimStr(o.business_lines, 500)
   let social: FooterSocialLink[] = []
   if (o.social !== undefined && o.social !== null) {
     if (!Array.isArray(o.social)) {
@@ -117,6 +123,18 @@ export function parseFooterContact(raw: unknown): Record<string, unknown> | null
   }
   if (email) {
     out.email = email
+  }
+  if (company_name) {
+    out.company_name = company_name
+  }
+  if (tax_code) {
+    out.tax_code = tax_code
+  }
+  if (address) {
+    out.address = address
+  }
+  if (business_lines) {
+    out.business_lines = business_lines
   }
   if (social.length) {
     out.social = social

@@ -29,6 +29,10 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
   const [ogFileId, setOgFileId] = useState("")
   const [hotline, setHotline] = useState("")
   const [email, setEmail] = useState("")
+  const [companyName, setCompanyName] = useState("")
+  const [taxCode, setTaxCode] = useState("")
+  const [address, setAddress] = useState("")
+  const [businessLines, setBusinessLines] = useState("")
   const [socialRows, setSocialRows] = useState<SocialRow[]>(emptySocial)
   const [annEnabled, setAnnEnabled] = useState(false)
   const [annVi, setAnnVi] = useState("")
@@ -59,6 +63,12 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
     const fc = s.footer_contact as Record<string, unknown> | undefined
     setHotline(typeof fc?.hotline === "string" ? fc.hotline : "")
     setEmail(typeof fc?.email === "string" ? fc.email : "")
+    setCompanyName(typeof fc?.company_name === "string" ? fc.company_name : "")
+    setTaxCode(typeof fc?.tax_code === "string" ? fc.tax_code : "")
+    setAddress(typeof fc?.address === "string" ? fc.address : "")
+    setBusinessLines(
+      typeof fc?.business_lines === "string" ? fc.business_lines : ""
+    )
     const soc = Array.isArray(fc?.social) ? fc?.social : []
     const nextSoc = emptySocial()
     soc.slice(0, 3).forEach((item, i) => {
@@ -125,6 +135,10 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
           footer_contact: {
             hotline: hotline.trim() || undefined,
             email: email.trim() || undefined,
+            company_name: companyName.trim() || undefined,
+            tax_code: taxCode.trim() || undefined,
+            address: address.trim() || undefined,
+            business_lines: businessLines.trim() || undefined,
             social: social.length ? social : undefined,
           },
           announcement: {
@@ -226,6 +240,46 @@ export function SiteContentAdr13Section({ settings, onReload }: Props) {
           <div>
             <Label>Email</Label>
             <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+        </div>
+
+        {/* Website thương mại điện tử ở Việt Nam bắt buộc công khai tên, địa
+            chỉ và mã số thuế của doanh nghiệp sở hữu. */}
+        <Text size="small" weight="plus" className="mt-2">
+          Thông tin doanh nghiệp (hiện ở chân trang)
+        </Text>
+        <div className="grid grid-cols-1 gap-3">
+          <div>
+            <Label>Tên công ty</Label>
+            <Input
+              value={companyName}
+              placeholder="CÔNG TY TNHH THƯƠNG MẠI TẬP ĐOÀN TÂY Á"
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <Label>Mã số thuế</Label>
+              <Input
+                value={taxCode}
+                placeholder="0111166057"
+                onChange={(e) => setTaxCode(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Địa chỉ trụ sở</Label>
+              <Input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <Label>Ngành nghề kinh doanh</Label>
+            <Input
+              value={businessLines}
+              onChange={(e) => setBusinessLines(e.target.value)}
+            />
           </div>
         </div>
         <Text size="small" className="text-ui-fg-muted">
