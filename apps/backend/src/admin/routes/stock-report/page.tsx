@@ -13,6 +13,8 @@ type Row = {
   adjust_qty: number
   sold_qty: number
   closing: number
+  derived_closing: number | null
+  discrepancy: number | null
 }
 
 const n = (v: number) => v.toLocaleString("vi-VN")
@@ -94,7 +96,8 @@ const StockReportPage = () => {
                 <th className="py-2 pr-3 text-right font-medium text-ui-fg-muted">Xuất</th>
                 <th className="py-2 pr-3 text-right font-medium text-ui-fg-muted">Kiểm kê</th>
                 <th className="py-2 pr-3 text-right font-medium text-ui-fg-muted">Đã bán</th>
-                <th className="py-2 text-right font-medium text-ui-fg-muted">Tồn hiện tại</th>
+                <th className="py-2 pr-3 text-right font-medium text-ui-fg-muted">Tồn hiện tại</th>
+                <th className="py-2 text-right font-medium text-ui-fg-muted">Lệch</th>
               </tr>
             </thead>
             <tbody>
@@ -124,8 +127,19 @@ const StockReportPage = () => {
                   <td className="py-2 pr-3 text-right tabular-nums">
                     {r.sold_qty ? n(r.sold_qty) : "—"}
                   </td>
-                  <td className="py-2 text-right font-medium tabular-nums">
+                  <td className="py-2 pr-3 text-right font-medium tabular-nums">
                     {n(r.closing)}
+                  </td>
+                  <td
+                    className={`py-2 text-right tabular-nums ${
+                      r.discrepancy ? "text-ui-tag-red-text" : "text-ui-fg-muted"
+                    }`}
+                  >
+                    {r.discrepancy === null
+                      ? "—"
+                      : r.discrepancy === 0
+                        ? "khớp"
+                        : n(r.discrepancy)}
                   </td>
                 </tr>
               ))}
@@ -136,7 +150,8 @@ const StockReportPage = () => {
                 <td className="py-2 pr-3 text-right tabular-nums">−{n(total.out_qty)}</td>
                 <td className="py-2 pr-3" />
                 <td className="py-2 pr-3 text-right tabular-nums">{n(total.sold_qty)}</td>
-                <td className="py-2 text-right tabular-nums">{n(total.closing)}</td>
+                <td className="py-2 pr-3 text-right tabular-nums">{n(total.closing)}</td>
+                <td className="py-2" />
               </tr>
             </tbody>
           </table>

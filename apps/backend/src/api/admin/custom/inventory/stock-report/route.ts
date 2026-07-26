@@ -159,10 +159,21 @@ export async function GET(
     }
   }
 
+  // Sổ đã ghi cả phần xuất do giao hàng, nên tồn suy ra từ sổ phải trùng tồn
+  // thực tế. Lệch nghĩa là có thay đổi không qua sổ (sửa tay ở trang Kho hàng
+  // mặc định của Medusa, hoặc lúc ghi sổ gặp lỗi) — hiện ra để còn kiểm kê lại.
+  const out = Array.from(rows.values()).map((r) => {
+    const net = r.in_qty - r.out_qty + r.adjust_qty
+    const derived = r.opening === null ? null : r.opening + net
+    return {
+      ...r,
+      derived_closing: derived,
+      discrepancy: derived === null ? null : r.closing - derived,
+    }
+  })
+
   res.json({
     range_days: days,
-    rows: Array.from(rows.values()).sort((a, b) =>
-      a.title.localeCompare(b.title, "vi")
-    ),
+    rows: out.sort((a, b) => a.title.localeCompare(b.title, "vi")),
   })
 }
