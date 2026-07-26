@@ -22,6 +22,13 @@ ENV REVALIDATE_SECRET=$REVALIDATE_SECRET
 ENV NEXT_PUBLIC_DEFAULT_REGION=$NEXT_PUBLIC_DEFAULT_REGION
 ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
 
+# npm registry thỉnh thoảng trả 429 khi deploy nhiều lần liên tiếp — bật retry
+# có backoff để build tự vượt qua thay vì chết giữa chừng dù code không lỗi.
+ENV npm_config_fetch_retries=6 \
+    npm_config_fetch_retry_mintimeout=15000 \
+    npm_config_fetch_retry_maxtimeout=180000 \
+    npm_config_fetch_timeout=600000
+
 RUN npm ci --no-audit --no-fund
 COPY apps/backend-storefront ./
 RUN npm run build && npm prune --omit=dev --no-audit --no-fund

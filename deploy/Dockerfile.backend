@@ -7,6 +7,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY apps/backend/package.json apps/backend/package-lock.json ./apps/backend/
 WORKDIR /app/apps/backend
+
+# npm registry thỉnh thoảng trả 429 (Too Many Requests) khi deploy nhiều lần
+# liên tiếp, làm build chết giữa chừng dù code không có lỗi. Bật retry có
+# backoff để build tự vượt qua thay vì phải ngồi chờ rồi deploy lại.
+ENV npm_config_fetch_retries=6 \
+    npm_config_fetch_retry_mintimeout=15000 \
+    npm_config_fetch_retry_maxtimeout=180000 \
+    npm_config_fetch_timeout=600000
+
 RUN npm ci --no-audit --no-fund
 
 COPY apps/backend ./
