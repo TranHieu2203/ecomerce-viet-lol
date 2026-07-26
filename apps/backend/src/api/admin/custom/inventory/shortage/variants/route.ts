@@ -13,6 +13,7 @@ import {
   MedusaResponse,
 } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { getInventoryLabels } from "../../../../../../lib/inventory-labels"
 
 export async function GET(
   req: AuthenticatedMedusaRequest,
@@ -31,6 +32,8 @@ export async function GET(
   )
 
   // Lấy inventory items với variant links
+  const labels = await getInventoryLabels(req.scope)
+
   const { data: items } = await query.graph({
     entity: "inventory_item",
     fields: [
@@ -44,10 +47,6 @@ export async function GET(
       "location_levels.stocked_quantity",
       "location_levels.reserved_quantity",
       "location_levels.incoming_quantity",
-      // Giữ đồng bộ với report/dashboard: một số bản Medusa 2.x lỗi graph khi kéo
-      // variant_id / product.thumbnail (hoặc product.id) qua link inventory_item.
-      "variant_inventory_items.variant.title",
-      "variant_inventory_items.variant.product.title",
     ],
   })
 
@@ -64,14 +63,6 @@ export async function GET(
       reserved_quantity: number
       incoming_quantity: number
       available_quantity: number | null
-    }>
-    variant_inventory_items?: Array<{
-      variant?: {
-        title?: string | null
-        product?: {
-          title?: string | null
-        } | null
-      } | null
     }>
   }
 
@@ -135,16 +126,15 @@ export async function GET(
 
     // Chỉ trả kết quả khi thiếu hoặc hết
     if (available < 0 || (includeZero && available === 0)) {
-      const variant = item.variant_inventory_items?.[0]?.variant
-      const product = variant?.product
+      const label = labels.get(item.id)
 
       shortageRows.push({
         inventory_item_id: item.id,
         sku: item.sku,
         inventory_title: item.title,
-        variant_title: variant?.title ?? null,
-        product_id: null,
-        product_title: product?.title ?? null,
+        variant_title: label?.variant_title ?? null,
+        product_id: label?.product_id ?? null,
+        product_title: label?.product_title ?? null,
         stocked_quantity: totalStocked,
         reserved_quantity: totalReserved,
         available_quantity: available,

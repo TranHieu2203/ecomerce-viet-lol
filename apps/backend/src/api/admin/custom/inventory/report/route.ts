@@ -12,6 +12,7 @@ import {
   MedusaResponse,
 } from "@medusajs/framework/http"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
+import { getInventoryLabels } from "../../../../../lib/inventory-labels"
 import * as XLSX from "xlsx"
 
 export async function GET(
@@ -30,6 +31,8 @@ export async function GET(
     allLocations.map((l) => [l.id, (l as unknown as { name: string }).name])
   )
 
+  const labels = await getInventoryLabels(req.scope)
+
   const { data: items } = await query.graph({
     entity: "inventory_item",
     fields: [
@@ -43,8 +46,6 @@ export async function GET(
       "location_levels.stocked_quantity",
       "location_levels.reserved_quantity",
       "location_levels.incoming_quantity",
-      "variant_inventory_items.variant.title",
-      "variant_inventory_items.variant.product.title",
     ],
   })
 
@@ -60,12 +61,6 @@ export async function GET(
       stocked_quantity: number
       reserved_quantity: number
       incoming_quantity: number
-    }>
-    variant_inventory_items?: Array<{
-      variant?: {
-        title?: string | null
-        product?: { title?: string | null } | null
-      } | null
     }>
   }
 
@@ -92,9 +87,9 @@ export async function GET(
     }
 
     const available = totalStocked - totalReserved
-    const variant = item.variant_inventory_items?.[0]?.variant
-    const productTitle = variant?.product?.title ?? null
-    const variantTitle = variant?.title ?? null
+    const label = labels.get(item.id)
+    const productTitle = label?.product_title ?? null
+    const variantTitle = label?.variant_title ?? null
 
     let status: string
     if (available < 0) status = "Thiếu hàng"
