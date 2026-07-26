@@ -111,29 +111,32 @@ export async function POST(
   let sku: string | null = null
 
   try {
-    const { data } = await query.graph({
-      entity: "inventory_item",
+    // Đi từ phía variant: entity "inventory_item" không có đường dẫn ngược
+    // sang variant trong query.graph. Catalog nhỏ nên quét hết vẫn nhẹ.
+    const { data: vs } = await query.graph({
+      entity: "variant",
       fields: [
         "id",
+        "title",
         "sku",
-        "variant_inventory_items.variant.id",
-        "variant_inventory_items.variant.title",
-        "variant_inventory_items.variant.product.id",
-        "variant_inventory_items.variant.product.title",
+        "product.id",
+        "product.title",
+        "inventory_items.inventory_item_id",
       ],
-      filters: { id: itemId },
     })
-    const it = data[0] as Record<string, unknown> | undefined
-    sku = (it?.sku as string) ?? null
-    const link = (
-      it?.variant_inventory_items as
-        | { variant?: { id?: string; title?: string; product?: { id?: string; title?: string } } }[]
-        | undefined
-    )?.[0]
-    variantId = link?.variant?.id ?? null
-    variantTitle = link?.variant?.title ?? null
-    productId = link?.variant?.product?.id ?? null
-    productTitle = link?.variant?.product?.title ?? null
+    const hit = (vs as Record<string, unknown>[]).find((v) =>
+      (
+        (v.inventory_items as { inventory_item_id?: string }[] | undefined) ?? []
+      ).some((li) => li.inventory_item_id === itemId)
+    )
+    if (hit) {
+      variantId = String(hit.id)
+      variantTitle = (hit.title as string) ?? null
+      sku = (hit.sku as string) ?? null
+      const prod = hit.product as { id?: string; title?: string } | null
+      productId = prod?.id ?? null
+      productTitle = prod?.title ?? null
+    }
   } catch {
     /* thiếu mô tả không được chặn việc ghi sổ */
   }
